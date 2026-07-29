@@ -6,85 +6,53 @@
 #include "Engine/DataTable.h"
 #include "BaseItemStruct.generated.h"
 
-/**
- * 
- */
+
 USTRUCT(BlueprintType)
-struct FBaseItem : public FTableRowBase
+struct FItemAffixes
 {
 	GENERATED_BODY()
 
-public:
-	UPROPERTY(EditAnywhere, Category = "Item")
-	FText ItemId;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Affixes")
+	int32 MaxImplicitMods;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Affixes")
+	int32 MaxPrefixMods;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Affixes")
+	int32 MaxSuffixMods;
+};
 
-	UPROPERTY(EditAnywhere, Category = "Item")
-	FText ItemName;
+USTRUCT(BlueprintType)
+struct FItemTags
+{
+	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, Category = "Item")
-	FText ItemBaseType;
-
-	UPROPERTY(EditAnywhere, Category = "Item")
-	FText ItemSlot;
-
-	UPROPERTY(EditAnywhere, Category = "Item")
-	FText ItemClass;	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Tags")
+	bool HasTags;
 };
 
 
-// Fill out your copyright notice in the Description page of Project Settings.
+USTRUCT(BlueprintType)
+struct FBaseItemStruct : public FTableRowBase
+{
+	GENERATED_BODY()
 
-// #pragma once
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	FText ItemId;
 
-// #include "CoreMinimal.h"
-// #include "Engine/DataTable.h"
-// #include "BaseItemStruct.generated.h"
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	FText ItemName;
 
-// USTRUCT(BlueprintType)
-// struct FItemAffixes
-// {
-// 	GENERATED_BODY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	FText ItemBaseType;
 
-// 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Affixes")
-// 	int32 MaxImplicitMods;
-// 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Affixes")
-// 	int32 MaxPrefixMods;
-// 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Affixes")
-// 	int32 MaxSuffixMods;
-// };
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	FText ItemSlot;
 
-// USTRUCT(BlueprintType)
-// struct FItemTags
-// {
-// 	GENERATED_BODY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	FText ItemClass;
 
-// 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Tags")
-// 	bool HasTags;
-// };
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	FItemTags ItemTags;
 
-// USTRUCT(BlueprintType)
-// struct FBaseItemStruct
-// {
-// 	GENERATED_BODY()
-
-// 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-// 	FText ItemId;
-
-// 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-// 	FText ItemName;
-
-// 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-// 	FText ItemBaseType;
-
-// 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-// 	FText ItemSlot;
-
-// 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-// 	FText ItemClass;
-
-// 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-// 	FItemTags ItemTags;
-
-// 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-// 	FItemAffixes ItemAffixes;
-// };
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	FItemAffixes ItemAffixes;
+};
