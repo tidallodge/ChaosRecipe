@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Button.h"
+#include "BaseItemStruct.h"
 #include "CoreMenu.generated.h"
 
 class UButton;
@@ -57,6 +58,12 @@ protected:
 	// Bound from the widget blueprint (named 'SellButton')
 	UPROPERTY(meta = (BindWidget))
 	UButton* BuyButton;
+	UPROPERTY(meta = (BindWidget))
+	UButton* SelectSwordButton;
+	UPROPERTY(meta = (BindWidget))
+	UButton* SelectShieldButton;
+	UPROPERTY(meta = (BindWidget))
+	UButton* ItemInfoButton;
 
 	// Click handler for SellButton
 	UFUNCTION()
@@ -64,6 +71,12 @@ protected:
 	// Click handler for SellButton
 	UFUNCTION()
 	void OnBuyButtonClicked();
+	// Click handler for the sword selection button
+	UFUNCTION()
+	void OnSelectSwordButtonClicked();
+	// Click handler for the item info button
+	UFUNCTION()
+	void OnItemInfoButtonClicked();
 
 	UFUNCTION()
 	void ValidateButton(UButton* InputButton);
@@ -74,5 +87,10 @@ protected:
 	UPROPERTY()
 	FString ItemType = TEXT("Sword");
 
+	UPROPERTY()
+	FBaseItemStruct SelectedItemData;
+
+	UPROPERTY()
+	bool bHasSelectedItemData = false;
 
 };
