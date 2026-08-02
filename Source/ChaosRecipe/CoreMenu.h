@@ -72,8 +72,14 @@ protected:
 	UFUNCTION()
 	void OnBuyButtonClicked();
 	// Click handler for the sword selection button
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void OnSelectSwordButtonClicked();
+	// Click handler for the sword selection button
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void OnSelectShieldButtonClicked();
+	// Generic item lookup helper
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void SelectItemData(const FText& ItemIdText);
 	// Click handler for the item info button
 	UFUNCTION()
 	void OnItemInfoButtonClicked();

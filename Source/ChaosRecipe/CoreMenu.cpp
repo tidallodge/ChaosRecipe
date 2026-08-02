@@ -31,6 +31,7 @@ void UCoreMenu::NativeConstruct()
 	BuyButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBuyButtonClicked);
 	SellButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSellButtonClicked);
 	SelectSwordButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectSwordButtonClicked);
+	SelectShieldButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectShieldButtonClicked);
 	ItemInfoButton->OnClicked.AddDynamic(this, &UCoreMenu::OnItemInfoButtonClicked);
 
 	PlayerSwordCount = 1;
@@ -55,30 +56,51 @@ void UCoreMenu::OnBuyButtonClicked()
 
 void UCoreMenu::OnSelectSwordButtonClicked()
 {
+	SelectItemData(FText::FromString(TEXT("sword_1h_001")));
+}
+
+void UCoreMenu::OnSelectShieldButtonClicked()
+{
+	SelectItemData(FText::FromString(TEXT("shield_1h_001")));
+}
+
+void UCoreMenu::SelectItemData(const FText& ItemIdText)
+{
 	UDataTable* ItemDataTable = LoadObject<UDataTable>(nullptr, TEXT("/Game/ItemData/BaseItem_DT"));
 	if (!ItemDataTable)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Failed to load BaseItem_DT data table."));
+		bHasSelectedItemData = false;
 		return;
 	}
 
-	FName RowName = TEXT("sword_1h_001");
-	FBaseItemStruct* ItemRow = ItemDataTable->FindRow<FBaseItemStruct>(RowName, TEXT("CoreMenu::OnSelectSwordButtonClicked"));
-	if (!ItemRow)
+	const FString SearchText = ItemIdText.ToString();
+	TArray<FName> RowNames = ItemDataTable->GetRowNames();
+	for (const FName& RowName : RowNames)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No row found for item ID: %s"), *RowName.ToString());
-		return;
+		FBaseItemStruct* ItemRow = ItemDataTable->FindRow<FBaseItemStruct>(RowName, TEXT("CoreMenu::SelectItemData"));
+		if (!ItemRow)
+		{
+			continue;
+		}
+
+		if (ItemRow->ItemId.ToString().Equals(SearchText, ESearchCase::IgnoreCase))
+		{
+			SelectedItemData = *ItemRow;
+			bHasSelectedItemData = true;
+
+			FString ItemName = ItemRow->ItemName.ToString();
+			UE_LOG(LogTemp, Warning, TEXT("Selected item name: %s"), *ItemName);
+			if (GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Item Name: %s"), *ItemName));
+			}
+			return;
+		}
 	}
 
-	SelectedItemData = *ItemRow;
-	bHasSelectedItemData = true;
-
-	FString ItemName = ItemRow->ItemName.ToString();
-	UE_LOG(LogTemp, Warning, TEXT("Selected item name: %s"), *ItemName);
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Item Name: %s"), *ItemName));
-	}
+	bHasSelectedItemData = false;
+	UE_LOG(LogTemp, Warning, TEXT("No item found for ItemId: %s"), *SearchText);
 }
 
 void UCoreMenu::OnItemInfoButtonClicked()
