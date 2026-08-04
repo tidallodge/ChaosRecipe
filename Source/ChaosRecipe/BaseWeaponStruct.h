@@ -26,10 +26,10 @@ struct FWeaponBaseDamage
     GENERATED_BODY()
 
     UPROPERTY(EditAnywhere)
-    int8 MinDamage;
+    int32 MinDamage;
 
     UPROPERTY(EditAnywhere)
-    int8 MaxDamage;
+    int32 MaxDamage;
 
     UPROPERTY(EditAnywhere)
     EDamageType DamageType;
@@ -54,4 +54,7 @@ struct FBaseWeaponStruct : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
     FWeaponBaseDamage WeaponBaseDamage;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    int32 WeaponBaseAttackRate;
 };
