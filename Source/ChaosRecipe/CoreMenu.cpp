@@ -73,7 +73,7 @@ void UCoreMenu::SelectItemData(const FText& ItemIdText)
 		bHasSelectedItemData = false;
 		return;
 	}
-
+	
 	const FString SearchText = ItemIdText.ToString();
 	TArray<FName> RowNames = ItemDataTable->GetRowNames();
 	for (const FName& RowName : RowNames)
@@ -111,17 +111,14 @@ void UCoreMenu::OnItemInfoButtonClicked()
 		return;
 	}
 
+	FString ItemClassName = UEnum::GetValueAsString(SelectedItemData.ItemClass);
+	FString ItemSlotName = UEnum::GetValueAsString(SelectedItemData.ItemSlot);
 	FString ItemInfo = FString::Printf(
-		TEXT("Item ID: %s\nName: %s\nBase Type: %s\nSlot: %s\nClass: %s\nHas Tags: %s\nMax Implicit Mods: %d\nMax Prefix Mods: %d\nMax Suffix Mods: %d"),
+		TEXT("Item ID: %s\nName: %s\nClass: %s\nSlot: %s"),
 		*SelectedItemData.ItemId.ToString(),
 		*SelectedItemData.ItemName.ToString(),
-		*SelectedItemData.ItemBaseType.ToString(),
-		*SelectedItemData.ItemSlot.ToString(),
-		*SelectedItemData.ItemClass.ToString(),
-		SelectedItemData.ItemTags.HasTags ? TEXT("true") : TEXT("false"),
-		SelectedItemData.ItemAffixes.MaxImplicitMods,
-		SelectedItemData.ItemAffixes.MaxPrefixMods,
-		SelectedItemData.ItemAffixes.MaxSuffixMods);
+		*ItemClassName,
+		*ItemSlotName);
 
 	UE_LOG(LogTemp, Warning, TEXT("Item info: %s"), *ItemInfo);
 	if (GEngine)

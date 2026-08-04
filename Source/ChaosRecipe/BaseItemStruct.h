@@ -6,29 +6,43 @@
 #include "Engine/DataTable.h"
 #include "BaseItemStruct.generated.h"
 
-
-USTRUCT(BlueprintType)
-struct FItemAffixes
+UENUM(BlueprintType)
+enum class EItemClass : uint8
 {
-	GENERATED_BODY()
+	Armor UMETA(DisplayName = "Armor"),
+	Weapon UMETA(DisplayName = "Weapon"),
+	Shield UMETA(DisplayName = "Shield"),
+	Jewelry UMETA(DisplayName = "Jewelry"),
+	Misc UMETA(DisplayName = "Misc")
+};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Affixes")
-	int32 MaxImplicitMods;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Affixes")
-	int32 MaxPrefixMods;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Affixes")
-	int32 MaxSuffixMods;
+UENUM(BlueprintType)
+enum class EItemSlot : uint8
+{
+	Chest UMETA(DisplayName = "Chest"),
+	Head UMETA(DisplayName = "Head"),
+	Gloves UMETA(DisplayName = "Gloves "),
+	Boots UMETA(DisplayName = "Boots"),
+	HandMain UMETA(DisplayName = "HandMain"),
+	HandOff UMETA(DisplayName = "HandOff"),
+	HandBoth UMETA(DisplayName = "HandBoth"),
+	Neck UMETA(DisplayName = "Neck"),
+	Ring UMETA(DisplayName = "Ring"),
+	Belt UMETA(DisplayName = "Belt"),
+	Misc UMETA(DisplayName = "Misc"),
 };
 
 USTRUCT(BlueprintType)
-struct FItemTags
+struct FItemAssetData
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Tags")
-	bool HasTags;
-};
+	UPROPERTY(EditAnywhere)
+	UTexture2D* ItemIcon;
 
+	UPROPERTY(EditAnywhere)
+	UStaticMesh* ItemStaticMesh;
+};
 
 USTRUCT(BlueprintType)
 struct FBaseItemStruct : public FTableRowBase
@@ -40,19 +54,13 @@ struct FBaseItemStruct : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 	FText ItemName;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	EItemClass ItemClass;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	EItemSlot ItemSlot;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-	FText ItemBaseType;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-	FText ItemSlot;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-	FText ItemClass;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-	FItemTags ItemTags;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-	FItemAffixes ItemAffixes;
+	FItemAssetData ItemAssetData;
 };
