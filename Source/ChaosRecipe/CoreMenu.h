@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/Button.h"
+#include "Components/RichTextBlock.h"
 #include "BaseItemStruct.h"
 #include "CoreMenu.generated.h"
 
@@ -42,6 +43,11 @@ public:
 	UTextBlock* PlayerMoneyTextBlock;
 	UPROPERTY()
 	int32 PlayerMoneyCount;
+
+	UPROPERTY(meta = (BindWidget))
+	URichTextBlock* LogOutput;
+	UPROPERTY()
+	FText LogOutputText;
 
 	UFUNCTION(BlueprintCallable, Category = "Player Inventory Display")
 	void UpdateSwordCount(int32 PlayerSwords);
@@ -83,6 +89,9 @@ protected:
 	// Click handler for the item info button
 	UFUNCTION()
 	void OnItemInfoButtonClicked();
+
+	UFUNCTION(BlueprintCallable, Category = "Logging")
+	void PrintLogToScreen(const FText& Message);
 
 	UFUNCTION()
 	void ValidateButton(UButton* InputButton);
