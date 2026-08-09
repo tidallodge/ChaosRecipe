@@ -53,12 +53,7 @@ void UPlayerInventory::HandleStoreSale(FString ItemType, int32 ItemValue)
 	
 	if (!ValidSale)
 	{
-		GEngine->AddOnScreenDebugMessage(
-			-1,
-			5.0f,
-			FColor::Green,
-			FString::Printf(TEXT("No item to sell, Bank Balance: %d"), PlayerMoneyCount)
-		);
+		UE_LOG(LogTemp, Warning, TEXT("No item to sell, Bank Balance: %d"), PlayerMoneyCount);
 	}
 
 	if (CoreMenuRef)
@@ -86,12 +81,7 @@ void UPlayerInventory::HandleStoreBuy(FString ItemType, int32 ItemValue)
 	
 	if (!ValidBuy)
 	{
-		GEngine->AddOnScreenDebugMessage(
-			-1,
-			5.0f,
-			FColor::Green,
-			FString::Printf(TEXT("No item to sell, Bank Balance: %d"), PlayerMoneyCount)
-		);
+		UE_LOG(LogTemp, Warning, TEXT("No item to sell, Bank Balance: %d"), PlayerMoneyCount);
 	}
 
 	if (CoreMenuRef)

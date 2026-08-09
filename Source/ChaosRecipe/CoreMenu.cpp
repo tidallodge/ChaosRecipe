@@ -42,7 +42,7 @@ void UCoreMenu::NativeConstruct()
 		LogOutput->SetText(LogOutputText);
 	}
 
-	PrintLogToScreen(FText::FromString(TEXT("CoreMenu initialized.")));
+	UE_LOG(LogTemp, Warning, TEXT("CoreMenu initialized."));
 	UpdateSwordCount(PlayerSwordCount);
 	UpdatePlayerMoney(PlayerMoneyCount);
 }
@@ -50,14 +50,12 @@ void UCoreMenu::NativeConstruct()
 void UCoreMenu::OnSellButtonClicked()
 {
 	// Empty handler for SellButton click.
-    PrintLogToScreen(FText::FromString(TEXT("SellButton Clicked.")));
 	UE_LOG(LogTemp, Warning, TEXT("SellButton Clicked."));
 	OnSellButtonClickedEvent.Broadcast(ItemType);
 }
 
 void UCoreMenu::OnBuyButtonClicked()
 {
-    PrintLogToScreen(FText::FromString(TEXT("BuyButton Clicked. Event Dispatched")));
     UE_LOG(LogTemp, Warning, TEXT("BuyButton Clicked. Event Dispatched"));
     OnBuyButtonClickedEvent.Broadcast(ItemType);
 }
@@ -77,7 +75,6 @@ void UCoreMenu::SelectItemData(const FText& ItemIdText)
 	UDataTable* ItemDataTable = LoadObject<UDataTable>(nullptr, TEXT("/Game/ItemData/BaseItem_DT"));
 	if (!ItemDataTable)
 	{
-		PrintLogToScreen(FText::FromString(TEXT("Failed to load BaseItem_DT data table.")));
 		UE_LOG(LogTemp, Error, TEXT("Failed to load BaseItem_DT data table."));
 		bHasSelectedItemData = false;
 		return;
@@ -99,18 +96,12 @@ void UCoreMenu::SelectItemData(const FText& ItemIdText)
 			bHasSelectedItemData = true;
 
 			FText ItemNameText = ItemRow->ItemName;
-			PrintLogToScreen(FText::Format(FText::FromString(TEXT("Selected item name: {0}")), ItemNameText));
 			UE_LOG(LogTemp, Warning, TEXT("Selected item name: %s"), *ItemNameText.ToString());
-			if (GEngine)
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, FString::Printf(TEXT("Item Name: %s"), *ItemNameText.ToString()));
-			}
 			return;
 		}
 	}
 
 	bHasSelectedItemData = false;
-	PrintLogToScreen(FText::Format(FText::FromString(TEXT("No item found for ItemId: {0}")), FText::FromString(SearchText)));
 	UE_LOG(LogTemp, Warning, TEXT("No item found for ItemId: %s"), *SearchText);
 }
 
@@ -118,7 +109,6 @@ void UCoreMenu::OnItemInfoButtonClicked()
 {
 	if (!bHasSelectedItemData)
 	{
-		PrintLogToScreen(FText::FromString(TEXT("No item data has been selected yet.")));
 		UE_LOG(LogTemp, Warning, TEXT("No item data has been selected yet."));
 		return;
 	}
@@ -132,47 +122,18 @@ void UCoreMenu::OnItemInfoButtonClicked()
 		*ItemClassName,
 		*ItemSlotName);
 
-	PrintLogToScreen(FText::Format(FText::FromString(TEXT("Item info: {0}")), FText::FromString(ItemInfo)));
 	UE_LOG(LogTemp, Warning, TEXT("Item info: %s"), *ItemInfo);
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 8.0f, FColor::Cyan, ItemInfo);
-	}
 }
 
 void UCoreMenu::ValidateButton(UButton* InputButton)
 {
 	if (!InputButton)
 	{
-		PrintLogToScreen(FText::FromString(TEXT("InputButton is null or not found!")));
 		UE_LOG(LogTemp, Error, TEXT("InputButton is null or not found!"));
 		return;
 	}
 
-	PrintLogToScreen(FText::Format(FText::FromString(TEXT("Found button: {0}")), FText::FromString(InputButton->GetName())));
 	UE_LOG(LogTemp, Warning, TEXT("Found button: %s"), *InputButton->GetName());
-}
-
-void UCoreMenu::PrintLogToScreen(const FText& Message)
-{
-	if (!LogOutput)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("LogOutput widget not bound."));
-		return;
-	}
-
-	FString CombinedText;
-	if (!LogOutputText.IsEmpty())
-	{
-		CombinedText = LogOutputText.ToString() + TEXT("\n") + Message.ToString();
-	}
-	else
-	{
-		CombinedText = Message.ToString();
-	}
-
-	LogOutputText = FText::FromString(CombinedText);
-	LogOutput->SetText(LogOutputText);
 }
 
 void UCoreMenu::UpdateSwordCount(int32 PlayerSwords)

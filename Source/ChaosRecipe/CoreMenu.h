@@ -90,9 +90,6 @@ protected:
 	UFUNCTION()
 	void OnItemInfoButtonClicked();
 
-	UFUNCTION(BlueprintCallable, Category = "Logging")
-	void PrintLogToScreen(const FText& Message);
-
 	UFUNCTION()
 	void ValidateButton(UButton* InputButton);
 
