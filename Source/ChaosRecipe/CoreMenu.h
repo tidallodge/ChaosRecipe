@@ -44,8 +44,8 @@ public:
 	UPROPERTY()
 	int32 PlayerMoneyCount;
 
-	UPROPERTY(meta = (BindWidget))
-	URichTextBlock* LogOutput;
+	// UPROPERTY(meta = (BindWidget))
+	// URichTextBlock* LogOutput;
 	UPROPERTY()
 	FText LogOutputText;
 
@@ -55,8 +55,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Player Inventory Display")
 	void UpdatePlayerMoney(int32 PlayerMoney);
 
+	UFUNCTION(BlueprintCallable, Category = "Menu Text")
+	void LogToScreen(const FString& NewMessage);
+
 protected:
 	virtual void NativeConstruct() override;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	UTextBlock* TestTextBlock;
 	
 	// Bound from the widget blueprint (named 'SellButton')
 	UPROPERTY(meta = (BindWidget))

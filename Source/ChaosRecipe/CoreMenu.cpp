@@ -36,11 +36,11 @@ void UCoreMenu::NativeConstruct()
 
 	PlayerSwordCount = 1;
 	PlayerMoneyCount = 20;
-	LogOutputText = FText::GetEmpty();
-	if (LogOutput)
-	{
-		LogOutput->SetText(LogOutputText);
-	}
+	// LogOutputText = FText::GetEmpty();
+	// if (LogOutput)
+	// {
+	// 	LogOutput->SetText(LogOutputText);
+	// }
 
 	UE_LOG(LogTemp, Warning, TEXT("CoreMenu initialized."));
 	UpdateSwordCount(PlayerSwordCount);
@@ -63,11 +63,13 @@ void UCoreMenu::OnBuyButtonClicked()
 void UCoreMenu::OnSelectSwordButtonClicked()
 {
 	SelectItemData(FText::FromString(TEXT("sword_1h_001")));
+	LogToScreen(FString(TEXT("sword_1h_001 Selected")));
 }
 
 void UCoreMenu::OnSelectShieldButtonClicked()
 {
 	SelectItemData(FText::FromString(TEXT("shield_1h_001")));
+	LogToScreen(FString(TEXT("shield_1h_001 Selected")));
 }
 
 void UCoreMenu::SelectItemData(const FText& ItemIdText)
@@ -123,6 +125,7 @@ void UCoreMenu::OnItemInfoButtonClicked()
 		*ItemSlotName);
 
 	UE_LOG(LogTemp, Warning, TEXT("Item info: %s"), *ItemInfo);
+	LogToScreen(ItemInfo);
 }
 
 void UCoreMenu::ValidateButton(UButton* InputButton)
@@ -151,6 +154,14 @@ void UCoreMenu::UpdatePlayerMoney(int32 PlayerMoney)
 	{
 		FText PlayerMoneyText = FText::Format(FText::FromString("Player Bank: {0}"), FText::AsNumber(PlayerMoney));
 		PlayerMoneyTextBlock->SetText(PlayerMoneyText);
+	}
+}
+
+void UCoreMenu::LogToScreen(const FString& NewMessage)
+{
+	if (TestTextBlock)
+	{
+		TestTextBlock->SetText(FText::FromString(NewMessage));
 	}
 }
 
