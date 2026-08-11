@@ -15,7 +15,8 @@ void UPlayerInventory::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
 	}
 
 	PlayerMoneyCount = 20;
-	PlayerSwordCount = 1; 
+	ItemCountById.clear();
+	ItemCountById[TEXT("Sword")] = 1;
 
 	CoreMenuRef = CoreMenu;
 }
@@ -36,19 +37,17 @@ void UPlayerInventory::BindToStoreManagerEvents(UStoreManager* StoreManager)
 
 void UPlayerInventory::HandleStoreSale(FString ItemType, int32 ItemValue)
 {
-	if (ItemType == (TEXT("Sword")))
+	auto ItemIt = ItemCountById.find(ItemType);
+	if (ItemIt != ItemCountById.end() && ItemIt->second > 0)
 	{
-		if (PlayerSwordCount > 0)
-		{
-			ValidSale = 1;
-			PlayerSwordCount -= 1;
-			ItemValue = FMath::FloorToInt(ItemValue * ItemValueModifier);
-			PlayerMoneyCount += ItemValue;
-		}
-		else
-		{
-			ValidSale = 0;
-		}
+		ValidSale = 1;
+		ItemIt->second -= 1;
+		ItemValue = FMath::FloorToInt(ItemValue * ItemValueModifier);
+		PlayerMoneyCount += ItemValue;
+	}
+	else
+	{
+		ValidSale = 0;
 	}
 	
 	if (!ValidSale)
@@ -58,25 +57,24 @@ void UPlayerInventory::HandleStoreSale(FString ItemType, int32 ItemValue)
 
 	if (CoreMenuRef)
 	{
-		CoreMenuRef->UpdateSwordCount(PlayerSwordCount);
+		auto SwordIt = ItemCountById.find(TEXT("Sword"));
+		int32 SwordCount = (SwordIt != ItemCountById.end()) ? SwordIt->second : 0;
+		CoreMenuRef->UpdateSwordCount(SwordCount);
 		CoreMenuRef->UpdatePlayerMoney(PlayerMoneyCount);
 	}
 }
 
 void UPlayerInventory::HandleStoreBuy(FString ItemType, int32 ItemValue)
 {
-	if (ItemType == (TEXT("Sword")))
+	if (PlayerMoneyCount >= ItemValue)
 	{
-		if (PlayerMoneyCount >= ItemValue)
-		{
-			ValidBuy = 1;
-			PlayerSwordCount += 1;
-			PlayerMoneyCount -= ItemValue;
-		}
-		else
-		{
-			ValidBuy = 0;
-		}
+		ValidBuy = 1;
+		ItemCountById[ItemType] += 1;
+		PlayerMoneyCount -= ItemValue;
+	}
+	else
+	{
+		ValidBuy = 0;
 	}
 	
 	if (!ValidBuy)
@@ -86,7 +84,9 @@ void UPlayerInventory::HandleStoreBuy(FString ItemType, int32 ItemValue)
 
 	if (CoreMenuRef)
 	{
-		CoreMenuRef->UpdateSwordCount(PlayerSwordCount);
+		auto SwordIt = ItemCountById.find(TEXT("Sword"));
+		int32 SwordCount = (SwordIt != ItemCountById.end()) ? SwordIt->second : 0;
+		CoreMenuRef->UpdateSwordCount(SwordCount);
 		CoreMenuRef->UpdatePlayerMoney(PlayerMoneyCount);
 	}
 }

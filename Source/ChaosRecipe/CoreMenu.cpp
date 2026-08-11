@@ -92,15 +92,24 @@ void UCoreMenu::NativeConstruct()
 
 void UCoreMenu::OnSellButtonClicked()
 {
-	// Empty handler for SellButton click.
 	UE_LOG(LogTemp, Warning, TEXT("SellButton Clicked."));
-	OnSellButtonClickedEvent.Broadcast(ItemType);
+	if (!bHasSelectedItemData)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No selected item to sell."));
+		return;
+	}
+	OnSellButtonClickedEvent.Broadcast(SelectedItemId);
 }
 
 void UCoreMenu::OnBuyButtonClicked()
 {
-    UE_LOG(LogTemp, Warning, TEXT("BuyButton Clicked. Event Dispatched"));
-    OnBuyButtonClickedEvent.Broadcast(ItemType);
+	UE_LOG(LogTemp, Warning, TEXT("BuyButton Clicked. Event Dispatched"));
+	if (!bHasSelectedItemData)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No selected item to buy."));
+		return;
+	}
+	OnBuyButtonClickedEvent.Broadcast(SelectedItemId);
 }
 
 void UCoreMenu::OnSelectSwordButtonClicked()
