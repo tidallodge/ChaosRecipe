@@ -11,6 +11,7 @@
 
 class UButton;
 class FString;
+class UImage;
 class UTextBlock;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBuyButtonClickedEvent, FString, ItemType);
@@ -63,17 +64,26 @@ protected:
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UTextBlock* TestTextBlock;
-	
+
+	UPROPERTY(meta = (BindWidget))
+	UImage* Item1_Icon;
+	UPROPERTY(meta = (BindWidget))
+	UImage* Item2_Icon;
+	UPROPERTY(meta = (BindWidget))
+	UImage* Item3_Icon;
+
 	// Bound from the widget blueprint (named 'SellButton')
 	UPROPERTY(meta = (BindWidget))
 	UButton* SellButton;
-	// Bound from the widget blueprint (named 'SellButton')
+	// Bound from the widget blueprint (named 'BuyButton')
 	UPROPERTY(meta = (BindWidget))
 	UButton* BuyButton;
-	// UPROPERTY(meta = (BindWidget))
-	// UButton* SelectSwordButton;
-	// UPROPERTY(meta = (BindWidget))
-	// UButton* SelectShieldButton;
+	UPROPERTY(meta = (BindWidget))
+	UButton* Item1;
+	UPROPERTY(meta = (BindWidget))
+	UButton* Item2;
+	UPROPERTY(meta = (BindWidget))
+	UButton* Item3;
 	UPROPERTY(meta = (BindWidget))
 	UButton* ItemInfoButton;
 
@@ -86,7 +96,10 @@ protected:
 	// Click handler for the sword selection button
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void OnSelectSwordButtonClicked();
-	// Click handler for the sword selection button
+	// Click handler for the axe selection button
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void OnSelectAxeButtonClicked();
+	// Click handler for the shield selection button
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void OnSelectShieldButtonClicked();
 	// Generic item lookup helper
@@ -107,6 +120,9 @@ protected:
 
 	UPROPERTY()
 	FBaseItemStruct SelectedItemData;
+
+	UPROPERTY()
+	FString SelectedItemId;
 
 	UPROPERTY()
 	bool bHasSelectedItemData = false;

@@ -5,8 +5,10 @@
 #include "GameFramework/PlayerController.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
+#include "Components/Image.h"
 #include "Engine/DataTable.h"
 #include "Engine/Engine.h"
+#include "Engine/Texture2D.h"
 #include "BaseItemStruct.h"
 
 void UCoreMenu::NativeConstruct()
@@ -24,14 +26,16 @@ void UCoreMenu::NativeConstruct()
 
     ValidateButton(BuyButton);
     ValidateButton(SellButton);
-    // ValidateButton(SelectSwordButton);
-    // ValidateButton(SelectShieldButton);
+    ValidateButton(Item1);
+    ValidateButton(Item2);
+    ValidateButton(Item3);
     ValidateButton(ItemInfoButton);
 
 	BuyButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBuyButtonClicked);
 	SellButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSellButtonClicked);
-	// SelectSwordButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectSwordButtonClicked);
-	// SelectShieldButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectShieldButtonClicked);
+	Item1->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectSwordButtonClicked);
+	Item2->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectAxeButtonClicked);
+	Item3->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectShieldButtonClicked);
 	ItemInfoButton->OnClicked.AddDynamic(this, &UCoreMenu::OnItemInfoButtonClicked);
 
 	PlayerSwordCount = 1;
@@ -45,6 +49,45 @@ void UCoreMenu::NativeConstruct()
 	UE_LOG(LogTemp, Warning, TEXT("CoreMenu initialized."));
 	UpdateSwordCount(PlayerSwordCount);
 	UpdatePlayerMoney(PlayerMoneyCount);
+
+	if (Item1_Icon)
+	{
+		UTexture2D* SwordTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/ItemAssets/WeaponShieldAssets/CutlassTexture2D.CutlassTexture2D"));
+		if (SwordTexture)
+		{
+			Item1_Icon->SetBrushFromTexture(SwordTexture);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Failed to load Sword texture for Image1."));
+		}
+	}
+
+	if (Item2_Icon)
+	{
+		UTexture2D* HatchetTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/ItemAssets/WeaponShieldAssets/HatchetTexture2D.HatchetTexture2D"));
+		if (HatchetTexture)
+		{
+			Item2_Icon->SetBrushFromTexture(HatchetTexture);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Failed to load Hatchet texture for Image2."));
+		}
+	}
+
+	if (Item3_Icon)
+	{
+		UTexture2D* ShieldTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/ItemAssets/WeaponShieldAssets/BucklerTexture2D.BucklerTexture2D"));
+		if (ShieldTexture)
+		{
+			Item3_Icon->SetBrushFromTexture(ShieldTexture);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Failed to load Shield texture for Image3."));
+		}
+	}
 }
 
 void UCoreMenu::OnSellButtonClicked()
@@ -62,14 +105,17 @@ void UCoreMenu::OnBuyButtonClicked()
 
 void UCoreMenu::OnSelectSwordButtonClicked()
 {
-	// SelectItemData(FText::FromString(TEXT("sword_1h_001")));
-	// LogToScreen(FString(TEXT("sword_1h_001 Selected")));
+	SelectItemData(FText::FromString(TEXT("sword_1h_001")));
+}
+
+void UCoreMenu::OnSelectAxeButtonClicked()
+{
+	SelectItemData(FText::FromString(TEXT("axe_2h_001")));
 }
 
 void UCoreMenu::OnSelectShieldButtonClicked()
 {
-	// SelectItemData(FText::FromString(TEXT("shield_1h_001")));
-	// LogToScreen(FString(TEXT("shield_1h_001 Selected")));
+	SelectItemData(FText::FromString(TEXT("shield_1h_001")));
 }
 
 void UCoreMenu::SelectItemData(const FText& ItemIdText)
@@ -95,10 +141,24 @@ void UCoreMenu::SelectItemData(const FText& ItemIdText)
 		if (ItemRow->ItemId.ToString().Equals(SearchText, ESearchCase::IgnoreCase))
 		{
 			SelectedItemData = *ItemRow;
+			SelectedItemId = ItemRow->ItemId.ToString();
 			bHasSelectedItemData = true;
 
-			FText ItemNameText = ItemRow->ItemName;
-			UE_LOG(LogTemp, Warning, TEXT("Selected item name: %s"), *ItemNameText.ToString());
+			FString ItemClassName = UEnum::GetValueAsString(ItemRow->ItemClass);
+			FString ItemSlotName = UEnum::GetValueAsString(ItemRow->ItemSlot);
+			FString ItemIconName = ItemRow->ItemAssetData.ItemIcon ? ItemRow->ItemAssetData.ItemIcon->GetName() : TEXT("None");
+			FString ItemStaticMeshName = ItemRow->ItemAssetData.ItemStaticMesh ? ItemRow->ItemAssetData.ItemStaticMesh->GetName() : TEXT("None");
+
+			FString ItemInfo = FString::Printf(
+				TEXT("Item ID: %s\nName: %s\nClass: %s\nSlot: %s\nIcon: %s\nStaticMesh: %s"),
+				*ItemRow->ItemId.ToString(),
+				*ItemRow->ItemName.ToString(),
+				*ItemClassName,
+				*ItemSlotName,
+				*ItemIconName,
+				*ItemStaticMeshName);
+			LogToScreen(ItemInfo);
+			UE_LOG(LogTemp, Warning, TEXT("Selected item data: %s"), *ItemInfo);
 			return;
 		}
 	}
