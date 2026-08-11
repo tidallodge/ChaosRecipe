@@ -24,14 +24,14 @@ void UCoreMenu::NativeConstruct()
 
     ValidateButton(BuyButton);
     ValidateButton(SellButton);
-    ValidateButton(SelectSwordButton);
-    ValidateButton(SelectShieldButton);
+    // ValidateButton(SelectSwordButton);
+    // ValidateButton(SelectShieldButton);
     ValidateButton(ItemInfoButton);
 
 	BuyButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBuyButtonClicked);
 	SellButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSellButtonClicked);
-	SelectSwordButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectSwordButtonClicked);
-	SelectShieldButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectShieldButtonClicked);
+	// SelectSwordButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectSwordButtonClicked);
+	// SelectShieldButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectShieldButtonClicked);
 	ItemInfoButton->OnClicked.AddDynamic(this, &UCoreMenu::OnItemInfoButtonClicked);
 
 	PlayerSwordCount = 1;
@@ -62,14 +62,14 @@ void UCoreMenu::OnBuyButtonClicked()
 
 void UCoreMenu::OnSelectSwordButtonClicked()
 {
-	SelectItemData(FText::FromString(TEXT("sword_1h_001")));
-	LogToScreen(FString(TEXT("sword_1h_001 Selected")));
+	// SelectItemData(FText::FromString(TEXT("sword_1h_001")));
+	// LogToScreen(FString(TEXT("sword_1h_001 Selected")));
 }
 
 void UCoreMenu::OnSelectShieldButtonClicked()
 {
-	SelectItemData(FText::FromString(TEXT("shield_1h_001")));
-	LogToScreen(FString(TEXT("shield_1h_001 Selected")));
+	// SelectItemData(FText::FromString(TEXT("shield_1h_001")));
+	// LogToScreen(FString(TEXT("shield_1h_001 Selected")));
 }
 
 void UCoreMenu::SelectItemData(const FText& ItemIdText)

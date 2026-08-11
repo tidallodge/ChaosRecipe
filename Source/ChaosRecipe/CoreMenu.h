@@ -70,10 +70,10 @@ protected:
 	// Bound from the widget blueprint (named 'SellButton')
 	UPROPERTY(meta = (BindWidget))
 	UButton* BuyButton;
-	UPROPERTY(meta = (BindWidget))
-	UButton* SelectSwordButton;
-	UPROPERTY(meta = (BindWidget))
-	UButton* SelectShieldButton;
+	// UPROPERTY(meta = (BindWidget))
+	// UButton* SelectSwordButton;
+	// UPROPERTY(meta = (BindWidget))
+	// UButton* SelectShieldButton;
 	UPROPERTY(meta = (BindWidget))
 	UButton* ItemInfoButton;
 
