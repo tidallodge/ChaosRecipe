@@ -194,7 +194,9 @@ void UCoreMenu::OnItemInfoButtonClicked()
 		*ItemSlotName);
 
 	UE_LOG(LogTemp, Warning, TEXT("Item info: %s"), *ItemInfo);
+	FString ItemId = FString(SelectedItemData.ItemId.ToString());
 	LogToScreen(ItemInfo);
+	OnItemInfoButtonClickedEvent.Broadcast(ItemId);
 }
 
 void UCoreMenu::ValidateButton(UButton* InputButton)

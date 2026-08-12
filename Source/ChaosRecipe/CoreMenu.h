@@ -16,6 +16,7 @@ class UTextBlock;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBuyButtonClickedEvent, FString, ItemType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSellButtonClickedEvent, FString, ItemType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemInfoButtonClickedEvent, FString, ItemId);
 
 /**
  * 
@@ -34,6 +35,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnSellButtonClickedEvent OnSellButtonClickedEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnItemInfoButtonClickedEvent OnItemInfoButtonClickedEvent;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* SwordCountText;

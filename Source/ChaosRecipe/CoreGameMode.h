@@ -9,6 +9,7 @@
 
 class UCoreMenu;
 class UStoreManager;
+class UItemHandler;
 
 /**
  * 
@@ -26,4 +27,7 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "UI")
 	UCoreMenu* CoreMenuWidget;
+
+	UPROPERTY()
+	UItemHandler* ItemHandler;
 };

@@ -7,6 +7,7 @@
 #include "CoreMenu.h"
 #include "PlayerInventory.h"
 #include "StoreManager.h"
+#include "ItemHandler.h"
 
 void ACoreGameMode::BeginPlay()
 {
@@ -28,6 +29,12 @@ void ACoreGameMode::BeginPlay()
 
 			UPlayerInventory* PlayerInventory = NewObject<UPlayerInventory>(this);
 			PlayerInventory->BindToCoreMenuEvents(CoreMenuWidget);
+
+			ItemHandler = NewObject<UItemHandler>(this);
+			if (ItemHandler)
+			{
+				ItemHandler->BindToCoreMenuEvents(CoreMenuWidget);
+			}
 
 			UStoreManager* StoreManager = NewObject<UStoreManager>(this);
 			StoreManager->BindToCoreMenuEvents(CoreMenuWidget);
