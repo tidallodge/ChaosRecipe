@@ -5,9 +5,51 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 #include "BaseItemStruct.h"
+#include "BaseWeaponStruct.h"
+#include "BaseArmorStruct.h"
 #include "ItemHandler.generated.h"
 
 class UCoreMenu;
+
+USTRUCT(BlueprintType)
+struct FTagsStruct
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Tags")
+    bool LockedMod;
+};
+
+USTRUCT(BlueprintType)
+struct FItemWeaponStatsStruct : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
+    FText ItemId;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
+    FText UUID;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
+    FTagsStruct Tags;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
+    TMap<FString, FWeaponBaseDamage> WeaponDamage; // FString for easy look up for what damage type, FWeaponBaseDamage struct for full damage info
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
+    float AttackRate;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
+    TMap<FString, int32> ImplicitModifiers; // FString for ModifierId, int32 for modifier range roll (0 through max range for each mod)
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
+    TMap<FString, int32> PrefixModifiers; 
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
+    TMap<FString, int32> SuffixModifiers; 
+
+};
 
 UCLASS()
 class CHAOSRECIPE_API UItemHandler : public UObject
