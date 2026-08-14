@@ -15,8 +15,8 @@ void UPlayerInventory::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
 	}
 
 	PlayerMoneyCount = 20;
-	ItemCountById.clear();
-	ItemCountById[TEXT("Sword")] = 1;
+	ItemCountById.Empty();
+	ItemCountById.Add(TEXT("Sword"), 1);
 
 	CoreMenuRef = CoreMenu;
 }
@@ -37,11 +37,11 @@ void UPlayerInventory::BindToStoreManagerEvents(UStoreManager* StoreManager)
 
 void UPlayerInventory::HandleStoreSale(FString ItemType, int32 ItemValue)
 {
-	auto ItemIt = ItemCountById.find(ItemType);
-	if (ItemIt != ItemCountById.end() && ItemIt->second > 0)
+	int32* ItemCount = ItemCountById.Find(ItemType);
+	if (ItemCount && *ItemCount > 0)
 	{
 		ValidSale = 1;
-		ItemIt->second -= 1;
+		*ItemCount -= 1;
 		ItemValue = FMath::FloorToInt(ItemValue * ItemValueModifier);
 		PlayerMoneyCount += ItemValue;
 	}
@@ -57,8 +57,8 @@ void UPlayerInventory::HandleStoreSale(FString ItemType, int32 ItemValue)
 
 	if (CoreMenuRef)
 	{
-		auto SwordIt = ItemCountById.find(TEXT("Sword"));
-		int32 SwordCount = (SwordIt != ItemCountById.end()) ? SwordIt->second : 0;
+		int32* SwordCountPtr = ItemCountById.Find(TEXT("Sword"));
+		int32 SwordCount = SwordCountPtr ? *SwordCountPtr : 0;
 		CoreMenuRef->UpdateSwordCount(SwordCount);
 		CoreMenuRef->UpdatePlayerMoney(PlayerMoneyCount);
 	}
@@ -69,7 +69,7 @@ void UPlayerInventory::HandleStoreBuy(FString ItemType, int32 ItemValue)
 	if (PlayerMoneyCount >= ItemValue)
 	{
 		ValidBuy = 1;
-		ItemCountById[ItemType] += 1;
+		ItemCountById.FindOrAdd(ItemType) += 1;
 		PlayerMoneyCount -= ItemValue;
 	}
 	else
@@ -84,8 +84,8 @@ void UPlayerInventory::HandleStoreBuy(FString ItemType, int32 ItemValue)
 
 	if (CoreMenuRef)
 	{
-		auto SwordIt = ItemCountById.find(TEXT("Sword"));
-		int32 SwordCount = (SwordIt != ItemCountById.end()) ? SwordIt->second : 0;
+		int32* SwordCountPtr = ItemCountById.Find(TEXT("Sword"));
+		int32 SwordCount = SwordCountPtr ? *SwordCountPtr : 0;
 		CoreMenuRef->UpdateSwordCount(SwordCount);
 		CoreMenuRef->UpdatePlayerMoney(PlayerMoneyCount);
 	}

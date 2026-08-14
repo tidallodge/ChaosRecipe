@@ -2,26 +2,8 @@
 
 #pragma once
 
-#include <unordered_map>
 #include "CoreMinimal.h"
 #include "PlayerInventory.generated.h"
-
-
-struct FStringHash
-{
-    size_t operator()(FString const& Key) const noexcept
-    {
-        return static_cast<size_t>(GetTypeHash(Key));
-    }
-};
-
-struct FStringEqual
-{
-    bool operator()(FString const& A, FString const& B) const noexcept
-    {
-        return A == B;
-    }
-};
 
 class UCoreMenu;
 class UStoreManager;
@@ -54,7 +36,7 @@ protected:
 	UPROPERTY()
 	bool ValidBuy = 1;
 
-	std::unordered_map<FString, int32, FStringHash, FStringEqual> ItemCountById;
+	TMap<FString, int32> ItemCountById;
 
 	UCoreMenu* CoreMenuRef;
 };
