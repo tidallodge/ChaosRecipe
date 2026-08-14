@@ -13,6 +13,7 @@ enum class EArmorType : uint8
     Chest UMETA(DisplayName = "Chest"),
     Gloves UMETA(DisplayName = "Gloves"),
     Boots UMETA(DisplayName = "Boots"),
+    Shield UMETA(DisplayName = "Shield"),
 };
 
 UENUM(BlueprintType)
@@ -22,6 +23,7 @@ enum class EArmorSlot : uint8
     Chest UMETA(DisplayName = "Chest"),
     Gloves UMETA(DisplayName = "Gloves"),
     Boots UMETA(DisplayName = "Boots"),
+    OffHand UMETA(DisplayName = "OffHand"),
 };
 
 USTRUCT(BlueprintType)

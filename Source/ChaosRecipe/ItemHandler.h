@@ -58,7 +58,15 @@ public:
     UFUNCTION()
     void OnItemInfoClicked(FString ItemId);
 
+    UFUNCTION()
+    void OnBuyButtonClicked(FString ItemId);
+
 protected:
     bool LoadItemDataRow(const FString& ItemId, FBaseItemStruct& OutItemData) const;
+    bool LoadWeaponDataRow(const FString& ItemId, FBaseWeaponStruct& OutWeaponData) const;
+    bool LoadArmorDataRow(const FString& ItemId, FBaseArmorStruct& OutArmorData) const;
+
     void LogItemData(const FBaseItemStruct& ItemData) const;
+    void LogWeaponData(const FBaseWeaponStruct& WeaponData) const;
+    void LogArmorData(const FBaseArmorStruct& ArmorData) const;
 };

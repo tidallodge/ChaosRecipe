@@ -1,0 +1,40 @@
+[
+	{
+		"Name": "shield_1h_001",
+		"ItemId": "NSLOCTEXT(\"[9B9DCC1A10C55B010022703F68E07FA8]\", \"627A6A0B4A61E7CB8A43968994895D2F\", \"shield_1h_001\")",
+		"ItemName": "NSLOCTEXT(\"[9B9DCC1A10C55B010022703F68E07FA8]\", \"642B365945A44AF6D171B79A9A6DA165\", \"Buckler\")",
+		"ArmorType": "Shield",
+		"ArmorSlot": "OffHand",
+		"ArmorPrimaryBaseDefense":
+		{
+			"MinDefense": 10,
+			"MaxDefense": 12,
+			"MitigationType": "PhysicalReduction"
+		},
+		"ArmorSecondaryBaseDefense":
+		{
+			"MinDefense": 4,
+			"MaxDefense": 6,
+			"MitigationType": "Evade"
+		}
+	},
+	{
+		"Name": "shield_1h_002",
+		"ItemId": "NSLOCTEXT(\"[9B9DCC1A10C55B010022703F68E07FA8]\", \"9EB84C4045944638A6D927B40EA39A3E\", \"shield_1h_002\")",
+		"ItemName": "NSLOCTEXT(\"[9B9DCC1A10C55B010022703F68E07FA8]\", \"282F39644B407A2EF7DD8E9FBC93C1A1\", \"Kite Shield\")",
+		"ArmorType": "Shield",
+		"ArmorSlot": "OffHand",
+		"ArmorPrimaryBaseDefense":
+		{
+			"MinDefense": 14,
+			"MaxDefense": 16,
+			"MitigationType": "PhysicalReduction"
+		},
+		"ArmorSecondaryBaseDefense":
+		{
+			"MinDefense": 0,
+			"MaxDefense": 0,
+			"MitigationType": "PhysicalReduction"
+		}
+	}
+]

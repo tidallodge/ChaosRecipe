@@ -1,0 +1,44 @@
+[
+	{
+		"Name": "sword_1h_001",
+		"ItemId": "NSLOCTEXT(\"[63720FC3B56239BF78EA259A817FA9E3]\", \"FF2D3AEF481945C0EAD5D8BBA6921B3C\", \"sword_1h_001\")",
+		"ItemName": "NSLOCTEXT(\"[63720FC3B56239BF78EA259A817FA9E3]\", \"B3F3DFA74716614545984B8BDF63C38F\", \"Cutlass\")",
+		"WeaponType": "Sword",
+		"WeaponSlot": "MainHand",
+		"WeaponBaseDamage":
+		{
+			"MinDamage": 5,
+			"MaxDamage": 8,
+			"DamageType": "Physical"
+		},
+		"WeaponBaseAttackRate": 1.3
+	},
+	{
+		"Name": "sword_2h_001",
+		"ItemId": "NSLOCTEXT(\"[63720FC3B56239BF78EA259A817FA9E3]\", \"9962801E4F69A0398F80B0A016B1764A\", \"sword_2h_001\")",
+		"ItemName": "NSLOCTEXT(\"[63720FC3B56239BF78EA259A817FA9E3]\", \"7B81489540E00C070F6C51B202825B0E\", \"Claymore\")",
+		"WeaponType": "Sword",
+		"WeaponSlot": "TwoHand",
+		"WeaponBaseDamage":
+		{
+			"MinDamage": 12,
+			"MaxDamage": 18,
+			"DamageType": "Physical"
+		},
+		"WeaponBaseAttackRate": 1.0
+	},
+	{
+		"Name": "axe_1h_001",
+		"ItemId": "NSLOCTEXT(\"[63720FC3B56239BF78EA259A817FA9E3]\", \"4591B3FD4C95F305CE6B9AA545780154\", \"axe_1h_001\")",
+		"ItemName": "NSLOCTEXT(\"[63720FC3B56239BF78EA259A817FA9E3]\", \"7190E96645C1DA02A8C48185612D2C79\", \"Hatchet\")",
+		"WeaponType": "Axe",
+		"WeaponSlot": "MainHand",
+		"WeaponBaseDamage":
+		{
+			"MinDamage": 7,
+			"MaxDamage": 9,
+			"DamageType": "Physical"
+		},
+		"WeaponBaseAttackRate": 1.2
+	}
+]

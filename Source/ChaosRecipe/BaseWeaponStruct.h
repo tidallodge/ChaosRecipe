@@ -56,5 +56,5 @@ struct FBaseWeaponStruct : public FTableRowBase
     FWeaponBaseDamage WeaponBaseDamage;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-    int32 WeaponBaseAttackRate;
+    float WeaponBaseAttackRate;
 };
