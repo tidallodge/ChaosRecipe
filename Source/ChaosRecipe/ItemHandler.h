@@ -4,21 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "TagsStruct.h"
 #include "BaseItemStruct.h"
 #include "BaseWeaponStruct.h"
 #include "BaseArmorStruct.h"
 #include "ItemHandler.generated.h"
 
 class UCoreMenu;
-
-USTRUCT(BlueprintType)
-struct FTagsStruct
-{
-    GENERATED_BODY()
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Tags")
-    bool LockedMod;
-};
 
 USTRUCT(BlueprintType)
 struct FItemWeaponStatsStruct : public FTableRowBase
@@ -30,6 +22,9 @@ struct FItemWeaponStatsStruct : public FTableRowBase
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
     FText UUID;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
+    int32 ItemLevel;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
     FTagsStruct Tags;
