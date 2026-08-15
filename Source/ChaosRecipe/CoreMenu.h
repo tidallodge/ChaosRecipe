@@ -79,6 +79,8 @@ protected:
 	UImage* Item2_Icon;
 	UPROPERTY(meta = (BindWidget))
 	UImage* Item3_Icon;
+	UPROPERTY(meta = (BindWidget))
+	UImage* Item4_Icon;
 
 	// Bound from the widget blueprint (named 'SellButton')
 	UPROPERTY(meta = (BindWidget))
@@ -92,6 +94,8 @@ protected:
 	UButton* Item2;
 	UPROPERTY(meta = (BindWidget))
 	UButton* Item3;
+	UPROPERTY(meta = (BindWidget))
+	UButton* Item4;
 	UPROPERTY(meta = (BindWidget))
 	UButton* ItemInfoButton;
 	UPROPERTY(meta = (BindWidget))
@@ -112,6 +116,9 @@ protected:
 	// Click handler for the shield selection button
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void OnSelectShieldButtonClicked();
+	// Click handler for the 1H axe selection button
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void OnSelectHatchetButtonClicked();
 	// Generic item lookup helper
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void SelectItemData(const FText& ItemIdText);

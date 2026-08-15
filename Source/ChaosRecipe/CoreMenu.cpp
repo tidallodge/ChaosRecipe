@@ -29,6 +29,7 @@ void UCoreMenu::NativeConstruct()
     ValidateButton(Item1);
     ValidateButton(Item2);
     ValidateButton(Item3);
+    ValidateButton(Item4);
     ValidateButton(ItemInfoButton);
     ValidateButton(RandomizeButton);
 
@@ -37,6 +38,7 @@ void UCoreMenu::NativeConstruct()
 	Item1->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectSwordButtonClicked);
 	Item2->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectAxeButtonClicked);
 	Item3->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectShieldButtonClicked);
+	Item4->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectHatchetButtonClicked);
 	ItemInfoButton->OnClicked.AddDynamic(this, &UCoreMenu::OnItemInfoButtonClicked);
 	RandomizeButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeItemButtonClicked);
 
@@ -85,6 +87,19 @@ void UCoreMenu::NativeConstruct()
 			UE_LOG(LogTemp, Warning, TEXT("Failed to load Shield texture for Image3."));
 		}
 	}
+
+	if (Item4_Icon)
+	{
+		UTexture2D* HatchetTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/ItemAssets/WeaponShieldAssets/Hatchet_Icon_test.Hatchet_Icon_test"));
+		if (HatchetTexture)
+		{
+			Item4_Icon->SetBrushFromTexture(HatchetTexture);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Failed to load Hatchet texture for Image4."));
+		}
+	}
 }
 
 void UCoreMenu::OnSellButtonClicked()
@@ -122,6 +137,11 @@ void UCoreMenu::OnSelectAxeButtonClicked()
 void UCoreMenu::OnSelectShieldButtonClicked()
 {
 	SelectItemData(FText::FromString(TEXT("shield_1h_001")));
+}
+
+void UCoreMenu::OnSelectHatchetButtonClicked()
+{
+	SelectItemData(FText::FromString(TEXT("axe_1h_001")));
 }
 
 void UCoreMenu::SelectItemData(const FText& ItemIdText)
