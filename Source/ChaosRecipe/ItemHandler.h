@@ -59,6 +59,12 @@ public:
     FItemWeaponStatsStruct GetWeaponStatsForItem(const FString& ItemId);
 
     UFUNCTION()
+    FText GetUUID() const;
+
+    UFUNCTION()
+    void SetUUID();
+
+    UFUNCTION()
     void OnItemInfoClicked(FString ItemId);
 
     UFUNCTION()

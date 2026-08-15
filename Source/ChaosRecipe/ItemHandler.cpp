@@ -70,6 +70,8 @@ void UItemHandler::OnItemInfoClicked(FString ItemId)
 
 bool UItemHandler::BuildWeaponStatsForItem(const FString& ItemId, FItemWeaponStatsStruct& OutWeaponStats) const
 {
+    const FText ExistingUUID = OutWeaponStats.UUID;
+
     FBaseItemStruct BaseItemData;
     FBaseWeaponStruct WeaponData;
     if (!LoadItemDataRow(ItemId, BaseItemData) || !LoadWeaponDataRow(ItemId, WeaponData))
@@ -79,7 +81,6 @@ bool UItemHandler::BuildWeaponStatsForItem(const FString& ItemId, FItemWeaponSta
     }
 
     OutWeaponStats.ItemId = BaseItemData.ItemId;
-    OutWeaponStats.UUID = FText::FromString(ItemId + TEXT("_UUID"));
     OutWeaponStats.ItemLevel = 1;
     OutWeaponStats.Tags = FTagsStruct();
     OutWeaponStats.AttackRate = WeaponData.WeaponBaseAttackRate;
@@ -89,12 +90,20 @@ bool UItemHandler::BuildWeaponStatsForItem(const FString& ItemId, FItemWeaponSta
     OutWeaponStats.PrefixModifiers.Empty();
     OutWeaponStats.SuffixModifiers.Empty();
 
+    if (!ExistingUUID.IsEmpty())
+    {
+        OutWeaponStats.UUID = ExistingUUID;
+    }
+
     return true;
 }
 
 FItemWeaponStatsStruct UItemHandler::GetWeaponStatsForItem(const FString& ItemId)
 {
+    const FText ExistingUUID = CachedWeaponStats.UUID;
     CachedWeaponStats = FItemWeaponStatsStruct();
+    CachedWeaponStats.UUID = ExistingUUID;
+
     if (!BuildWeaponStatsForItem(ItemId, CachedWeaponStats))
     {
         CachedWeaponStats = FItemWeaponStatsStruct();
@@ -103,10 +112,26 @@ FItemWeaponStatsStruct UItemHandler::GetWeaponStatsForItem(const FString& ItemId
     return CachedWeaponStats;
 }
 
+FText UItemHandler::GetUUID() const
+{
+    if (CachedWeaponStats.UUID.IsEmpty())
+    {
+        const_cast<UItemHandler*>(this)->SetUUID();
+    }
+
+    return CachedWeaponStats.UUID;
+}
+
+void UItemHandler::SetUUID()
+{
+    CachedWeaponStats.UUID = FText::FromString(FGuid::NewGuid().ToString());
+}
+
 void UItemHandler::OnBuyButtonClicked(FString ItemId)
 {
     UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Buy button clicked for ItemId '%s'."), *ItemId);
     CachedWeaponStats = GetWeaponStatsForItem(ItemId);
+    SetUUID();
     OnItemInfoClicked(ItemId);
 }
 
@@ -142,7 +167,8 @@ void UItemHandler::OnRandomizeItem(float RandomValue)
     }
 
     FString Message = FString::Printf(
-        TEXT("ItemHandler randomized weapon stats:\nRandomModifierValue=%.2f\nAttackRate=%.2f\n%s"),
+        TEXT("ItemHandler randomized weapon stats:\nUUID:%s\nRandomModifierValue=%.2f\nAttackRate=%.2f\n%s"),
+        *CachedWeaponStats.UUID.ToString(),
         RandomValue,
         CachedWeaponStats.AttackRate,
         *DamageSummary);
