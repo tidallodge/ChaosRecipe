@@ -13,8 +13,10 @@ void UItemHandler::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
         return;
     }
 
+    BoundCoreMenu = CoreMenu;
     CoreMenu->OnItemInfoButtonClickedEvent.AddDynamic(this, &UItemHandler::OnItemInfoClicked);
     CoreMenu->OnBuyButtonClickedEvent.AddDynamic(this, &UItemHandler::OnBuyButtonClicked);
+    CoreMenu->OnRandomizeItemEvent.AddDynamic(this, &UItemHandler::OnRandomizeItem);
 }
 
 void UItemHandler::OnItemInfoClicked(FString ItemId)
@@ -34,36 +36,165 @@ void UItemHandler::OnItemInfoClicked(FString ItemId)
 
     LogItemData(ItemData);
 
-    switch (ItemData.ItemClass)
+    if (ItemData.ItemClass == EItemClass::Weapon || ItemData.ItemClass == EItemClass::Shield)
     {
-    case EItemClass::Weapon:
-    case EItemClass::Shield:
-    {
+        CachedWeaponStats = GetWeaponStatsForItem(ItemId);
+        if (CachedWeaponStats.ItemId.IsEmpty())
+        {
+            UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Failed to cache weapon stats for ItemId '%s'."), *ItemId);
+            return;
+        }
+
+        UE_LOG(LogTemp, Warning,
+            TEXT("ItemHandler cached weapon stats: ItemId=%s, UUID=%s, ItemLevel=%d, AttackRate=%.2f"),
+            *CachedWeaponStats.ItemId.ToString(),
+            *CachedWeaponStats.UUID.ToString(),
+            CachedWeaponStats.ItemLevel,
+            CachedWeaponStats.AttackRate);
+
         FBaseWeaponStruct WeaponData;
         if (LoadWeaponDataRow(ItemId, WeaponData))
         {
             LogWeaponData(WeaponData);
         }
-        break;
     }
-    case EItemClass::Armor:
+    else if (ItemData.ItemClass == EItemClass::Armor)
     {
         FBaseArmorStruct ArmorData;
         if (LoadArmorDataRow(ItemId, ArmorData))
         {
             LogArmorData(ArmorData);
         }
-        break;
     }
-    default:
-        break;
+}
+
+bool UItemHandler::BuildWeaponStatsForItem(const FString& ItemId, FItemWeaponStatsStruct& OutWeaponStats) const
+{
+    FBaseItemStruct BaseItemData;
+    FBaseWeaponStruct WeaponData;
+    if (!LoadItemDataRow(ItemId, BaseItemData) || !LoadWeaponDataRow(ItemId, WeaponData))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Unable to build weapon stats for %s."), *ItemId);
+        return false;
     }
+
+    OutWeaponStats.ItemId = BaseItemData.ItemId;
+    OutWeaponStats.UUID = FText::FromString(ItemId + TEXT("_UUID"));
+    OutWeaponStats.ItemLevel = 1;
+    OutWeaponStats.Tags = FTagsStruct();
+    OutWeaponStats.AttackRate = WeaponData.WeaponBaseAttackRate;
+    OutWeaponStats.WeaponDamage.Empty();
+    OutWeaponStats.WeaponDamage.Add(TEXT("BaseDamage"), WeaponData.WeaponBaseDamage);
+    OutWeaponStats.ImplicitModifiers.Empty();
+    OutWeaponStats.PrefixModifiers.Empty();
+    OutWeaponStats.SuffixModifiers.Empty();
+
+    return true;
+}
+
+FItemWeaponStatsStruct UItemHandler::GetWeaponStatsForItem(const FString& ItemId)
+{
+    CachedWeaponStats = FItemWeaponStatsStruct();
+    if (!BuildWeaponStatsForItem(ItemId, CachedWeaponStats))
+    {
+        CachedWeaponStats = FItemWeaponStatsStruct();
+    }
+
+    return CachedWeaponStats;
 }
 
 void UItemHandler::OnBuyButtonClicked(FString ItemId)
 {
     UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Buy button clicked for ItemId '%s'."), *ItemId);
+    CachedWeaponStats = GetWeaponStatsForItem(ItemId);
     OnItemInfoClicked(ItemId);
+}
+
+void UItemHandler::OnRandomizeItem(float RandomValue)
+{
+    if (RandomValue <= 0.0f)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Randomize value must be greater than zero."));
+        return;
+    }
+
+    if (CachedWeaponStats.ItemId.IsEmpty())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: No cached weapon stats available to randomize."));
+        return;
+    }
+
+    CachedWeaponStats = GetWeaponStatsForItem(CachedWeaponStats.ItemId.ToString());
+    ApplyRandomizedWeaponStats(RandomValue);
+
+    FString DamageSummary;
+    for (const TPair<FString, FWeaponBaseDamage>& DamageEntry : CachedWeaponStats.WeaponDamage)
+    {
+        if (!DamageSummary.IsEmpty())
+        {
+            DamageSummary += TEXT(" | ");
+        }
+
+        DamageSummary += FString::Printf(TEXT("%s:%d-%d"),
+            *DamageEntry.Key,
+            DamageEntry.Value.MinDamage,
+            DamageEntry.Value.MaxDamage);
+    }
+
+    FString Message = FString::Printf(
+        TEXT("ItemHandler randomized weapon stats:\nRandomModifierValue=%.2f\nAttackRate=%.2f\n%s"),
+        RandomValue,
+        CachedWeaponStats.AttackRate,
+        *DamageSummary);
+
+    if (BoundCoreMenu)
+    {
+        BoundCoreMenu->LogToScreen(Message);
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
+}
+
+void UItemHandler::ApplyRandomizedWeaponStats(float RandomValue)
+{
+    if (CachedWeaponStats.ItemId.IsEmpty())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("No Cached Weapon Stats to apply random values to!"));
+        return;
+    }
+
+    CachedWeaponStats.AttackRate *= RandomValue;
+
+    for (TPair<FString, FWeaponBaseDamage>& DamageEntry : CachedWeaponStats.WeaponDamage)
+    {
+        DamageEntry.Value.MinDamage = FMath::Max(1, FMath::RoundToInt(DamageEntry.Value.MinDamage * RandomValue));
+        DamageEntry.Value.MaxDamage = FMath::Max(1, FMath::RoundToInt(DamageEntry.Value.MaxDamage * RandomValue));
+    }
+
+    FString DamageSummary;
+    for (const TPair<FString, FWeaponBaseDamage>& DamageEntry : CachedWeaponStats.WeaponDamage)
+    {
+        if (!DamageSummary.IsEmpty())
+        {
+            DamageSummary += TEXT(" | ");
+        }
+
+        DamageSummary += FString::Printf(TEXT("%s: %d-%d"),
+            *DamageEntry.Key,
+            DamageEntry.Value.MinDamage,
+            DamageEntry.Value.MaxDamage);
+    }
+
+    const FString Message = FString::Printf(
+        TEXT("Randomized %s: AttackRate=%.2f, Damage=[%s]"),
+        *CachedWeaponStats.ItemId.ToString(),
+        CachedWeaponStats.AttackRate,
+        *DamageSummary);
+
+    if (BoundCoreMenu)
+    {
+        BoundCoreMenu->LogToScreen(Message);
+    }
 }
 
 bool UItemHandler::LoadItemDataRow(const FString& ItemId, FBaseItemStruct& OutItemData) const

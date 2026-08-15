@@ -56,15 +56,30 @@ public:
     void BindToCoreMenuEvents(UCoreMenu* CoreMenu);
 
     UFUNCTION()
+    FItemWeaponStatsStruct GetWeaponStatsForItem(const FString& ItemId);
+
+    UFUNCTION()
     void OnItemInfoClicked(FString ItemId);
 
     UFUNCTION()
     void OnBuyButtonClicked(FString ItemId);
 
+    UFUNCTION()
+    void OnRandomizeItem(float RandomValue);
+
 protected:
+    UPROPERTY()
+    FItemWeaponStatsStruct CachedWeaponStats;
+
+    UPROPERTY()
+    TObjectPtr<UCoreMenu> BoundCoreMenu = nullptr;
+
+    void ApplyRandomizedWeaponStats(float RandomValue);
+
     bool LoadItemDataRow(const FString& ItemId, FBaseItemStruct& OutItemData) const;
     bool LoadWeaponDataRow(const FString& ItemId, FBaseWeaponStruct& OutWeaponData) const;
     bool LoadArmorDataRow(const FString& ItemId, FBaseArmorStruct& OutArmorData) const;
+    bool BuildWeaponStatsForItem(const FString& ItemId, FItemWeaponStatsStruct& OutWeaponStats) const;
 
     void LogItemData(const FBaseItemStruct& ItemData) const;
     void LogWeaponData(const FBaseWeaponStruct& WeaponData) const;

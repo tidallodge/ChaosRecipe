@@ -30,6 +30,7 @@ void UCoreMenu::NativeConstruct()
     ValidateButton(Item2);
     ValidateButton(Item3);
     ValidateButton(ItemInfoButton);
+    ValidateButton(RandomizeButton);
 
 	BuyButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBuyButtonClicked);
 	SellButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSellButtonClicked);
@@ -37,14 +38,10 @@ void UCoreMenu::NativeConstruct()
 	Item2->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectAxeButtonClicked);
 	Item3->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectShieldButtonClicked);
 	ItemInfoButton->OnClicked.AddDynamic(this, &UCoreMenu::OnItemInfoButtonClicked);
+	RandomizeButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeItemButtonClicked);
 
 	PlayerSwordCount = 1;
 	PlayerMoneyCount = 20;
-	// LogOutputText = FText::GetEmpty();
-	// if (LogOutput)
-	// {
-	// 	LogOutput->SetText(LogOutputText);
-	// }
 
 	UE_LOG(LogTemp, Warning, TEXT("CoreMenu initialized."));
 	UpdateSwordCount(PlayerSwordCount);
@@ -65,7 +62,7 @@ void UCoreMenu::NativeConstruct()
 
 	if (Item2_Icon)
 	{
-		UTexture2D* HatchetTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/ItemAssets/WeaponShieldAssets/HatchetTexture2D.HatchetTexture2D"));
+		UTexture2D* HatchetTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/ItemAssets/WeaponShieldAssets/BattleAxeTexture2D.BattleAxeTexture2D"));
 		if (HatchetTexture)
 		{
 			Item2_Icon->SetBrushFromTexture(HatchetTexture);
@@ -197,6 +194,13 @@ void UCoreMenu::OnItemInfoButtonClicked()
 	FString ItemId = FString(SelectedItemData.ItemId.ToString());
 	LogToScreen(ItemInfo);
 	OnItemInfoButtonClickedEvent.Broadcast(ItemId);
+}
+
+void UCoreMenu::OnRandomizeItemButtonClicked()
+{
+	const float RandomValue = FMath::FRandRange(0.5f, 2.0f);
+	UE_LOG(LogTemp, Warning, TEXT("RandomizeItemButton Clicked. RandomValue: %.2f"), RandomValue);
+	OnRandomizeItemEvent.Broadcast(RandomValue);
 }
 
 void UCoreMenu::ValidateButton(UButton* InputButton)

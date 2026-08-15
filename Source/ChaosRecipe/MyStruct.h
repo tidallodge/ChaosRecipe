@@ -2,16 +2,21 @@
 
 #pragma once
 
+#pragma once
+
 #include "CoreMinimal.h"
-#include "UObject/Class.h"
+#include "Engine/DataTable.h"
 #include "MyStruct.generated.h"
 
-/**
- * 
- */
-UCLASS()
-class CHAOSRECIPE_API UMyStruct : public UStruct
+USTRUCT(BlueprintType)
+struct FMyStruct : public FTableRowBase
 {
 	GENERATED_BODY()
-	
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MyStruct")
+	int32 One = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "MyStruct")
+	int32 Two = 0;
 };
