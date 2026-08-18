@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Dom/JsonObject.h"
+#include "ItemHandler.h"
 
 UENUM(BlueprintType)
 enum class EAssignedEntity : uint8
@@ -20,6 +22,18 @@ public:
     ItemInstanceManager();
     ~ItemInstanceManager();
 
+    void SaveItem(const FString& ItemUUID, const FItemWeaponStatsStruct& ItemData);
+    void SaveItem(const FString& ItemUUID, const FItemArmorStatsStruct& ItemData);
+
+    TSharedPtr<FJsonObject> GetSavedItemJson(const FString& ItemUUID) const;
+    bool HasSavedItem(const FString& ItemUUID) const;
+    void RemoveSavedItem(const FString& ItemUUID);
+
+    const TMap<FString, TSharedPtr<FJsonObject>>& GetSavedItems() const
+    {
+        return SavedItemsByUUID;
+    }
+
     void AssignItemToEntity(const FString& ItemUUID, EAssignedEntity AssignedEntity);
     EAssignedEntity GetAssignedEntityForItem(const FString& ItemUUID) const;
     bool HasItemAssignment(const FString& ItemUUID) const;
@@ -31,5 +45,6 @@ public:
     }
 
 private:
+    TMap<FString, TSharedPtr<FJsonObject>> SavedItemsByUUID;
     TMap<FString, EAssignedEntity> ItemUUIDToAssignedEntity;
 };
