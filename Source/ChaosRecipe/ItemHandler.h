@@ -46,6 +46,39 @@ struct FItemWeaponStatsStruct : public FTableRowBase
 
 };
 
+USTRUCT(BlueprintType)
+struct FItemArmorStatsStruct : public FTableRowBase
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor Stats")
+    FText ItemId;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor Stats")
+    FText UUID;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor Stats")
+    int32 ItemLevel;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor Stats")
+    FTagsStruct Tags;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor Stats")
+    FArmorPrimaryBaseDefense ArmorPrimaryBaseDefense;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor Stats")
+    FArmorSecondaryBaseDefense ArmorSecondaryBaseDefense;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor Stats")
+    TMap<FString, int32> ImplicitModifiers;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor Stats")
+    TMap<FString, int32> PrefixModifiers;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor Stats")
+    TMap<FString, int32> SuffixModifiers;
+};
+
 UCLASS()
 class CHAOSRECIPE_API UItemHandler : public UObject
 {
