@@ -17,6 +17,7 @@ void UItemHandler::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
     CoreMenu->OnItemInfoButtonClickedEvent.AddDynamic(this, &UItemHandler::OnItemInfoClicked);
     CoreMenu->OnBuyButtonClickedEvent.AddDynamic(this, &UItemHandler::OnBuyButtonClicked);
     CoreMenu->OnRandomizeItemEvent.AddDynamic(this, &UItemHandler::OnRandomizeItem);
+    CoreMenu->OnSaveItemButtonClickedEvent.AddDynamic(this, &UItemHandler::OnSaveItemButtonClicked);
 }
 
 void UItemHandler::OnItemInfoClicked(FString ItemId)
@@ -36,8 +37,9 @@ void UItemHandler::OnItemInfoClicked(FString ItemId)
 
     LogItemData(ItemData);
 
-    if (ItemData.ItemClass == EItemClass::Weapon || ItemData.ItemClass == EItemClass::Shield)
+    if (ItemData.ItemClass == EItemClass::Weapon)
     {
+        LastSelectedItemClass = EItemClass::Weapon;
         CachedWeaponStats = GetWeaponStatsForItem(ItemId);
         if (CachedWeaponStats.ItemId.IsEmpty())
         {
@@ -58,13 +60,27 @@ void UItemHandler::OnItemInfoClicked(FString ItemId)
             LogWeaponData(WeaponData);
         }
     }
-    else if (ItemData.ItemClass == EItemClass::Armor)
+    else if (ItemData.ItemClass == EItemClass::Armor || ItemData.ItemClass == EItemClass::Shield)
     {
         FBaseArmorStruct ArmorData;
         if (LoadArmorDataRow(ItemId, ArmorData))
         {
             LogArmorData(ArmorData);
         }
+
+        LastSelectedItemClass = EItemClass::Armor;
+        CachedArmorStats = GetArmorStatsForItem(ItemId);
+        if (CachedArmorStats.ItemId.IsEmpty())
+        {
+            UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Failed to cache armor stats for ItemId '%s'."), *ItemId);
+            return;
+        }
+
+        UE_LOG(LogTemp, Warning,
+            TEXT("ItemHandler cached armor stats: ItemId=%s, UUID=%s, ItemLevel=%d"),
+            *CachedArmorStats.ItemId.ToString(),
+            *CachedArmorStats.UUID.ToString(),
+            CachedArmorStats.ItemLevel);
     }
 }
 
@@ -72,7 +88,7 @@ bool UItemHandler::BuildWeaponStatsForItem(const FString& ItemId, FItemWeaponSta
 {
     const FText ExistingUUID = OutWeaponStats.UUID;
 
-    FBaseItemStruct BaseItemData;
+    FBaseItemStruct BaseItemData; 
     FBaseWeaponStruct WeaponData;
     if (!LoadItemDataRow(ItemId, BaseItemData) || !LoadWeaponDataRow(ItemId, WeaponData))
     {
@@ -112,8 +128,60 @@ FItemWeaponStatsStruct UItemHandler::GetWeaponStatsForItem(const FString& ItemId
     return CachedWeaponStats;
 }
 
+bool UItemHandler::BuildArmorStatsForItem(const FString& ItemId, FItemArmorStatsStruct& OutArmorStats) const
+{
+    const FText ExistingUUID = OutArmorStats.UUID;
+
+    FBaseItemStruct BaseItemData;
+    FBaseArmorStruct ArmorData;
+    if (!LoadItemDataRow(ItemId, BaseItemData) || !LoadArmorDataRow(ItemId, ArmorData))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Unable to build armor stats for %s."), *ItemId);
+        return false;
+    }
+
+    OutArmorStats.ItemId = BaseItemData.ItemId;
+    OutArmorStats.ItemLevel = 1;
+    OutArmorStats.Tags = FTagsStruct();
+    OutArmorStats.ArmorPrimaryBaseDefense = ArmorData.ArmorPrimaryBaseDefense;
+    OutArmorStats.ArmorSecondaryBaseDefense = ArmorData.ArmorSecondaryBaseDefense;
+    OutArmorStats.ImplicitModifiers.Empty();
+    OutArmorStats.PrefixModifiers.Empty();
+    OutArmorStats.SuffixModifiers.Empty();
+
+    if (!ExistingUUID.IsEmpty())
+    {
+        OutArmorStats.UUID = ExistingUUID;
+    }
+
+    return true;
+}
+
+FItemArmorStatsStruct UItemHandler::GetArmorStatsForItem(const FString& ItemId)
+{
+    const FText ExistingUUID = CachedArmorStats.UUID;
+    CachedArmorStats = FItemArmorStatsStruct();
+    CachedArmorStats.UUID = ExistingUUID;
+
+    if (!BuildArmorStatsForItem(ItemId, CachedArmorStats))
+    {
+        CachedArmorStats = FItemArmorStatsStruct();
+    }
+
+    return CachedArmorStats;
+}
+
 FText UItemHandler::GetUUID() const
 {
+    if (LastSelectedItemClass == EItemClass::Armor)
+    {
+        if (CachedArmorStats.UUID.IsEmpty())
+        {
+            const_cast<UItemHandler*>(this)->SetUUID();
+        }
+        return CachedArmorStats.UUID;
+    }
+
     if (CachedWeaponStats.UUID.IsEmpty())
     {
         const_cast<UItemHandler*>(this)->SetUUID();
@@ -124,7 +192,15 @@ FText UItemHandler::GetUUID() const
 
 void UItemHandler::SetUUID()
 {
-    CachedWeaponStats.UUID = FText::FromString(FGuid::NewGuid().ToString());
+    const FText NewUUID = FText::FromString(FGuid::NewGuid().ToString());
+    if (LastSelectedItemClass == EItemClass::Armor)
+    {
+        CachedArmorStats.UUID = NewUUID;
+    }
+    else
+    {
+        CachedWeaponStats.UUID = NewUUID;
+    }
 }
 
 void UItemHandler::OnBuyButtonClicked(FString ItemId)
@@ -221,6 +297,64 @@ void UItemHandler::ApplyRandomizedWeaponStats(float RandomValue)
     {
         BoundCoreMenu->LogToScreen(Message);
     }
+}
+
+void UItemHandler::OnSaveItemButtonClicked(FString ItemId)
+{
+    if (ItemId.IsEmpty())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Received empty ItemId for save."));
+        return;
+    }
+
+    FBaseItemStruct ItemData;
+    if (!LoadItemDataRow(ItemId, ItemData))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: No item found in BaseItem_DT for ItemId '%s'."), *ItemId);
+        return;
+    }
+
+    FString Message;
+    if (ItemData.ItemClass == EItemClass::Armor || ItemData.ItemClass == EItemClass::Shield)
+    {
+        LastSelectedItemClass = EItemClass::Armor;
+        if (CachedArmorStats.ItemId.IsEmpty() || CachedArmorStats.ItemId.ToString() != ItemId)
+        {
+            CachedArmorStats = GetArmorStatsForItem(ItemId);
+        }
+        if (CachedArmorStats.ItemId.IsEmpty())
+        {
+            UE_LOG(LogTemp, Warning, TEXT("ItemHandler: No cached armor stats available to save for ItemId '%s'."), *ItemId);
+            return;
+        }
+
+        const FString UUID = GetUUID().ToString();
+        SavedItemsManager.SaveItem(UUID, CachedArmorStats);
+        Message = FString::Printf(TEXT("Saved armor item %s (UUID: %s)"), *ItemId, *UUID);
+    }
+    else
+    {
+        LastSelectedItemClass = EItemClass::Weapon;
+        if (CachedWeaponStats.ItemId.IsEmpty() || CachedWeaponStats.ItemId.ToString() != ItemId)
+        {
+            CachedWeaponStats = GetWeaponStatsForItem(ItemId);
+        }
+        if (CachedWeaponStats.ItemId.IsEmpty())
+        {
+            UE_LOG(LogTemp, Warning, TEXT("ItemHandler: No cached weapon stats available to save for ItemId '%s'."), *ItemId);
+            return;
+        }
+
+        const FString UUID = GetUUID().ToString();
+        SavedItemsManager.SaveItem(UUID, CachedWeaponStats);
+        Message = FString::Printf(TEXT("Saved weapon item %s (UUID: %s)"), *ItemId, *UUID);
+    }
+
+    if (BoundCoreMenu)
+    {
+        BoundCoreMenu->LogToScreen(Message);
+    }
+    UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
 }
 
 bool UItemHandler::LoadItemDataRow(const FString& ItemId, FBaseItemStruct& OutItemData) const

@@ -1,8 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ItemInstanceManager.h"
+#include "ItemHandler.h"
 #include "JsonObjectConverter.h"
 #include "Serialization/JsonSerializer.h"
+#include "Serialization/JsonReader.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
@@ -42,6 +44,7 @@ namespace
 
 ItemInstanceManager::ItemInstanceManager()
 {
+    LoadSavedItemsFromDisk();
 }
 
 ItemInstanceManager::~ItemInstanceManager()
@@ -68,6 +71,47 @@ void ItemInstanceManager::SaveItem(const FString& ItemUUID, const FItemArmorStat
 
     SavedItemsByUUID.Add(ItemUUID, CreateArmorJsonObject(ItemUUID, ItemData));
     WriteSavedItemsToDisk();
+}
+
+void ItemInstanceManager::LoadSavedItemsFromDisk()
+{
+    const FString SaveFilePath = FPaths::ProjectSavedDir() / SavedItemsFileName;
+
+    FString InputString;
+    if (!FFileHelper::LoadFileToString(InputString, *SaveFilePath))
+    {
+        return;
+    }
+
+    TSharedPtr<FJsonObject> RootObject;
+    TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(InputString);
+    if (!FJsonSerializer::Deserialize(Reader, RootObject) || !RootObject.IsValid())
+    {
+        return;
+    }
+
+    const TArray<TSharedPtr<FJsonValue>>* ItemsArray;
+    if (!RootObject->TryGetArrayField(TEXT("Items"), ItemsArray))
+    {
+        return;
+    }
+
+    for (const TSharedPtr<FJsonValue>& ItemValue : *ItemsArray)
+    {
+        const TSharedPtr<FJsonObject>* ItemObject;
+        if (!ItemValue->TryGetObject(ItemObject))
+        {
+            continue;
+        }
+
+        FString ItemUUID;
+        if (!(*ItemObject)->TryGetStringField(TEXT("UUID"), ItemUUID) || ItemUUID.IsEmpty())
+        {
+            continue;
+        }
+
+        SavedItemsByUUID.Add(ItemUUID, *ItemObject);
+    }
 }
 
 void ItemInstanceManager::WriteSavedItemsToDisk() const

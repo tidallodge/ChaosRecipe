@@ -32,6 +32,7 @@ void UCoreMenu::NativeConstruct()
     ValidateButton(Item4);
     ValidateButton(ItemInfoButton);
     ValidateButton(RandomizeButton);
+    ValidateButton(SaveItemButton);
 
 	BuyButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBuyButtonClicked);
 	SellButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSellButtonClicked);
@@ -41,6 +42,7 @@ void UCoreMenu::NativeConstruct()
 	Item4->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectHatchetButtonClicked);
 	ItemInfoButton->OnClicked.AddDynamic(this, &UCoreMenu::OnItemInfoButtonClicked);
 	RandomizeButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeItemButtonClicked);
+	SaveItemButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSaveItemButtonClicked);
 
 	PlayerSwordCount = 1;
 	PlayerMoneyCount = 20;
@@ -221,6 +223,17 @@ void UCoreMenu::OnRandomizeItemButtonClicked()
 	const float RandomValue = FMath::FRandRange(0.5f, 2.0f);
 	UE_LOG(LogTemp, Warning, TEXT("RandomizeItemButton Clicked. RandomValue: %.2f"), RandomValue);
 	OnRandomizeItemEvent.Broadcast(RandomValue);
+}
+
+void UCoreMenu::OnSaveItemButtonClicked()
+{
+	UE_LOG(LogTemp, Warning, TEXT("SaveItemButton Clicked."));
+	if (!bHasSelectedItemData)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No selected item to save."));
+		return;
+	}
+	OnSaveItemButtonClickedEvent.Broadcast(SelectedItemId);
 }
 
 void UCoreMenu::ValidateButton(UButton* InputButton)

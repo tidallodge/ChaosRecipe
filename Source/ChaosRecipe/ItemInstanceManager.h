@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Dom/JsonObject.h"
-#include "ItemHandler.h"
+
+struct FItemWeaponStatsStruct;
+struct FItemArmorStatsStruct;
 
 UENUM(BlueprintType)
 enum class EAssignedEntity : uint8
@@ -45,6 +47,7 @@ public:
     }
 
 private:
+    void LoadSavedItemsFromDisk();
     void WriteSavedItemsToDisk() const;
 
     TMap<FString, TSharedPtr<FJsonObject>> SavedItemsByUUID;

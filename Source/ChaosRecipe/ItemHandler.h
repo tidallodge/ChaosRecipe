@@ -8,6 +8,7 @@
 #include "BaseItemStruct.h"
 #include "BaseWeaponStruct.h"
 #include "BaseArmorStruct.h"
+#include "ItemInstanceManager.h"
 #include "ItemHandler.generated.h"
 
 class UCoreMenu;
@@ -92,6 +93,9 @@ public:
     FItemWeaponStatsStruct GetWeaponStatsForItem(const FString& ItemId);
 
     UFUNCTION()
+    FItemArmorStatsStruct GetArmorStatsForItem(const FString& ItemId);
+
+    UFUNCTION()
     FText GetUUID() const;
 
     UFUNCTION()
@@ -106,9 +110,20 @@ public:
     UFUNCTION()
     void OnRandomizeItem(float RandomValue);
 
+    UFUNCTION()
+    void OnSaveItemButtonClicked(FString ItemId);
+
 protected:
     UPROPERTY()
     FItemWeaponStatsStruct CachedWeaponStats;
+
+    UPROPERTY()
+    FItemArmorStatsStruct CachedArmorStats;
+
+    UPROPERTY()
+    EItemClass LastSelectedItemClass = EItemClass::Weapon;
+
+    ItemInstanceManager SavedItemsManager;
 
     UPROPERTY()
     TObjectPtr<UCoreMenu> BoundCoreMenu = nullptr;
@@ -119,6 +134,7 @@ protected:
     bool LoadWeaponDataRow(const FString& ItemId, FBaseWeaponStruct& OutWeaponData) const;
     bool LoadArmorDataRow(const FString& ItemId, FBaseArmorStruct& OutArmorData) const;
     bool BuildWeaponStatsForItem(const FString& ItemId, FItemWeaponStatsStruct& OutWeaponStats) const;
+    bool BuildArmorStatsForItem(const FString& ItemId, FItemArmorStatsStruct& OutArmorStats) const;
 
     void LogItemData(const FBaseItemStruct& ItemData) const;
     void LogWeaponData(const FBaseWeaponStruct& WeaponData) const;

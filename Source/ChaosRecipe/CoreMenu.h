@@ -18,6 +18,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBuyButtonClickedEvent, FString, I
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSellButtonClickedEvent, FString, ItemType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemInfoButtonClickedEvent, FString, ItemId);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRandomizeItemEvent, float, RandomValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSaveItemButtonClickedEvent, FString, ItemId);
 
 /**
  * 
@@ -42,6 +43,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnRandomizeItemEvent OnRandomizeItemEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnSaveItemButtonClickedEvent OnSaveItemButtonClickedEvent;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* SwordCountText;
@@ -100,6 +104,8 @@ protected:
 	UButton* ItemInfoButton;
 	UPROPERTY(meta = (BindWidget))
 	UButton* RandomizeButton;
+	UPROPERTY(meta = (BindWidget))
+	UButton* SaveItemButton;
 
 	// Click handler for SellButton
 	UFUNCTION()
@@ -128,6 +134,9 @@ protected:
 	// Click handler for the randomize item button
 	UFUNCTION()
 	void OnRandomizeItemButtonClicked();
+	// Click handler for the save item button
+	UFUNCTION()
+	void OnSaveItemButtonClicked();
 
 	UFUNCTION()
 	void ValidateButton(UButton* InputButton);
