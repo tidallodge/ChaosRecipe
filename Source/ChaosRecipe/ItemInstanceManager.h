@@ -45,6 +45,8 @@ public:
     }
 
 private:
+    void WriteSavedItemsToDisk() const;
+
     TMap<FString, TSharedPtr<FJsonObject>> SavedItemsByUUID;
     TMap<FString, EAssignedEntity> ItemUUIDToAssignedEntity;
 };

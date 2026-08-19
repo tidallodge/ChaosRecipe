@@ -2,6 +2,14 @@
 
 #include "ItemInstanceManager.h"
 #include "JsonObjectConverter.h"
+#include "Serialization/JsonSerializer.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+
+namespace
+{
+    const FString SavedItemsFileName = TEXT("SavedItems.json");
+}
 
 namespace
 {
@@ -48,6 +56,7 @@ void ItemInstanceManager::SaveItem(const FString& ItemUUID, const FItemWeaponSta
     }
 
     SavedItemsByUUID.Add(ItemUUID, CreateWeaponJsonObject(ItemUUID, ItemData));
+    WriteSavedItemsToDisk();
 }
 
 void ItemInstanceManager::SaveItem(const FString& ItemUUID, const FItemArmorStatsStruct& ItemData)
@@ -58,6 +67,26 @@ void ItemInstanceManager::SaveItem(const FString& ItemUUID, const FItemArmorStat
     }
 
     SavedItemsByUUID.Add(ItemUUID, CreateArmorJsonObject(ItemUUID, ItemData));
+    WriteSavedItemsToDisk();
+}
+
+void ItemInstanceManager::WriteSavedItemsToDisk() const
+{
+    TSharedRef<FJsonObject> RootObject = MakeShared<FJsonObject>();
+
+    TArray<TSharedPtr<FJsonValue>> ItemsArray;
+    for (const TPair<FString, TSharedPtr<FJsonObject>>& Pair : SavedItemsByUUID)
+    {
+        ItemsArray.Add(MakeShared<FJsonValueObject>(Pair.Value.ToSharedRef()));
+    }
+    RootObject->SetArrayField(TEXT("Items"), ItemsArray);
+
+    FString OutputString;
+    TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&OutputString);
+    FJsonSerializer::Serialize(RootObject, Writer);
+
+    const FString SaveFilePath = FPaths::ProjectSavedDir() / SavedItemsFileName;
+    FFileHelper::SaveStringToFile(OutputString, *SaveFilePath);
 }
 
 TSharedPtr<FJsonObject> ItemInstanceManager::GetSavedItemJson(const FString& ItemUUID) const
