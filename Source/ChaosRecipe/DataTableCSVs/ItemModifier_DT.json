@@ -1,0 +1,34 @@
+[
+	{
+		"Name": "phys_dmg_flat_01",
+		"ModifierId": "NSLOCTEXT(\"[4A8CC53D56946A4EBA4950222267C748]\", \"2B0A49A44EE124F85C050B91E44B5856\", \"phys_dmg_flat_01\")",
+		"ModifierName": "NSLOCTEXT(\"[4A8CC53D56946A4EBA4950222267C748]\", \"881CDC904C2FAC604F0CCD9DC1253EC6\", \"Hardened\")",
+		"ModifierTags":
+		{
+			"Etched": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			2,
+			4
+		],
+		"ModifiedAttribute":
+		{
+			"PhysicalDamage": 1,
+			"FireDamage": 0,
+			"IceDamage": 0,
+			"ElectricDamage": 0,
+			"PoisonDamage": 0,
+			"WeaponAttackRate": 0,
+			"PhysicalReduction": 0,
+			"Evade": 0,
+			"Overshield": 0,
+			"Block": 0
+		},
+		"ModifierOperator": "Addition",
+		"UniqueModifierId": ""
+	}
+]

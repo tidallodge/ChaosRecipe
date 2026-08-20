@@ -4,10 +4,11 @@
 #include "TagsStruct.generated.h"
 
 USTRUCT(BlueprintType)
-struct FTagsStruct
+struct FTagsStruct : public FTableRowBase
 {
     GENERATED_BODY()
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Tags")
-    bool LockedMod = false;
+    bool Etched = false; // locked modifierFTagsStruct
+
 };
