@@ -1,8 +1,8 @@
 [
 	{
 		"Name": "sword_1h_001",
-		"ItemId": "NSLOCTEXT(\"[63720FC3B56239BF78EA259A817FA9E3]\", \"FF2D3AEF481945C0EAD5D8BBA6921B3C\", \"sword_1h_001\")",
-		"ItemName": "NSLOCTEXT(\"[63720FC3B56239BF78EA259A817FA9E3]\", \"B3F3DFA74716614545984B8BDF63C38F\", \"Cutlass\")",
+		"ItemId": "NSLOCTEXT(\"[95F96B7BA48BF1092173463E393221A7]\", \"1E01B6D24FF06FBF2DA31CA3CB65CDDD\", \"sword_1h_001\")",
+		"ItemName": "NSLOCTEXT(\"[95F96B7BA48BF1092173463E393221A7]\", \"1A571D5041505A1495589881BEDB1375\", \"Cutlass\")",
 		"WeaponType": "Sword",
 		"WeaponSlot": "MainHand",
 		"WeaponBaseDamage":
@@ -11,12 +11,14 @@
 			"MaxDamage": 8,
 			"DamageType": "Physical"
 		},
-		"WeaponBaseAttackRate": 1.3
+		"WeaponBaseAttackRate": 1.3,
+		"WeaponBaseCritChance": 6,
+		"WeaponBaseCritMulti": 1.5
 	},
 	{
 		"Name": "sword_2h_001",
-		"ItemId": "NSLOCTEXT(\"[63720FC3B56239BF78EA259A817FA9E3]\", \"9962801E4F69A0398F80B0A016B1764A\", \"sword_2h_001\")",
-		"ItemName": "NSLOCTEXT(\"[63720FC3B56239BF78EA259A817FA9E3]\", \"7B81489540E00C070F6C51B202825B0E\", \"Claymore\")",
+		"ItemId": "NSLOCTEXT(\"[95F96B7BA48BF1092173463E393221A7]\", \"3FE8395042D4F2BF2ACEF0B8DE924E73\", \"sword_2h_001\")",
+		"ItemName": "NSLOCTEXT(\"[95F96B7BA48BF1092173463E393221A7]\", \"0A63CA8C402192B364E367B576675E49\", \"Claymore\")",
 		"WeaponType": "Sword",
 		"WeaponSlot": "TwoHand",
 		"WeaponBaseDamage":
@@ -25,12 +27,14 @@
 			"MaxDamage": 18,
 			"DamageType": "Physical"
 		},
-		"WeaponBaseAttackRate": 1.0
+		"WeaponBaseAttackRate": 1,
+		"WeaponBaseCritChance": 6,
+		"WeaponBaseCritMulti": 1.5
 	},
 	{
 		"Name": "axe_1h_001",
-		"ItemId": "NSLOCTEXT(\"[63720FC3B56239BF78EA259A817FA9E3]\", \"4591B3FD4C95F305CE6B9AA545780154\", \"axe_1h_001\")",
-		"ItemName": "NSLOCTEXT(\"[63720FC3B56239BF78EA259A817FA9E3]\", \"7190E96645C1DA02A8C48185612D2C79\", \"Hatchet\")",
+		"ItemId": "NSLOCTEXT(\"[95F96B7BA48BF1092173463E393221A7]\", \"80E2B26445FC49ABED8D128B2CA9C066\", \"axe_1h_001\")",
+		"ItemName": "NSLOCTEXT(\"[95F96B7BA48BF1092173463E393221A7]\", \"12F5A76A40310BCC8F39CA8594456D9F\", \"Hatchet\")",
 		"WeaponType": "Axe",
 		"WeaponSlot": "MainHand",
 		"WeaponBaseDamage":
@@ -39,6 +43,24 @@
 			"MaxDamage": 9,
 			"DamageType": "Physical"
 		},
-		"WeaponBaseAttackRate": 1.2
+		"WeaponBaseAttackRate": 1.2,
+		"WeaponBaseCritChance": 3,
+		"WeaponBaseCritMulti": 2
+	},
+	{
+		"Name": "axe_2h_001",
+		"ItemId": "NSLOCTEXT(\"[95F96B7BA48BF1092173463E393221A7]\", \"6108F9404878A013069DE690B9BB0973\", \"axe_2h_001\")",
+		"ItemName": "NSLOCTEXT(\"[95F96B7BA48BF1092173463E393221A7]\", \"B877D7314ACB86CC601550992D709230\", \"Battle Axe\")",
+		"WeaponType": "Axe",
+		"WeaponSlot": "TwoHand",
+		"WeaponBaseDamage":
+		{
+			"MinDamage": 15,
+			"MaxDamage": 19,
+			"DamageType": "Physical"
+		},
+		"WeaponBaseAttackRate": 0.95,
+		"WeaponBaseCritChance": 3,
+		"WeaponBaseCritMulti": 2
 	}
 ]

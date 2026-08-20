@@ -20,6 +20,7 @@ enum class EModifierOperator : uint8
 {
     Addition UMETA(DisplayName = "Addition"),
     Multiplication UMETA(DisplayName = "Multiplication"),
+    GlobalMod UMETA(DisplayName = "GlobalMod"),
     UniqueModifier UMETA(DisplayName = "UniqueModifier"),
 };
 
@@ -173,6 +174,9 @@ struct FModifierTags
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
     bool Speed;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
+    bool Critical;
+
 };
 
 USTRUCT(BlueprintType)
@@ -245,6 +249,12 @@ struct FItemModifierAffectedAttributes
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modified Stats")
     float WeaponAttackRate = 0.f;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modified Stats")
+    float WeaponCriticalChance = 0.f;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modified Stats")
+    float WeaponCriticalMulti = 0.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modified Stats")
     FItemModifierDamageStruct DamageModifier;

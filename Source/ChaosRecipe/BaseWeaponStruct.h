@@ -57,4 +57,10 @@ struct FBaseWeaponStruct : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
     float WeaponBaseAttackRate;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    float WeaponBaseCritChance;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    float WeaponBaseCritMulti;
 };

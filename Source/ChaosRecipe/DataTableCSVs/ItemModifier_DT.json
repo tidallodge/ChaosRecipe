@@ -1,11 +1,25 @@
 [
 	{
 		"Name": "phys_dmg_flat_01",
-		"ModifierId": "NSLOCTEXT(\"[4A8CC53D56946A4EBA4950222267C748]\", \"2B0A49A44EE124F85C050B91E44B5856\", \"phys_dmg_flat_01\")",
-		"ModifierName": "NSLOCTEXT(\"[4A8CC53D56946A4EBA4950222267C748]\", \"881CDC904C2FAC604F0CCD9DC1253EC6\", \"Hardened\")",
-		"ModifierTags":
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"B5F10D094E054BFD96EB43A8D68F8AD6\", \"phys_dmg_flat_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"E835C82C47ADAE6E150AE4BA1600F669\", \"Hardened\")",
+		"ItemTags":
 		{
 			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false
 		},
 		"ModifierWeight": 1000,
 		"ModifierTier": 0,
@@ -17,18 +31,2546 @@
 		],
 		"ModifiedAttribute":
 		{
-			"PhysicalDamage": 1,
-			"FireDamage": 0,
-			"IceDamage": 0,
-			"ElectricDamage": 0,
-			"PoisonDamage": 0,
 			"WeaponAttackRate": 0,
-			"PhysicalReduction": 0,
-			"Evade": 0,
-			"Overshield": 0,
-			"Block": 0
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 1,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
 		},
 		"ModifierOperator": "Addition",
-		"UniqueModifierId": ""
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": true,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "phys_dmg_flat_02",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"A68EFE18436F6D8970E5FA9F0057CF5B\", \"phys_dmg_flat_02\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"BC514C694E6451CAE750F88FEDCAF8B2\", \"phys + 2\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": true,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": true,
+			"Attack": true,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 1,
+		"ModifierRequiredLevel": 5,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			4,
+			6
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 1,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Addition",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": false,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "phys_dmg_percent_01",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"FB42EE2C44ABEE0642EB1695DCD96B50\", \"phys_dmg_percent_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"2BF300F54F98EF23661AB7BDB94C4AE1\", \"phys % 1\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": true,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": true,
+			"Attack": true,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			10,
+			20
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 1,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Multiplication",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": true,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "phys_dmg_percent_02",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"555E412843CEBB8EED2FC9AA854CBAC9\", \"phys_dmg_percent_02\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"8226692740BD8C69AB1FACA21F50C4ED\", \"phys % 2\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": true,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": true,
+			"Attack": true,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 1,
+		"ModifierRequiredLevel": 5,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			21,
+			30
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 1,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Multiplication",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": true,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "fire_dmg_flat_01",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"3267274D4407C560FBCBBE80C91711C8\", \"fire_dmg_flat_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"C1A130F747D023655AD470AC3CA62FE6\", \"fire + 1\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": true,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": true,
+			"Attack": true,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			3,
+			6
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 1,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Addition",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": true,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "fire_dmg_flat_02",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"355791D143DCD3B4832C08825535E15A\", \"fire_dmg_flat_02\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"1F2A7BFC4BADB2834324E480D9FC479B\", \"fire + 2\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": true,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": true,
+			"Attack": true,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 1,
+		"ModifierRequiredLevel": 5,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			6,
+			12
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 1,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Addition",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": true,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "ice_dmg_flat_01",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"A6062CA84D96023AB40DF8AD02B4B816\", \"ice_dmg_flat_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"8B6552F34BEED4686EFDB789AAF58F7B\", \"ice + 1\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": true,
+			"Electric": false,
+			"Poison": false,
+			"Damage": true,
+			"Attack": true,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			4,
+			5
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 1,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Addition",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": true,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "ice_dmg_flat_02",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"848965A54D107820CECDDE9A4875E00D\", \"ice_dmg_flat_02\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"7703D11A46C3F7105C885D9212108597\", \"ice + 2\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": true,
+			"Electric": false,
+			"Poison": false,
+			"Damage": true,
+			"Attack": true,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 1,
+		"ModifierRequiredLevel": 5,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			8,
+			10
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 1,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Addition",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": true,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "elec_dmg_flat_01",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"CE94C60249D2FDC5AE669F84F5F67015\", \"elec_dmg_flat_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"215A4ADE4FFF95EAF9B47E9AB68BDFBE\", \"electric + 1\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": true,
+			"Poison": false,
+			"Damage": true,
+			"Attack": true,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			1,
+			8
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 1,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Addition",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": true,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "elec_dmg_flat_02",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"D12237514C8E239833E9D484FE29D94A\", \"elec_dmg_flat_02\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"4D67C4694802A6A41E525CA2B8C1577C\", \"electric + 2\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": true,
+			"Poison": false,
+			"Damage": true,
+			"Attack": true,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 1,
+		"ModifierRequiredLevel": 5,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			2,
+			16
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 1,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Addition",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": true,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "poison_dmg_flat_01",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"A39A0DC74DA95C91ABE0818CFCAF501B\", \"poison_dmg_flat_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"E96F523C4EFD77B8A5C97B91F3626AAE\", \"poison + 1\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Poison": true,
+			"Damage": true,
+			"Attack": true,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			2,
+			4
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 1
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Addition",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": true,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "poison_dmg_flat_02",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"1565B15446C3DC04BB20F2859F442127\", \"poison_dmg_flat_02\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"904F44B24092D00CD99C9EBF47626860\", \"poison + 2\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Poison": true,
+			"Damage": true,
+			"Attack": true,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 1,
+		"ModifierRequiredLevel": 5,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			4,
+			8
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 1
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Addition",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": true,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "atk_spd_01",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"B1BEE023469658C03E1DB39A62ECBB61\", \"atk_spd_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"3DE28A594DAAF87A42971E869521663F\", \"atk speed 1\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": true,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": true,
+			"Critical": false
+		},
+		"ModifierWeight": 500,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Suffix",
+		"MinMaxRange": [
+			5,
+			10
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 1,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Multiplication",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": true,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "atk_spd_02",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"BFCD149D478C0461871E8EBB599BF464\", \"atk_spd_02\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"9B248FD948E691838A3B1081C3FA0043\", \"atk speed 2\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": true,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": true,
+			"Critical": false
+		},
+		"ModifierWeight": 500,
+		"ModifierTier": 1,
+		"ModifierRequiredLevel": 5,
+		"ModifierAffixType": "Suffix",
+		"MinMaxRange": [
+			11,
+			15
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 1,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Multiplication",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": true,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "atk_spd_03",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"E205E2AB47FEE93A71BB32B493222437\", \"atk_spd_03\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"832FF0704CC85B47F361C2A106EAA48B\", \"atk speed 3\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": true,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": true,
+			"Critical": false
+		},
+		"ModifierWeight": 500,
+		"ModifierTier": 2,
+		"ModifierRequiredLevel": 10,
+		"ModifierAffixType": "Suffix",
+		"MinMaxRange": [
+			16,
+			20
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 1,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Multiplication",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": true,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "crit_chance_01",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"1897DA0148D62CD9EC7C9D8A74CA9A92\", \"crit_chance_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"05C61DCD43320819D6B8CAA2D30BB7D0\", \"crit chance 1\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": true,
+			"Attack": true,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": true
+		},
+		"ModifierWeight": 500,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Suffix",
+		"MinMaxRange": [
+			10,
+			15
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 1,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Multiplication",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": true,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "crit_chance_02",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"8F24F5DB40F553980B1D8FACBC008850\", \"crit_chance_02\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"B00F947549CF8A8FDD60358D8B0619D6\", \"crit chance 2\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": true,
+			"Attack": true,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": true
+		},
+		"ModifierWeight": 500,
+		"ModifierTier": 1,
+		"ModifierRequiredLevel": 5,
+		"ModifierAffixType": "Suffix",
+		"MinMaxRange": [
+			16,
+			20
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 1,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Multiplication",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": true,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "crit_chance_03",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"DE577F7D45BD7C8EEDB64F92C0777F45\", \"crit_chance_03\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"CD4EE5E64F6C6ED14090A6905277D597\", \"crit chance 3\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": true,
+			"Attack": true,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": true
+		},
+		"ModifierWeight": 500,
+		"ModifierTier": 2,
+		"ModifierRequiredLevel": 10,
+		"ModifierAffixType": "Suffix",
+		"MinMaxRange": [
+			21,
+			25
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 1,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Multiplication",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": true,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "fire_res_01",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"BBFF5EBA4AB297F01CBDF2B83A4070EF\", \"fire_res_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"2F71C0D247BB9EC356CF05A15F01A7D3\", \"fire resist 1\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": true,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": false,
+			"Resistance": true,
+			"Speed": false,
+			"Critical": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Suffix",
+		"MinMaxRange": [
+			5,
+			10
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 1,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "GlobalMod",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": true,
+			"Weapon": true,
+			"Shield": true,
+			"Jewelry": true,
+			"Misc": true
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "fire_res_02",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"6913BF3F4DC9DFA92D24A6BD93A1D178\", \"fire_res_02\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"BD0EF1224D81A2C3723351B58A62787B\", \"fire resist 2\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": true,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": false,
+			"Resistance": true,
+			"Speed": false,
+			"Critical": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 1,
+		"ModifierRequiredLevel": 5,
+		"ModifierAffixType": "Suffix",
+		"MinMaxRange": [
+			11,
+			15
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 1,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "GlobalMod",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": true,
+			"Weapon": true,
+			"Shield": true,
+			"Jewelry": true,
+			"Misc": true
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "ice_res_01",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"170459C04BB0229797FCC585AAD0CA50\", \"ice_res_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"1DC4566243B86CA0FF195F9913AB7128\", \"ice resist 1\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": true,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": false,
+			"Resistance": true,
+			"Speed": false,
+			"Critical": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Suffix",
+		"MinMaxRange": [
+			5,
+			10
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 1,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "GlobalMod",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": true,
+			"Weapon": true,
+			"Shield": true,
+			"Jewelry": true,
+			"Misc": true
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "ice_res_02",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"F88F12044AAA4F2B21AD42906CF986E8\", \"ice_res_02\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"C6BAC79D48F0468287E0EE80133BCD2B\", \"ice resist 2\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": true,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": false,
+			"Resistance": true,
+			"Speed": false,
+			"Critical": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 1,
+		"ModifierRequiredLevel": 5,
+		"ModifierAffixType": "Suffix",
+		"MinMaxRange": [
+			11,
+			15
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 1,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "GlobalMod",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": true,
+			"Weapon": true,
+			"Shield": true,
+			"Jewelry": true,
+			"Misc": true
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "elec_res_01",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"B755AFEC4B9A2556CC7635BCCD819AAF\", \"elec_res_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"7A30EAAA4B8875528D144894635644A4\", \"electric resist 1\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": true,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": false,
+			"Resistance": true,
+			"Speed": false,
+			"Critical": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Suffix",
+		"MinMaxRange": [
+			5,
+			10
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 1,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "GlobalMod",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": true,
+			"Weapon": true,
+			"Shield": true,
+			"Jewelry": true,
+			"Misc": true
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "elec_res_02",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"506AD6744194399035F051AA03F0296D\", \"elec_res_02\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"BA9BC7044C0E649FED207F9A9E48831B\", \"electric resist 2\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": true,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": false,
+			"Resistance": true,
+			"Speed": false,
+			"Critical": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 1,
+		"ModifierRequiredLevel": 5,
+		"ModifierAffixType": "Suffix",
+		"MinMaxRange": [
+			11,
+			15
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 1,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "GlobalMod",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": true,
+			"Weapon": true,
+			"Shield": true,
+			"Jewelry": true,
+			"Misc": true
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "poison_res_01",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"E1BAAC8940460FADB915C7A0C6432FC4\", \"poison_res_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"EDA2C9C04BC925706912EEAC56A42D9C\", \"poison resist 1\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": true,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": false,
+			"Resistance": true,
+			"Speed": false,
+			"Critical": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Suffix",
+		"MinMaxRange": [
+			5,
+			10
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 1
+			}
+		},
+		"ModifierOperator": "GlobalMod",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": true,
+			"Weapon": true,
+			"Shield": true,
+			"Jewelry": true,
+			"Misc": true
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "poison_res_02",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"2A064D31425BA10563D96C9CAB0BFBA5\", \"poison_res_02\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"E968298047208E74473F47A908FA7B89\", \"poison resist 2\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": true,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": false,
+			"Resistance": true,
+			"Speed": false,
+			"Critical": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 1,
+		"ModifierRequiredLevel": 5,
+		"ModifierAffixType": "Suffix",
+		"MinMaxRange": [
+			11,
+			15
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 1
+			}
+		},
+		"ModifierOperator": "GlobalMod",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": true,
+			"Weapon": true,
+			"Shield": true,
+			"Jewelry": true,
+			"Misc": true
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
 	}
 ]
