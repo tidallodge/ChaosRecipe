@@ -2572,5 +2572,201 @@
 				"Misc": false
 			}
 		}
+	},
+	{
+		"Name": "skills_plus_01",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"9EBC4C1B4C2E463D6727BFB0208B20DF\", \"skills_plus_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"05F187304D2677320595179A4554787B\", \"all skills + 1\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false
+		},
+		"ModifierWeight": 100,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			1
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "GlobalMod",
+		"UniqueModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"E8C88F314AACE0FEF964DA949ED57418\", \"skills_plus_01\")",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": true,
+			"Shield": false,
+			"Jewelry": true,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
+	},
+	{
+		"Name": "uskill_firestorm_01",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"226FB9E3474F764241E38DA6F8B49403\", \"uskill_firestorm_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"531DE4F94AD2DC5E69B57F95EE6A70B0\", \"Firestorm\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": true,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false
+		},
+		"ModifierWeight": 250,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Suffix",
+		"MinMaxRange": [
+			1
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "UniqueModifier",
+		"UniqueModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"32C28A0442FEBBDD60E488962A1C3768\", \"uskill_firestorm_01\")",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": false,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": true
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		}
 	}
 ]
