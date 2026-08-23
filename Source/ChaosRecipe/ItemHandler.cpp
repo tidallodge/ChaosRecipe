@@ -1,4 +1,10 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// ItemHandler
+/** Purpose: Compile a full item across mutliple Data Tables
+    Assign a new item its UUID and base stats
+    Assign item modifiers and update stats accordingly
+    
+*/
+
 
 #include "ItemHandler.h"
 #include "CoreMenu.h"

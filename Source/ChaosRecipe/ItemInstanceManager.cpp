@@ -1,4 +1,7 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// ItemInstanceManager
+/** Purpose: Save and Load items between sessions
+    Assign items to entities such as player or shop
+*/
 
 #include "ItemInstanceManager.h"
 #include "ItemHandler.h"
