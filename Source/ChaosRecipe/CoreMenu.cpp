@@ -6,10 +6,16 @@
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
+#include "Components/VerticalBox.h"
 #include "Engine/DataTable.h"
 #include "Engine/Engine.h"
 #include "Engine/Texture2D.h"
 #include "BaseItemStruct.h"
+#include "Dom/JsonObject.h"
+#include "Serialization/JsonReader.h"
+#include "Serialization/JsonSerializer.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
 
 void UCoreMenu::NativeConstruct()
 {
@@ -33,6 +39,7 @@ void UCoreMenu::NativeConstruct()
     ValidateButton(ItemInfoButton);
     ValidateButton(RandomizeButton);
     ValidateButton(SaveItemButton);
+    ValidateButton(LoadItemButton);
 
 	BuyButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBuyButtonClicked);
 	SellButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSellButtonClicked);
@@ -43,6 +50,7 @@ void UCoreMenu::NativeConstruct()
 	ItemInfoButton->OnClicked.AddDynamic(this, &UCoreMenu::OnItemInfoButtonClicked);
 	RandomizeButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeItemButtonClicked);
 	SaveItemButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSaveItemButtonClicked);
+	LoadItemButton->OnClicked.AddDynamic(this, &UCoreMenu::OnLoadItemButtonClicked);
 
 	PlayerSwordCount = 1;
 	PlayerMoneyCount = 20;
@@ -234,6 +242,101 @@ void UCoreMenu::OnSaveItemButtonClicked()
 		return;
 	}
 	OnSaveItemButtonClickedEvent.Broadcast(SelectedItemId);
+}
+
+static TArray<FString> GetAllSavedItemUUIDs()
+{
+	TArray<FString> OutUUIDs;
+	const FString SaveFilePath = FPaths::ProjectSavedDir() / TEXT("SavedItems.json");
+
+	FString InputString;
+	if (!FFileHelper::LoadFileToString(InputString, *SaveFilePath))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to load SavedItems.json at %s"), *SaveFilePath);
+		return OutUUIDs;
+	}
+
+	TSharedPtr<FJsonObject> RootObject;
+	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(InputString);
+	if (!FJsonSerializer::Deserialize(Reader, RootObject) || !RootObject.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to parse SavedItems.json"));
+		return OutUUIDs;
+	}
+
+	const TArray<TSharedPtr<FJsonValue>>* ItemsArray;
+	if (!RootObject->TryGetArrayField(TEXT("Items"), ItemsArray))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SavedItems.json has no items."));
+		return OutUUIDs;
+	}
+
+	for (const TSharedPtr<FJsonValue>& ItemValue : *ItemsArray)
+	{
+		const TSharedPtr<FJsonObject>* ItemObject;
+		FString ItemUUID;
+		if (ItemValue->TryGetObject(ItemObject) && (*ItemObject)->TryGetStringField(TEXT("UUID"), ItemUUID) && !ItemUUID.IsEmpty())
+		{
+			OutUUIDs.Add(ItemUUID);
+		}
+	}
+
+	return OutUUIDs;
+}
+
+void UCoreMenu::OnLoadItemButtonClicked()
+{
+	UE_LOG(LogTemp, Warning, TEXT("LoadItemButton Clicked."));
+
+	if (!LoadItemVertBox)
+	{
+		UE_LOG(LogTemp, Error, TEXT("LoadItemVertBox is null or not found!"));
+		return;
+	}
+
+	LoadItemVertBox->ClearChildren();
+
+	const TArray<FString> SavedUUIDs = GetAllSavedItemUUIDs();
+	if (SavedUUIDs.Num() == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No saved item UUIDs found."));
+		return;
+	}
+
+	UClass* SingleButtonClass = LoadClass<UUserWidget>(nullptr, TEXT("/Game/WBP_SingleButton.WBP_SingleButton_C"));
+	if (!SingleButtonClass)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load WBP_SingleButton class."));
+		return;
+	}
+
+	for (const FString& UUID : SavedUUIDs)
+	{
+		UUserWidget* NewSingleButton = CreateWidget<UUserWidget>(this, SingleButtonClass);
+		if (!NewSingleButton)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed to create WBP_SingleButton widget instance."));
+			continue;
+		}
+
+		if (FObjectProperty* TextBlockProp = FindFProperty<FObjectProperty>(NewSingleButton->GetClass(), TEXT("SingleButtonText")))
+		{
+			if (UTextBlock* SingleButtonTextBlock = Cast<UTextBlock>(TextBlockProp->GetPropertyValue_InContainer(NewSingleButton)))
+			{
+				SingleButtonTextBlock->SetText(FText::FromString(UUID));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("SingleButtonText resolved to a null/non-TextBlock widget."));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SingleButtonText property not found on WBP_SingleButton."));
+		}
+
+		LoadItemVertBox->AddChildToVerticalBox(NewSingleButton);
+	}
 }
 
 void UCoreMenu::ValidateButton(UButton* InputButton)

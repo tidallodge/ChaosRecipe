@@ -13,6 +13,7 @@ class UButton;
 class FString;
 class UImage;
 class UTextBlock;
+class UVerticalBox;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBuyButtonClickedEvent, FString, ItemType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSellButtonClickedEvent, FString, ItemType);
@@ -106,6 +107,10 @@ protected:
 	UButton* RandomizeButton;
 	UPROPERTY(meta = (BindWidget))
 	UButton* SaveItemButton;
+	UPROPERTY(meta = (BindWidget))
+	UButton* LoadItemButton;
+	UPROPERTY(meta = (BindWidget))
+	UVerticalBox* LoadItemVertBox;
 
 	// Click handler for SellButton
 	UFUNCTION()
@@ -137,6 +142,9 @@ protected:
 	// Click handler for the save item button
 	UFUNCTION()
 	void OnSaveItemButtonClicked();
+	// Click handler for the load item button
+	UFUNCTION()
+	void OnLoadItemButtonClicked();
 
 	UFUNCTION()
 	void ValidateButton(UButton* InputButton);
