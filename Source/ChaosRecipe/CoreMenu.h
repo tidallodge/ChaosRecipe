@@ -21,13 +21,35 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemInfoButtonClickedEvent, FStri
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRandomizeItemEvent, float, RandomValue);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSaveItemButtonClickedEvent, FString, ItemId);
 
+class UCoreMenu;
+
+// Carries a saved item's UUID for a dynamically created load-item button, since
+// UButton::OnClicked takes no parameters and can't otherwise identify its sender.
+UCLASS()
+class ULoadItemButtonProxy : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY()
+	FString ItemUUID;
+
+	UPROPERTY()
+	TObjectPtr<UCoreMenu> OwningMenu;
+
+	UFUNCTION()
+	void HandleClicked();
+};
+
 /**
- * 
+ *
  */
 UCLASS()
 class CHAOSRECIPE_API UCoreMenu : public UUserWidget
 {
 	GENERATED_BODY()
+
+	friend class ULoadItemButtonProxy;
 
 public:
 
@@ -111,6 +133,8 @@ protected:
 	UButton* LoadItemButton;
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* LoadItemVertBox;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* ActiveItemTextBox;
 
 	// Click handler for SellButton
 	UFUNCTION()
@@ -145,6 +169,9 @@ protected:
 	// Click handler for the load item button
 	UFUNCTION()
 	void OnLoadItemButtonClicked();
+	// Click handler for a dynamically created saved-item button
+	UFUNCTION()
+	void OnSingleLoadItemButtonClicked(FString ItemUUID);
 
 	UFUNCTION()
 	void ValidateButton(UButton* InputButton);
@@ -163,5 +190,9 @@ protected:
 
 	UPROPERTY()
 	bool bHasSelectedItemData = false;
+
+	// Keeps the per-button proxies alive (and their click bindings valid) between repopulations.
+	UPROPERTY()
+	TArray<TObjectPtr<ULoadItemButtonProxy>> LoadItemButtonProxies;
 
 };

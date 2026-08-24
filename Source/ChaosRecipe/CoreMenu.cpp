@@ -284,6 +284,106 @@ static TArray<FString> GetAllSavedItemUUIDs()
 	return OutUUIDs;
 }
 
+static bool GetSavedItemJsonByUUID(const FString& UUID, TSharedPtr<FJsonObject>& OutItemObject)
+{
+	const FString SaveFilePath = FPaths::ProjectSavedDir() / TEXT("SavedItems.json");
+
+	FString InputString;
+	if (!FFileHelper::LoadFileToString(InputString, *SaveFilePath))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to load SavedItems.json at %s"), *SaveFilePath);
+		return false;
+	}
+
+	TSharedPtr<FJsonObject> RootObject;
+	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(InputString);
+	if (!FJsonSerializer::Deserialize(Reader, RootObject) || !RootObject.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to parse SavedItems.json"));
+		return false;
+	}
+
+	const TArray<TSharedPtr<FJsonValue>>* ItemsArray;
+	if (!RootObject->TryGetArrayField(TEXT("Items"), ItemsArray))
+	{
+		return false;
+	}
+
+	for (const TSharedPtr<FJsonValue>& ItemValue : *ItemsArray)
+	{
+		const TSharedPtr<FJsonObject>* ItemObject;
+		FString ItemUUID;
+		if (ItemValue->TryGetObject(ItemObject) && (*ItemObject)->TryGetStringField(TEXT("UUID"), ItemUUID) && ItemUUID.Equals(UUID, ESearchCase::IgnoreCase))
+		{
+			OutItemObject = *ItemObject;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void ULoadItemButtonProxy::HandleClicked()
+{
+	if (OwningMenu)
+	{
+		OwningMenu->OnSingleLoadItemButtonClicked(ItemUUID);
+	}
+}
+
+void UCoreMenu::OnSingleLoadItemButtonClicked(FString ItemUUID)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Saved item button clicked for UUID: %s"), *ItemUUID);
+
+	if (!ActiveItemTextBox)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ActiveItemTextBox is null or not found!"));
+		return;
+	}
+
+	TSharedPtr<FJsonObject> ItemObject;
+	if (!GetSavedItemJsonByUUID(ItemUUID, ItemObject))
+	{
+		ActiveItemTextBox->SetText(FText::FromString(FString::Printf(TEXT("No saved item found for UUID: %s"), *ItemUUID)));
+		return;
+	}
+
+	FString ItemId;
+	ItemObject->TryGetStringField(TEXT("ItemId"), ItemId);
+
+	double AttackRate = 0.0;
+	ItemObject->TryGetNumberField(TEXT("attackRate"), AttackRate);
+
+	FString WeaponDamageText;
+	const TSharedPtr<FJsonObject>* WeaponDamageObject;
+	if (ItemObject->TryGetObjectField(TEXT("weaponDamage"), WeaponDamageObject))
+	{
+		for (const TPair<FString, TSharedPtr<FJsonValue>>& DamagePair : (*WeaponDamageObject)->Values)
+		{
+			const TSharedPtr<FJsonObject>* DamageObject;
+			if (DamagePair.Value->TryGetObject(DamageObject))
+			{
+				int32 MinDamage = 0;
+				int32 MaxDamage = 0;
+				FString DamageType;
+				(*DamageObject)->TryGetNumberField(TEXT("minDamage"), MinDamage);
+				(*DamageObject)->TryGetNumberField(TEXT("maxDamage"), MaxDamage);
+				(*DamageObject)->TryGetStringField(TEXT("damageType"), DamageType);
+				WeaponDamageText += FString::Printf(TEXT("%s: %d-%d (%s)\n"), *DamagePair.Key, MinDamage, MaxDamage, *DamageType);
+			}
+		}
+	}
+
+	const FString DisplayText = FString::Printf(
+		TEXT("UUID: %s\nItemId: %s\nAttackRate: %.2f\n%s"),
+		*ItemUUID,
+		*ItemId,
+		AttackRate,
+		*WeaponDamageText);
+
+	ActiveItemTextBox->SetText(FText::FromString(DisplayText));
+}
+
 void UCoreMenu::OnLoadItemButtonClicked()
 {
 	UE_LOG(LogTemp, Warning, TEXT("LoadItemButton Clicked."));
@@ -295,6 +395,7 @@ void UCoreMenu::OnLoadItemButtonClicked()
 	}
 
 	LoadItemVertBox->ClearChildren();
+	LoadItemButtonProxies.Empty();
 
 	const TArray<FString> SavedUUIDs = GetAllSavedItemUUIDs();
 	if (SavedUUIDs.Num() == 0)
@@ -333,6 +434,27 @@ void UCoreMenu::OnLoadItemButtonClicked()
 		else
 		{
 			UE_LOG(LogTemp, Warning, TEXT("SingleButtonText property not found on WBP_SingleButton."));
+		}
+
+		if (FObjectProperty* ButtonProp = FindFProperty<FObjectProperty>(NewSingleButton->GetClass(), TEXT("SingleButton")))
+		{
+			if (UButton* InnerButton = Cast<UButton>(ButtonProp->GetPropertyValue_InContainer(NewSingleButton)))
+			{
+				ULoadItemButtonProxy* Proxy = NewObject<ULoadItemButtonProxy>(this);
+				Proxy->ItemUUID = UUID;
+				Proxy->OwningMenu = this;
+				LoadItemButtonProxies.Add(Proxy);
+
+				InnerButton->OnClicked.AddDynamic(Proxy, &ULoadItemButtonProxy::HandleClicked);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("SingleButton resolved to a null/non-Button widget."));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SingleButton property not found on WBP_SingleButton."));
 		}
 
 		LoadItemVertBox->AddChildToVerticalBox(NewSingleButton);
