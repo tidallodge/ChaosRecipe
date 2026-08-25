@@ -7,6 +7,7 @@
 #include "Components/Button.h"
 #include "Components/Image.h"
 #include "Components/VerticalBox.h"
+#include "Components/HorizontalBox.h"
 #include "Engine/DataTable.h"
 #include "Engine/Engine.h"
 #include "Engine/Texture2D.h"
@@ -394,6 +395,17 @@ void UCoreMenu::OnLoadItemButtonClicked()
 		return;
 	}
 
+	if (LoadItemHorizBox)
+	{
+		LoadItemHorizBox->SetVisibility(ESlateVisibility::Visible);
+	}
+
+	if (!bCloseLoadItemButtonCreated)
+	{
+		CreateCloseLoadItemButton();
+		bCloseLoadItemButtonCreated = true;
+	}
+
 	LoadItemVertBox->ClearChildren();
 	LoadItemButtonProxies.Empty();
 
@@ -459,6 +471,74 @@ void UCoreMenu::OnLoadItemButtonClicked()
 
 		LoadItemVertBox->AddChildToVerticalBox(NewSingleButton);
 	}
+}
+
+void UCoreMenu::OnCloseLoadItemBoxButtonClicked()
+{
+	if (!LoadItemHorizBox)
+	{
+		UE_LOG(LogTemp, Error, TEXT("LoadItemHorizBox is null or not found!"));
+		return;
+	}
+
+	LoadItemHorizBox->SetVisibility(ESlateVisibility::Collapsed);
+}
+
+void UCoreMenu::CreateCloseLoadItemButton()
+{
+	if (!LoadItemHeaderBox)
+	{
+		UE_LOG(LogTemp, Error, TEXT("LoadItemHeaderBox is null or not found!"));
+		return;
+	}
+
+	UClass* SingleButtonClass = LoadClass<UUserWidget>(nullptr, TEXT("/Game/WBP_SingleButton.WBP_SingleButton_C"));
+	if (!SingleButtonClass)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load WBP_SingleButton class."));
+		return;
+	}
+
+	UUserWidget* CloseButtonWidget = CreateWidget<UUserWidget>(this, SingleButtonClass);
+	if (!CloseButtonWidget)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to create WBP_SingleButton widget instance."));
+		return;
+	}
+
+	if (FObjectProperty* TextBlockProp = FindFProperty<FObjectProperty>(CloseButtonWidget->GetClass(), TEXT("SingleButtonText")))
+	{
+		if (UTextBlock* CloseButtonTextBlock = Cast<UTextBlock>(TextBlockProp->GetPropertyValue_InContainer(CloseButtonWidget)))
+		{
+			CloseButtonTextBlock->SetText(FText::FromString(TEXT("X")));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SingleButtonText resolved to a null/non-TextBlock widget."));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SingleButtonText property not found on WBP_SingleButton."));
+	}
+
+	if (FObjectProperty* ButtonProp = FindFProperty<FObjectProperty>(CloseButtonWidget->GetClass(), TEXT("SingleButton")))
+	{
+		if (UButton* InnerButton = Cast<UButton>(ButtonProp->GetPropertyValue_InContainer(CloseButtonWidget)))
+		{
+			InnerButton->OnClicked.AddDynamic(this, &UCoreMenu::OnCloseLoadItemBoxButtonClicked);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SingleButton resolved to a null/non-Button widget."));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SingleButton property not found on WBP_SingleButton."));
+	}
+
+	LoadItemHeaderBox->AddChildToVerticalBox(CloseButtonWidget);
 }
 
 void UCoreMenu::ValidateButton(UButton* InputButton)

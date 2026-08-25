@@ -14,6 +14,7 @@ class FString;
 class UImage;
 class UTextBlock;
 class UVerticalBox;
+class UHorizontalBox;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBuyButtonClickedEvent, FString, ItemType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSellButtonClickedEvent, FString, ItemType);
@@ -134,6 +135,10 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* LoadItemVertBox;
 	UPROPERTY(meta = (BindWidget))
+	UVerticalBox* LoadItemHeaderBox;
+	UPROPERTY(meta = (BindWidget))
+	UHorizontalBox* LoadItemHorizBox;
+	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ActiveItemTextBox;
 
 	// Click handler for SellButton
@@ -172,6 +177,11 @@ protected:
 	// Click handler for a dynamically created saved-item button
 	UFUNCTION()
 	void OnSingleLoadItemButtonClicked(FString ItemUUID);
+	// Click handler for the close ("X") button that hides LoadItemHorizBox
+	UFUNCTION()
+	void OnCloseLoadItemBoxButtonClicked();
+	// Creates the "X" close button in LoadItemHeaderBox
+	void CreateCloseLoadItemButton();
 
 	UFUNCTION()
 	void ValidateButton(UButton* InputButton);
@@ -190,6 +200,10 @@ protected:
 
 	UPROPERTY()
 	bool bHasSelectedItemData = false;
+
+	// Guards against creating the "X" close button more than once across repeated LoadItem clicks.
+	UPROPERTY()
+	bool bCloseLoadItemButtonCreated = false;
 
 	// Keeps the per-button proxies alive (and their click bindings valid) between repopulations.
 	UPROPERTY()
