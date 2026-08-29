@@ -5,6 +5,7 @@
 #include "BaseItemStruct.h"
 #include "BaseWeaponStruct.h"
 #include "BaseArmorStruct.h"
+#include "TagsStruct.h"
 #include "ItemModifierStruct.generated.h"
 
 UENUM(BlueprintType)
