@@ -113,6 +113,9 @@ public:
     UFUNCTION()
     void OnSaveItemButtonClicked(FString ItemId);
 
+    UFUNCTION()
+    void OnSellButtonClicked(FString ItemId);
+
 protected:
     UPROPERTY()
     FItemWeaponStatsStruct CachedWeaponStats;

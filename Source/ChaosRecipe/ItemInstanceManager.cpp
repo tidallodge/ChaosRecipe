@@ -149,7 +149,12 @@ bool ItemInstanceManager::HasSavedItem(const FString& ItemUUID) const
 
 void ItemInstanceManager::RemoveSavedItem(const FString& ItemUUID)
 {
-    SavedItemsByUUID.Remove(ItemUUID);
+    // Only the entry for ItemUUID is dropped from the map; WriteSavedItemsToDisk()
+    // then re-serializes every remaining entry, so all other saved items are preserved.
+    if (SavedItemsByUUID.Remove(ItemUUID) > 0)
+    {
+        WriteSavedItemsToDisk();
+    }
 }
 
 void ItemInstanceManager::AssignItemToEntity(const FString& ItemUUID, EAssignedEntity AssignedEntity)

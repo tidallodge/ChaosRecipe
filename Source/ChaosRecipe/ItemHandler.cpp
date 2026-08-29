@@ -9,6 +9,11 @@
 #include "ItemHandler.h"
 #include "CoreMenu.h"
 #include "Engine/DataTable.h"
+#include "TagsStruct.h"
+#include "BaseItemStruct.h"
+#include "BaseWeaponStruct.h"
+#include "BaseArmorStruct.h"
+#include "ItemInstanceManager.h"
 #include "Engine/Engine.h"
 
 void UItemHandler::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
@@ -24,6 +29,7 @@ void UItemHandler::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
     CoreMenu->OnBuyButtonClickedEvent.AddDynamic(this, &UItemHandler::OnBuyButtonClicked);
     CoreMenu->OnRandomizeItemEvent.AddDynamic(this, &UItemHandler::OnRandomizeItem);
     CoreMenu->OnSaveItemButtonClickedEvent.AddDynamic(this, &UItemHandler::OnSaveItemButtonClicked);
+    CoreMenu->OnSellButtonClickedEvent.AddDynamic(this, &UItemHandler::OnSellButtonClicked);
 }
 
 void UItemHandler::OnItemInfoClicked(FString ItemId)
@@ -360,6 +366,29 @@ void UItemHandler::OnSaveItemButtonClicked(FString ItemId)
     {
         BoundCoreMenu->LogToScreen(Message);
     }
+    UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
+}
+
+void UItemHandler::OnSellButtonClicked(FString ItemId)
+{
+    if (!BoundCoreMenu)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: No bound CoreMenu to read selected UUID for sell."));
+        return;
+    }
+
+    const FString UUID = BoundCoreMenu->GetSelectedItemUUID();
+    if (UUID.IsEmpty())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: No loaded saved-item UUID to remove for sell of ItemId '%s'."), *ItemId);
+        return;
+    }
+
+    SavedItemsManager.RemoveSavedItem(UUID);
+    BoundCoreMenu->ClearSelectedItemUUID();
+
+    const FString Message = FString::Printf(TEXT("Removed sold item %s (UUID: %s) from SavedItems.json"), *ItemId, *UUID);
+    BoundCoreMenu->LogToScreen(Message);
     UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
 }
 

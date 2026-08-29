@@ -95,6 +95,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Menu Text")
 	void LogToScreen(const FString& NewMessage);
 
+	// UUID of the saved item currently loaded via the Load Item box (empty if none).
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	FString GetSelectedItemUUID() const { return SelectedItemUUID; }
+
+	// Clears the currently loaded UUID, e.g. once it has been sold.
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void ClearSelectedItemUUID() { SelectedItemUUID.Empty(); }
+
 protected:
 	virtual void NativeConstruct() override;
 
@@ -196,7 +204,11 @@ protected:
 	FBaseItemStruct SelectedItemData;
 
 	UPROPERTY()
-	FString SelectedItemId;
+	FString SelectedItemId; // 
+
+	// UUID of the saved item currently loaded via the Load Item box, cleared once sold.
+	UPROPERTY()
+	FString SelectedItemUUID;
 
 	UPROPERTY()
 	bool bHasSelectedItemData = false;

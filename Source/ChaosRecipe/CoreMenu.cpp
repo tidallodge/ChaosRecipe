@@ -349,6 +349,8 @@ void UCoreMenu::OnSingleLoadItemButtonClicked(FString ItemUUID)
 		return;
 	}
 
+	SelectedItemUUID = ItemUUID;
+
 	FString ItemId;
 	ItemObject->TryGetStringField(TEXT("ItemId"), ItemId);
 
