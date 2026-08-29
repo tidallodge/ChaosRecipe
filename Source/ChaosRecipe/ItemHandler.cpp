@@ -237,6 +237,17 @@ void UItemHandler::OnRandomizeItem(float RandomValue)
         return;
     }
 
+    // Load every possible item modifier and hand the full pool to the ModifierAssigner.
+    TArray<FItemModifierStruct> AllItemModifiers;
+    if (LoadAllItemModifierRows(AllItemModifiers))
+    {
+        ItemModifierAssigner.SetModifierPool(AllItemModifiers);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Failed to load modifiers from ItemModifier_DT."));
+    }
+
     CachedWeaponStats = GetWeaponStatsForItem(CachedWeaponStats.ItemId.ToString());
     ApplyRandomizedWeaponStats(RandomValue);
 
@@ -466,6 +477,30 @@ bool UItemHandler::LoadArmorDataRow(const FString& ItemId, FBaseArmorStruct& Out
     }
 
     return false;
+}
+
+bool UItemHandler::LoadAllItemModifierRows(TArray<FItemModifierStruct>& OutModifiers) const
+{
+    OutModifiers.Reset();
+
+    const FString DataTablePath = TEXT("/Game/ItemData/ItemModifier_DT.ItemModifier_DT");
+    UDataTable* ModifierDataTable = LoadObject<UDataTable>(nullptr, *DataTablePath);
+    if (!ModifierDataTable)
+    {
+        UE_LOG(LogTemp, Error, TEXT("ItemHandler: Failed to load modifier data table at %s."), *DataTablePath);
+        return false;
+    }
+
+    for (const FName& RowName : ModifierDataTable->GetRowNames())
+    {
+        if (FItemModifierStruct* ModifierRow = ModifierDataTable->FindRow<FItemModifierStruct>(RowName, TEXT("ItemHandler::LoadAllItemModifierRows"), true))
+        {
+            OutModifiers.Add(*ModifierRow);
+        }
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Loaded %d modifiers from ItemModifier_DT."), OutModifiers.Num());
+    return OutModifiers.Num() > 0;
 }
 
 void UItemHandler::LogItemData(const FBaseItemStruct& ItemData) const

@@ -9,6 +9,8 @@
 #include "BaseWeaponStruct.h"
 #include "BaseArmorStruct.h"
 #include "ItemInstanceManager.h"
+#include "ItemModifierStruct.h"
+#include "ModifierAssigner.h"
 #include "ItemHandler.generated.h"
 
 class UCoreMenu;
@@ -128,6 +130,9 @@ protected:
 
     ItemInstanceManager SavedItemsManager;
 
+    // Receives the full pool of possible modifiers whenever an item is randomized.
+    ModifierAssigner ItemModifierAssigner;
+
     UPROPERTY()
     TObjectPtr<UCoreMenu> BoundCoreMenu = nullptr;
 
@@ -136,6 +141,9 @@ protected:
     bool LoadItemDataRow(const FString& ItemId, FBaseItemStruct& OutItemData) const;
     bool LoadWeaponDataRow(const FString& ItemId, FBaseWeaponStruct& OutWeaponData) const;
     bool LoadArmorDataRow(const FString& ItemId, FBaseArmorStruct& OutArmorData) const;
+
+    // Loads every row from ItemModifier_DT (all possible item modifiers).
+    bool LoadAllItemModifierRows(TArray<FItemModifierStruct>& OutModifiers) const;
     bool BuildWeaponStatsForItem(const FString& ItemId, FItemWeaponStatsStruct& OutWeaponStats) const;
     bool BuildArmorStatsForItem(const FString& ItemId, FItemArmorStatsStruct& OutArmorStats) const;
 
