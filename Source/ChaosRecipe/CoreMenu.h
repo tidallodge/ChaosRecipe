@@ -95,6 +95,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Menu Text")
 	void LogToScreen(const FString& NewMessage);
 
+	// Sets the text shown in the Load Item box's ActiveItemTextBox.
+	UFUNCTION(BlueprintCallable, Category = "Menu Text")
+	void SetActiveItemText(const FString& NewMessage);
+
 	// UUID of the saved item currently loaded via the Load Item box (empty if none).
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	FString GetSelectedItemUUID() const { return SelectedItemUUID; }

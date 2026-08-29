@@ -19,9 +19,9 @@ public:
 	// Replaces the current pool of every possible item modifier.
 	void SetModifierPool(const TArray<FItemModifierStruct>& InModifierPool);
 
-	// Assigns each ModifierId a contiguous block of numbers sized to its ModifierWeight,
-	// accumulates the total weight, and logs each ModifierId with its range.
-	void BuildWeightRanges();
+	// Builds the subset of modifiers valid for the given item class/type, then rolls
+	// `Count` unique ModifierIds via weighted selection and returns them.
+	TArray<FString> AssignModifiers(const FString& ItemId, EItemClass ItemClass, const FString& ItemType, int32 Count = 3);
 
 	const TArray<FItemModifierStruct>& GetModifierPool() const { return ModifierPool; }
 	int32 GetModifierPoolCount() const { return ModifierPool.Num(); }
@@ -30,6 +30,13 @@ public:
 	int32 GetTotalModifierWeight() const { return TotalModifierWeight; }
 
 private:
+	// True if the modifier is valid for the given item class or specific item type.
+	bool ModifierMatchesItem(const FItemModifierStruct& Modifier, EItemClass ItemClass, const FString& ItemType) const;
+
+	// Shuffles the candidates, assigns each a weight-sized number block, rolls one number
+	// across the total weight, and returns the ModifierId that owns it (logs each step).
+	FString RollWeightedModifier(TArray<FItemModifierStruct>& Candidates);
+
 	// Every modifier row pulled from ItemModifier_DT, kept for later rolling/assignment.
 	TArray<FItemModifierStruct> ModifierPool;
 

@@ -251,6 +251,70 @@ void UItemHandler::OnRandomizeItem(float RandomValue)
     CachedWeaponStats = GetWeaponStatsForItem(CachedWeaponStats.ItemId.ToString());
     ApplyRandomizedWeaponStats(RandomValue);
 
+    // Resolve this item's class and type, then let the ModifierAssigner pick 3 unique modifiers.
+    const FString RandomizeItemId = CachedWeaponStats.ItemId.ToString();
+    FString RandomizeItemName = RandomizeItemId;
+    FString ModifiersText;
+    FBaseItemStruct RandomizeItemData;
+    FBaseWeaponStruct RandomizeWeaponData;
+    if (LoadItemDataRow(RandomizeItemId, RandomizeItemData) && LoadWeaponDataRow(RandomizeItemId, RandomizeWeaponData))
+    {
+        RandomizeItemName = RandomizeItemData.ItemName.ToString();
+        const EItemClass RandomizeItemClass = RandomizeItemData.ItemClass;
+        const FString RandomizeItemType = UEnum::GetValueAsString(RandomizeWeaponData.WeaponType)
+            .RightChop(FString(TEXT("EWeaponType::")).Len());
+
+        const TArray<FString> AssignedModifierIds =
+            ItemModifierAssigner.AssignModifiers(RandomizeItemId, RandomizeItemClass, RandomizeItemType, 3);
+
+        CachedWeaponStats.ImplicitModifiers.Empty();
+        CachedWeaponStats.PrefixModifiers.Empty();
+        CachedWeaponStats.SuffixModifiers.Empty();
+
+        for (const FString& ModifierId : AssignedModifierIds)
+        {
+            const FItemModifierStruct* ModifierRow = ItemModifierAssigner.GetModifierPool().FindByPredicate(
+                [&ModifierId](const FItemModifierStruct& Modifier)
+                {
+                    return Modifier.ModifierId.ToString().Equals(ModifierId, ESearchCase::IgnoreCase);
+                });
+
+            int32 RolledValue = 0;
+            EAffixType AffixType = EAffixType::Prefix;
+            if (ModifierRow)
+            {
+                AffixType = ModifierRow->ModifierAffixType;
+                if (ModifierRow->MinMaxRange.Num() >= 2)
+                {
+                    RolledValue = FMath::RandRange(ModifierRow->MinMaxRange[0], ModifierRow->MinMaxRange[1]);
+                }
+                else if (ModifierRow->MinMaxRange.Num() == 1)
+                {
+                    RolledValue = ModifierRow->MinMaxRange[0];
+                }
+            }
+
+            switch (AffixType)
+            {
+            case EAffixType::Implicit: CachedWeaponStats.ImplicitModifiers.Add(ModifierId, RolledValue); break;
+            case EAffixType::Suffix:   CachedWeaponStats.SuffixModifiers.Add(ModifierId, RolledValue);   break;
+            case EAffixType::Prefix:
+            default:                   CachedWeaponStats.PrefixModifiers.Add(ModifierId, RolledValue);   break;
+            }
+
+            ModifiersText += FString::Printf(TEXT("  %s: %s (%d)\n"),
+                *UEnum::GetValueAsString(AffixType).RightChop(FString(TEXT("EAffixType::")).Len()),
+                *ModifierId, RolledValue);
+
+            UE_LOG(LogTemp, Warning, TEXT("ItemHandler: assigned modifier %s (%s) value=%d"),
+                *ModifierId, *UEnum::GetValueAsString(AffixType), RolledValue);
+        }
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Could not resolve class/type for '%s' to assign modifiers."), *RandomizeItemId);
+    }
+
     FString DamageSummary;
     for (const TPair<FString, FWeaponBaseDamage>& DamageEntry : CachedWeaponStats.WeaponDamage)
     {
@@ -272,9 +336,22 @@ void UItemHandler::OnRandomizeItem(float RandomValue)
         CachedWeaponStats.AttackRate,
         *DamageSummary);
 
+    if (ModifiersText.IsEmpty())
+    {
+        ModifiersText = TEXT("  none\n");
+    }
+
+    const FString ActiveItemText = FString::Printf(
+        TEXT("%s\nBase Damage:\n%s\nAttack Rate: %.2f\nModifiers:\n%s"),
+        *RandomizeItemName,
+        *DamageSummary,
+        CachedWeaponStats.AttackRate,
+        *ModifiersText);
+
     if (BoundCoreMenu)
     {
         BoundCoreMenu->LogToScreen(Message);
+        BoundCoreMenu->SetActiveItemText(ActiveItemText);
     }
 
     UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);

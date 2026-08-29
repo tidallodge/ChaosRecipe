@@ -354,6 +354,21 @@ void UCoreMenu::OnSingleLoadItemButtonClicked(FString ItemUUID)
 	FString ItemId;
 	ItemObject->TryGetStringField(TEXT("ItemId"), ItemId);
 
+	// Item display name comes from BaseItem_DT (the saved JSON only stores the ItemId).
+	FString ItemName = ItemId;
+	if (UDataTable* ItemDataTable = LoadObject<UDataTable>(nullptr, TEXT("/Game/ItemData/BaseItem_DT")))
+	{
+		for (const FName& RowName : ItemDataTable->GetRowNames())
+		{
+			const FBaseItemStruct* ItemRow = ItemDataTable->FindRow<FBaseItemStruct>(RowName, TEXT("CoreMenu::OnSingleLoadItemButtonClicked"));
+			if (ItemRow && ItemRow->ItemId.ToString().Equals(ItemId, ESearchCase::IgnoreCase))
+			{
+				ItemName = ItemRow->ItemName.ToString();
+				break;
+			}
+		}
+	}
+
 	double AttackRate = 0.0;
 	ItemObject->TryGetNumberField(TEXT("attackRate"), AttackRate);
 
@@ -372,17 +387,44 @@ void UCoreMenu::OnSingleLoadItemButtonClicked(FString ItemUUID)
 				(*DamageObject)->TryGetNumberField(TEXT("minDamage"), MinDamage);
 				(*DamageObject)->TryGetNumberField(TEXT("maxDamage"), MaxDamage);
 				(*DamageObject)->TryGetStringField(TEXT("damageType"), DamageType);
-				WeaponDamageText += FString::Printf(TEXT("%s: %d-%d (%s)\n"), *DamagePair.Key, MinDamage, MaxDamage, *DamageType);
+				WeaponDamageText += FString::Printf(TEXT("  %s: %d-%d (%s)\n"), *DamagePair.Key, MinDamage, MaxDamage, *DamageType);
 			}
 		}
 	}
 
+	// Collect implicit/prefix/suffix modifiers (ModifierId -> rolled value).
+	auto AppendModifiers = [&ItemObject](const TCHAR* FieldName, const TCHAR* Label, FString& OutText)
+	{
+		const TSharedPtr<FJsonObject>* ModifierObject;
+		if (!ItemObject->TryGetObjectField(FieldName, ModifierObject) || (*ModifierObject)->Values.Num() == 0)
+		{
+			return;
+		}
+
+		OutText += FString::Printf(TEXT("%s:\n"), Label);
+		for (const TPair<FString, TSharedPtr<FJsonValue>>& ModifierPair : (*ModifierObject)->Values)
+		{
+			double ModifierValue = 0.0;
+			ModifierPair.Value->TryGetNumber(ModifierValue);
+			OutText += FString::Printf(TEXT("  %s (%d)\n"), *ModifierPair.Key, FMath::RoundToInt(ModifierValue));
+		}
+	};
+
+	FString ModifiersText;
+	AppendModifiers(TEXT("implicitModifiers"), TEXT("Implicit"), ModifiersText);
+	AppendModifiers(TEXT("prefixModifiers"), TEXT("Prefixes"), ModifiersText);
+	AppendModifiers(TEXT("suffixModifiers"), TEXT("Suffixes"), ModifiersText);
+	if (ModifiersText.IsEmpty())
+	{
+		ModifiersText = TEXT("Modifiers: none\n");
+	}
+
 	const FString DisplayText = FString::Printf(
-		TEXT("UUID: %s\nItemId: %s\nAttackRate: %.2f\n%s"),
-		*ItemUUID,
-		*ItemId,
+		TEXT("%s\nBase Damage:\n%sAttack Rate: %.2f\n%s"),
+		*ItemName,
+		*WeaponDamageText,
 		AttackRate,
-		*WeaponDamageText);
+		*ModifiersText);
 
 	ActiveItemTextBox->SetText(FText::FromString(DisplayText));
 }
@@ -577,6 +619,18 @@ void UCoreMenu::LogToScreen(const FString& NewMessage)
 	if (TestTextBlock)
 	{
 		TestTextBlock->SetText(FText::FromString(NewMessage));
+	}
+}
+
+void UCoreMenu::SetActiveItemText(const FString& NewMessage)
+{
+	if (ActiveItemTextBox)
+	{
+		ActiveItemTextBox->SetText(FText::FromString(NewMessage));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("ActiveItemTextBox is null or not found!"));
 	}
 }
 
