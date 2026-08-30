@@ -75,6 +75,8 @@ FString ModifierAssigner::RollWeightedModifier(TArray<FItemModifierStruct>& Cand
 
 	UE_LOG(LogTemp, Warning, TEXT("ModifierAssigner: assigning weight ranges for %d candidate modifiers:"), Candidates.Num());
 
+
+	// sub to compile list of valid modifier candidates to a pool to pick from
 	for (const FItemModifierStruct& Modifier : Candidates)
 	{
 		const FString ModifierId = Modifier.ModifierId.ToString();
@@ -98,6 +100,7 @@ FString ModifierAssigner::RollWeightedModifier(TArray<FItemModifierStruct>& Cand
 
 	UE_LOG(LogTemp, Warning, TEXT("ModifierAssigner: TotalModifierWeight=%d"), TotalModifierWeight);
 
+	// exit if no mods
 	if (TotalModifierWeight <= 0)
 	{
 		return FString();
@@ -119,7 +122,7 @@ FString ModifierAssigner::RollWeightedModifier(TArray<FItemModifierStruct>& Cand
 	return RolledModifierId;
 }
 
-TArray<FString> ModifierAssigner::AssignModifiers(const FString& ItemId, EItemClass ItemClass, const FString& ItemType, int32 Count)
+TArray<FString> ModifierAssigner::AssignModifiers(const FString& ItemId, EItemClass ItemClass, const FString& ItemType, int32 InModifierCount)
 {
 	TArray<FString> AssignedModifierIds;
 
@@ -137,8 +140,10 @@ TArray<FString> ModifierAssigner::AssignModifiers(const FString& ItemId, EItemCl
 		TEXT("ModifierAssigner: AssignModifiers for ItemId=%s Class=%s Type=%s -> %d matching modifiers."),
 		*ItemId, *UEnum::GetValueAsString(ItemClass), *ItemType, MatchingModifiers.Num());
 
-	while (AssignedModifierIds.Num() < Count && MatchingModifiers.Num() > 0)
+	// sub to add mods up to mod count limit
+	while (AssignedModifierIds.Num() < InModifierCount && MatchingModifiers.Num() > 0)
 	{
+		// TODO - add a new function to pass the newly rolled modifier below that will remove all conflicting modifiers from the MatchingModifiers TArray set at the start of this function
 		const FString RolledId = RollWeightedModifier(MatchingModifiers);
 		if (RolledId.IsEmpty())
 		{
@@ -147,6 +152,7 @@ TArray<FString> ModifierAssigner::AssignModifiers(const FString& ItemId, EItemCl
 
 		AssignedModifierIds.AddUnique(RolledId);
 
+		// TODO - rework this to pass the RolledId to the function made in the above TODO to update the list of matching modifiers
 		// Remove the picked modifier so the next roll produces a unique ModifierId.
 		MatchingModifiers.RemoveAll([&RolledId](const FItemModifierStruct& Modifier)
 		{

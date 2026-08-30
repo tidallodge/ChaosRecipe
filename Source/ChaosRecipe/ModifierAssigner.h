@@ -16,12 +16,14 @@ public:
 	explicit ModifierAssigner(const TArray<FItemModifierStruct>& InModifierPool);
 	~ModifierAssigner();
 
+	int32 ModifierCount = 3;
+
 	// Replaces the current pool of every possible item modifier.
 	void SetModifierPool(const TArray<FItemModifierStruct>& InModifierPool);
 
 	// Builds the subset of modifiers valid for the given item class/type, then rolls
 	// `Count` unique ModifierIds via weighted selection and returns them.
-	TArray<FString> AssignModifiers(const FString& ItemId, EItemClass ItemClass, const FString& ItemType, int32 Count = 3);
+	TArray<FString> AssignModifiers(const FString& ItemId, EItemClass ItemClass, const FString& ItemType, int32 InModifierCount);
 
 	const TArray<FItemModifierStruct>& GetModifierPool() const { return ModifierPool; }
 	int32 GetModifierPoolCount() const { return ModifierPool.Num(); }

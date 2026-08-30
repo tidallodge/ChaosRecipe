@@ -96,6 +96,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": true,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": false,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -195,6 +212,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": true,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": false,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -294,6 +328,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": true,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": false,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -393,6 +444,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": true,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": false,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -492,6 +560,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": true,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": false,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -591,6 +676,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": true,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": false,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -690,6 +792,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": true,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": false,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -789,6 +908,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": true,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": false,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -888,6 +1024,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": true,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": false,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -987,6 +1140,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": true,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": false,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -1086,6 +1256,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": true,
+			"LocalAttackRate": false,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -1185,6 +1372,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": true,
+			"LocalAttackRate": false,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -1284,6 +1488,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": true,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -1383,6 +1604,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": true,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -1482,6 +1720,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": true,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -1581,6 +1836,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": false,
+			"LocalCritChance": true,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -1680,6 +1952,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": false,
+			"LocalCritChance": true,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -1779,6 +2068,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": false,
+			"LocalCritChance": true,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -1878,6 +2184,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": false,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": true,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -1977,6 +2300,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": false,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": true,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -2076,6 +2416,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": false,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": true,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -2175,6 +2532,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": false,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": true,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -2274,6 +2648,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": false,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": true,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -2373,6 +2764,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": false,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": true,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -2472,6 +2880,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": false,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": true,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -2571,6 +2996,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": false,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": true,
+			"GlobalAllSkills": false
 		}
 	},
 	{
@@ -2669,6 +3111,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": false,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": true
 		}
 	},
 	{
@@ -2767,6 +3226,23 @@
 			{
 				"Misc": false
 			}
+		},
+		"ModifierBuckets":
+		{
+			"LocalFlatPhysDamage": false,
+			"LocalPercentPhysDamage": false,
+			"LocalFlatFireDamage": false,
+			"LocalFlatColdDamage": false,
+			"LocalFlatElectricDamage": false,
+			"LocalFlatPoisonDamage": false,
+			"LocalAttackRate": false,
+			"LocalCritChance": false,
+			"LocalCritDamage": false,
+			"FireResist": false,
+			"ColdResist": false,
+			"ElectricResist": false,
+			"PoisonResist": false,
+			"GlobalAllSkills": false
 		}
 	}
 ]

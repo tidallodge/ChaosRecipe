@@ -26,6 +26,54 @@ enum class EModifierOperator : uint8
 };
 
 USTRUCT(BlueprintType)
+struct FModifierBuckets
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
+    bool LocalFlatPhysDamage;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
+    bool LocalPercentPhysDamage;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
+    bool LocalFlatFireDamage;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
+    bool LocalFlatColdDamage;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
+    bool LocalFlatElectricDamage;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
+    bool LocalFlatPoisonDamage;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
+    bool LocalAttackRate;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
+    bool LocalCritChance;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
+    bool LocalCritDamage;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
+    bool FireResist;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
+    bool ColdResist;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
+    bool ElectricResist;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
+    bool PoisonResist;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
+    bool GlobalAllSkills;
+};
+
+USTRUCT(BlueprintType)
 struct FValidItemClasses
 {
     GENERATED_BODY()
@@ -313,5 +361,8 @@ struct FItemModifierStruct : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Modifiers")
     FValidItemTypesOverride ValidItemTypesOverride;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Modifiers")
+    FModifierBuckets ModifierBuckets;
 
 };
