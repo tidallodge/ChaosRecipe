@@ -332,8 +332,8 @@ void UItemHandler::OnRandomizeItem(float RandomValue)
 
         DamageSummary += FString::Printf(TEXT("%s:%d-%d"),
             *DamageEntry.Key,
-            DamageEntry.Value.MinDamage,
-            DamageEntry.Value.MaxDamage);
+            DamageEntry.Value.BasePhysicalDamage.X,
+            DamageEntry.Value.BasePhysicalDamage.Y);
     }
 
     FString Message = FString::Printf(
@@ -376,8 +376,8 @@ void UItemHandler::ApplyRandomizedWeaponStats(float RandomValue)
 
     for (TPair<FString, FWeaponBaseDamage>& DamageEntry : CachedWeaponStats.WeaponDamage)
     {
-        DamageEntry.Value.MinDamage = FMath::Max(1, FMath::RoundToInt(DamageEntry.Value.MinDamage * RandomValue));
-        DamageEntry.Value.MaxDamage = FMath::Max(1, FMath::RoundToInt(DamageEntry.Value.MaxDamage * RandomValue));
+        DamageEntry.Value.BasePhysicalDamage.X = FMath::Max(1, FMath::RoundToInt(DamageEntry.Value.BasePhysicalDamage.X * RandomValue));
+        DamageEntry.Value.BasePhysicalDamage.Y = FMath::Max(1, FMath::RoundToInt(DamageEntry.Value.BasePhysicalDamage.Y * RandomValue));
     }
 
     FString DamageSummary;
@@ -390,8 +390,8 @@ void UItemHandler::ApplyRandomizedWeaponStats(float RandomValue)
 
         DamageSummary += FString::Printf(TEXT("%s: %d-%d"),
             *DamageEntry.Key,
-            DamageEntry.Value.MinDamage,
-            DamageEntry.Value.MaxDamage);
+            DamageEntry.Value.BasePhysicalDamage.X,
+            DamageEntry.Value.BasePhysicalDamage.Y);
     }
 
     const FString Message = FString::Printf(
@@ -613,8 +613,8 @@ void UItemHandler::LogWeaponData(const FBaseWeaponStruct& WeaponData) const
         *UEnum::GetValueAsString(WeaponData.WeaponType),
         *UEnum::GetValueAsString(WeaponData.WeaponSlot),
         WeaponData.WeaponBaseAttackRate,
-        WeaponData.WeaponBaseDamage.MinDamage,
-        WeaponData.WeaponBaseDamage.MaxDamage);
+        WeaponData.WeaponBaseDamage.BasePhysicalDamage.X,
+        WeaponData.WeaponBaseDamage.BasePhysicalDamage.Y);
 
     UE_LOG(LogTemp, Warning, TEXT("ItemHandler loaded weapon table data:\n%s"), *WeaponInfo);
 }

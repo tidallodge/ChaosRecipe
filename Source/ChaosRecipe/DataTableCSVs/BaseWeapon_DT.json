@@ -11,7 +11,9 @@
 			"MaxDamage": 8,
 			"DamageType": "Physical"
 		},
-		"WeaponBaseAttackRate": 1.3
+		"WeaponBaseAttackRate": 1.3,
+		"WeaponBaseCritChance": 6,
+		"WeaponBaseCritMulti": 1.5
 	},
 	{
 		"Name": "sword_2h_001",
@@ -25,7 +27,9 @@
 			"MaxDamage": 18,
 			"DamageType": "Physical"
 		},
-		"WeaponBaseAttackRate": 1
+		"WeaponBaseAttackRate": 1,
+		"WeaponBaseCritChance": 6,
+		"WeaponBaseCritMulti": 1.5
 	},
 	{
 		"Name": "axe_1h_001",
@@ -39,7 +43,9 @@
 			"MaxDamage": 9,
 			"DamageType": "Physical"
 		},
-		"WeaponBaseAttackRate": 1.2
+		"WeaponBaseAttackRate": 1.2,
+		"WeaponBaseCritChance": 3,
+		"WeaponBaseCritMulti": 2
 	},
 	{
 		"Name": "axe_2h_001",
@@ -53,6 +59,8 @@
 			"MaxDamage": 19,
 			"DamageType": "Physical"
 		},
-		"WeaponBaseAttackRate": 0.95
+		"WeaponBaseAttackRate": 0.95,
+		"WeaponBaseCritChance": 3,
+		"WeaponBaseCritMulti": 2
 	}
 ]

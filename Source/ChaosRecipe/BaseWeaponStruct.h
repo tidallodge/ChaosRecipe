@@ -26,13 +26,40 @@ struct FWeaponBaseDamage
     GENERATED_BODY()
 
     UPROPERTY(EditAnywhere)
-    int32 MinDamage;
+    FIntPoint BasePhysicalDamage;
 
     UPROPERTY(EditAnywhere)
-    int32 MaxDamage;
+    FIntPoint BaseFireDamage;
 
     UPROPERTY(EditAnywhere)
-    EDamageType DamageType;
+    FIntPoint BaseIceDamage;
+
+    UPROPERTY(EditAnywhere)
+    FIntPoint BaseElectricDamage;
+
+    UPROPERTY(EditAnywhere)
+    FIntPoint BasePoisonDamage;
+};
+
+USTRUCT(BlueprintType)
+struct FWeaponLocalDamage 
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere)
+    FIntPoint LocalPhysicalDamage;
+
+    UPROPERTY(EditAnywhere)
+    FIntPoint LocalFireDamage;
+
+    UPROPERTY(EditAnywhere)
+    FIntPoint LocalIceDamage;
+
+    UPROPERTY(EditAnywhere)
+    FIntPoint LocalElectricDamage;
+
+    UPROPERTY(EditAnywhere)
+    FIntPoint LocalPoisonDamage;
 };
 
 USTRUCT(BlueprintType)
@@ -54,6 +81,9 @@ struct FBaseWeaponStruct : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
     FWeaponBaseDamage WeaponBaseDamage;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    FWeaponLocalDamage WeaponLocalDamage;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
     float WeaponBaseAttackRate;
