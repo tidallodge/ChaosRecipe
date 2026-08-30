@@ -31,6 +31,10 @@ public:
 	const TMap<FString, FInt32Range>& GetModifierWeightRanges() const { return ModifierWeightRanges; }
 	int32 GetTotalModifierWeight() const { return TotalModifierWeight; }
 
+	// Returns the ModifierIds from InModifierPool that are still valid to roll given the
+	// already-assigned modifiers: not already assigned and no overlapping bucket. Logs the result.
+	TArray<FString> ValidateModifierPool(const TArray<FItemModifierStruct>& InModifierPool, const TArray<FString>& InAssignedModifierIds);
+
 private:
 	// True if the modifier is valid for the given item class or specific item type.
 	bool ModifierMatchesItem(const FItemModifierStruct& Modifier, EItemClass ItemClass, const FString& ItemType) const;
@@ -39,8 +43,26 @@ private:
 	// across the total weight, and returns the ModifierId that owns it (logs each step).
 	FString RollWeightedModifier(TArray<FItemModifierStruct>& Candidates);
 
+	// Looks up the ModifierBuckets struct for a single ModifierId within the given pool.
+	static const FModifierBuckets* FindModifierBuckets(const TArray<FItemModifierStruct>& InModifierPool, const FString& ModifierId);
+
+	// Collects the ModifierBuckets struct of every currently-assigned modifier.
+	static TArray<FModifierBuckets> GetAssignedModifierBuckets(const TArray<FItemModifierStruct>& InModifierPool, const TArray<FString>& InAssignedModifierIds);
+
+	// True if any bucket flag is set on both structs (reflection-driven, no hard-coded field list).
+	static bool BucketsOverlap(const FModifierBuckets& A, const FModifierBuckets& B);
+
+	// True if the modifier's buckets overlap with any of the already-assigned buckets.
+	static bool IsModifierInAssignedBuckets(const FModifierBuckets& ModifierBuckets, const TArray<FModifierBuckets>& AssignedBuckets);
+
 	// Every modifier row pulled from ItemModifier_DT, kept for later rolling/assignment.
 	TArray<FItemModifierStruct> ModifierPool;
+
+	// Set a temporary array for validating modifiers for rolling
+	TArray<FString> TempModifierPoolUUIDs;
+
+	// Set a temp array for assigned modifier buckets (collected from resolved DT rows)
+	TArray<FModifierBuckets> TempModifierBuckets;
 
 	// ModifierId -> [start, end] weighted number range used for weighted random selection.
 	TMap<FString, FInt32Range> ModifierWeightRanges;

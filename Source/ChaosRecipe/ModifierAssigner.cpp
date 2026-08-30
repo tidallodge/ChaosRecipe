@@ -130,6 +130,7 @@ TArray<FString> ModifierAssigner::AssignModifiers(const FString& ItemId, EItemCl
 	TArray<FItemModifierStruct> MatchingModifiers;
 	for (const FItemModifierStruct& Modifier : ModifierPool)
 	{
+		// TODO - this looks like it requires class and type match? probably clean this up to handle the way the DT is structured, match on class unless there's a type override
 		if (ModifierMatchesItem(Modifier, ItemClass, ItemType))
 		{
 			MatchingModifiers.Add(Modifier);
@@ -140,10 +141,15 @@ TArray<FString> ModifierAssigner::AssignModifiers(const FString& ItemId, EItemCl
 		TEXT("ModifierAssigner: AssignModifiers for ItemId=%s Class=%s Type=%s -> %d matching modifiers."),
 		*ItemId, *UEnum::GetValueAsString(ItemClass), *ItemType, MatchingModifiers.Num());
 
+	// An item may carry at most this many prefix and this many suffix modifiers.
+	const int32 MaxPrefixes = 3;
+	const int32 MaxSuffixes = 3;
+	int32 PrefixCount = 0;
+	int32 SuffixCount = 0;
+
 	// sub to add mods up to mod count limit
 	while (AssignedModifierIds.Num() < InModifierCount && MatchingModifiers.Num() > 0)
 	{
-		// TODO - add a new function to pass the newly rolled modifier below that will remove all conflicting modifiers from the MatchingModifiers TArray set at the start of this function
 		const FString RolledId = RollWeightedModifier(MatchingModifiers);
 		if (RolledId.IsEmpty())
 		{
@@ -152,12 +158,54 @@ TArray<FString> ModifierAssigner::AssignModifiers(const FString& ItemId, EItemCl
 
 		AssignedModifierIds.AddUnique(RolledId);
 
-		// TODO - rework this to pass the RolledId to the function made in the above TODO to update the list of matching modifiers
-		// Remove the picked modifier so the next roll produces a unique ModifierId.
-		MatchingModifiers.RemoveAll([&RolledId](const FItemModifierStruct& Modifier)
+		// Record which affix slot the rolled modifier consumed.
+		EAffixType RolledAffix = EAffixType::Implicit;
+		if (const FItemModifierStruct* RolledRow = MatchingModifiers.FindByPredicate(
+			[&RolledId](const FItemModifierStruct& Modifier)
+			{
+				return Modifier.ModifierId.ToString().Equals(RolledId, ESearchCase::IgnoreCase);
+			}))
 		{
-			return Modifier.ModifierId.ToString().Equals(RolledId, ESearchCase::IgnoreCase);
+			RolledAffix = RolledRow->ModifierAffixType;
+		}
+
+		if (RolledAffix == EAffixType::Prefix)
+		{
+			++PrefixCount;
+		}
+		else if (RolledAffix == EAffixType::Suffix)
+		{
+			++SuffixCount;
+		}
+
+		// Reduce the candidate list to modifiers that still validate against everything assigned
+		// so far: this drops the just-rolled modifier and anything sharing one of its buckets.
+		const TArray<FString> ValidModifierIds = ValidateModifierPool(MatchingModifiers, AssignedModifierIds);
+		MatchingModifiers.RemoveAll([&ValidModifierIds](const FItemModifierStruct& Modifier)
+		{
+			const FString ModifierId = Modifier.ModifierId.ToString();
+			return !ValidModifierIds.ContainsByPredicate([&ModifierId](const FString& ValidId)
+			{
+				return ModifierId.Equals(ValidId, ESearchCase::IgnoreCase);
+			});
 		});
+
+		// Once an affix slot is full, drop every remaining modifier of that affix type so
+		// subsequent rolls can only draw from the still-available slot(s).
+		const bool bPrefixFull = PrefixCount >= MaxPrefixes;
+		const bool bSuffixFull = SuffixCount >= MaxSuffixes;
+		if (bPrefixFull || bSuffixFull)
+		{
+			MatchingModifiers.RemoveAll([bPrefixFull, bSuffixFull](const FItemModifierStruct& Modifier)
+			{
+				return (bPrefixFull && Modifier.ModifierAffixType == EAffixType::Prefix)
+					|| (bSuffixFull && Modifier.ModifierAffixType == EAffixType::Suffix);
+			});
+
+			UE_LOG(LogTemp, Warning,
+				TEXT("ModifierAssigner: affix cap hit (prefix=%d/%d, suffix=%d/%d); %d candidates remain."),
+				PrefixCount, MaxPrefixes, SuffixCount, MaxSuffixes, MatchingModifiers.Num());
+		}
 	}
 
 	UE_LOG(LogTemp, Warning, TEXT("ModifierAssigner: assigned %d modifiers to ItemId=%s:"), AssignedModifierIds.Num(), *ItemId);
@@ -167,4 +215,97 @@ TArray<FString> ModifierAssigner::AssignModifiers(const FString& ItemId, EItemCl
 	}
 
 	return AssignedModifierIds;
+}
+
+const FModifierBuckets* ModifierAssigner::FindModifierBuckets(const TArray<FItemModifierStruct>& InModifierPool, const FString& ModifierId)
+{
+	const FItemModifierStruct* Row = InModifierPool.FindByPredicate(
+		[&ModifierId](const FItemModifierStruct& Modifier)
+		{
+			return Modifier.ModifierId.ToString().Equals(ModifierId, ESearchCase::IgnoreCase);
+		});
+
+	return Row != nullptr ? &Row->ModifierBuckets : nullptr;
+}
+
+TArray<FModifierBuckets> ModifierAssigner::GetAssignedModifierBuckets(const TArray<FItemModifierStruct>& InModifierPool, const TArray<FString>& InAssignedModifierIds)
+{
+	TArray<FModifierBuckets> AssignedBuckets;
+
+	for (const FString& AssignedId : InAssignedModifierIds)
+	{
+		if (const FModifierBuckets* Buckets = FindModifierBuckets(InModifierPool, AssignedId))
+		{
+			AssignedBuckets.Add(*Buckets);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("ModifierAssigner: assigned ModifierId=%s not found in pool; skipping."), *AssignedId);
+		}
+	}
+
+	return AssignedBuckets;
+}
+
+bool ModifierAssigner::BucketsOverlap(const FModifierBuckets& A, const FModifierBuckets& B)
+{
+	// Walk every bool UPROPERTY on FModifierBuckets so new buckets are picked up automatically.
+	for (TFieldIterator<FBoolProperty> It(FModifierBuckets::StaticStruct()); It; ++It)
+	{
+		const FBoolProperty* Prop = *It;
+		if (Prop->GetPropertyValue_InContainer(&A) && Prop->GetPropertyValue_InContainer(&B))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool ModifierAssigner::IsModifierInAssignedBuckets(const FModifierBuckets& ModifierBuckets, const TArray<FModifierBuckets>& AssignedBuckets)
+{
+	for (const FModifierBuckets& Assigned : AssignedBuckets)
+	{
+		if (BucketsOverlap(ModifierBuckets, Assigned))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+TArray<FString> ModifierAssigner::ValidateModifierPool(const TArray<FItemModifierStruct>& InModifierPool, const TArray<FString>& InAssignedModifierIds)
+{
+	// Build the list of buckets currently occupied by the assigned modifiers.
+	const TArray<FModifierBuckets> AssignedBuckets = GetAssignedModifierBuckets(InModifierPool, InAssignedModifierIds);
+
+	UE_LOG(LogTemp, Warning,
+		TEXT("ModifierAssigner: ValidateModifierPool - %d assigned modifiers, %d bucket sets resolved, %d pool modifiers."),
+		InAssignedModifierIds.Num(), AssignedBuckets.Num(), InModifierPool.Num());
+
+	// Collect every pool modifier that is not already assigned and whose buckets do not
+	// collide with an occupied bucket - these are still valid to roll for this item.
+	TArray<FString> ValidModifierIds;
+	for (const FItemModifierStruct& Modifier : InModifierPool)
+	{
+		const FString ModifierId = Modifier.ModifierId.ToString();
+
+		const bool bAlreadyAssigned = InAssignedModifierIds.ContainsByPredicate(
+			[&ModifierId](const FString& AssignedId)
+			{
+				return ModifierId.Equals(AssignedId, ESearchCase::IgnoreCase);
+			});
+
+		if (bAlreadyAssigned || IsModifierInAssignedBuckets(Modifier.ModifierBuckets, AssignedBuckets))
+		{
+			continue;
+		}
+
+		ValidModifierIds.Add(ModifierId);
+		UE_LOG(LogTemp, Warning, TEXT("ModifierAssigner:  valid -> %s"), *ModifierId);
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("ModifierAssigner: %d / %d pool modifiers still valid."), ValidModifierIds.Num(), InModifierPool.Num());
+	return ValidModifierIds;
 }

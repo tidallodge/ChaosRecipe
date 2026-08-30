@@ -251,7 +251,14 @@ void UItemHandler::OnRandomizeItem(float RandomValue)
     CachedWeaponStats = GetWeaponStatsForItem(CachedWeaponStats.ItemId.ToString());
     ApplyRandomizedWeaponStats(RandomValue);
 
-    // Resolve this item's class and type, then let the ModifierAssigner pick 3 unique modifiers.
+    // Roll how many modifiers this item gets: 3-6, weighted so 4 and 5 are the common outcomes.
+    {
+        static const int32 ModifierCountChoices[] = { 3, 4, 4, 5, 5, 6 };
+        ItemModifierAssigner.ModifierCount = ModifierCountChoices[FMath::RandRange(0, UE_ARRAY_COUNT(ModifierCountChoices) - 1)];
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: rolled ModifierCount=%d for this randomize."), ItemModifierAssigner.ModifierCount);
+    }
+
+    // Resolve this item's class and type, then let the ModifierAssigner pick the modifiers.
     const FString RandomizeItemId = CachedWeaponStats.ItemId.ToString();
     FString RandomizeItemName = RandomizeItemId;
     FString ModifiersText;
@@ -265,7 +272,7 @@ void UItemHandler::OnRandomizeItem(float RandomValue)
             .RightChop(FString(TEXT("EWeaponType::")).Len());
 
         const TArray<FString> AssignedModifierIds =
-            ItemModifierAssigner.AssignModifiers(RandomizeItemId, RandomizeItemClass, RandomizeItemType, 3);
+            ItemModifierAssigner.AssignModifiers(RandomizeItemId, RandomizeItemClass, RandomizeItemType, ItemModifierAssigner.ModifierCount);
 
         CachedWeaponStats.ImplicitModifiers.Empty();
         CachedWeaponStats.PrefixModifiers.Empty();
