@@ -229,9 +229,8 @@ void UCoreMenu::OnItemInfoButtonClicked()
 
 void UCoreMenu::OnRandomizeItemButtonClicked()
 {
-	const float RandomValue = FMath::FRandRange(0.5f, 2.0f);
-	UE_LOG(LogTemp, Warning, TEXT("RandomizeItemButton Clicked. RandomValue: %.2f"), RandomValue);
-	OnRandomizeItemEvent.Broadcast(RandomValue);
+	UE_LOG(LogTemp, Warning, TEXT("RandomizeItemButton Clicked."));
+	OnRandomizeItemEvent.Broadcast();
 }
 
 void UCoreMenu::OnSaveItemButtonClicked()

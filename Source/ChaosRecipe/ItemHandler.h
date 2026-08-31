@@ -113,10 +113,10 @@ public:
     void OnBuyButtonClicked(FString ItemId);
 
     UFUNCTION()
-    void OnRandomizeItem(float RandomValue);
+    void OnRandomizeItem();
 
     UFUNCTION()
-    void RandomizeWeaponItem(float RandomValue);
+    void RandomizeWeaponItem();
 
     UFUNCTION()
     void OnSaveItemButtonClicked(FString ItemId);
@@ -142,7 +142,8 @@ protected:
     UPROPERTY()
     TObjectPtr<UCoreMenu> BoundCoreMenu = nullptr;
 
-    void ApplyRandomizedWeaponStats(float RandomValue);
+    // Rebuilds CachedWeaponStats.WeaponLocalDamage from the item's base damage plus the rolled damage modifiers.
+    void RecalculateWeaponLocalDamage();
 
     bool LoadItemDataRow(const FString& ItemId, FBaseItemStruct& OutItemData) const;
     bool LoadWeaponDataRow(const FString& ItemId, FBaseWeaponStruct& OutWeaponData) const;

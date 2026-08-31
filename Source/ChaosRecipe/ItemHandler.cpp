@@ -225,18 +225,21 @@ void UItemHandler::OnBuyButtonClicked(FString ItemId)
     OnItemInfoClicked(ItemId);
 }
 
-void UItemHandler::OnRandomizeItem(float RandomValue)
+void UItemHandler::OnRandomizeItem()
 {
-    if (RandomValue <= 0.0f)
+    if (LastSelectedItemClass == EItemClass::Weapon)
     {
-        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Randomize value must be greater than zero."));
-        return;
+        RandomizeWeaponItem();
     }
-
-    RandomizeWeaponItem(RandomValue);
+    else
+    {
+        UE_LOG(LogTemp, Warning,
+            TEXT("ItemHandler: Randomizing item class '%s' is not supported yet."),
+            *UEnum::GetValueAsString(LastSelectedItemClass));
+    }
 }
 
-void UItemHandler::RandomizeWeaponItem(float RandomValue)
+void UItemHandler::RandomizeWeaponItem()
 {
     if (CachedWeaponStats.ItemId.IsEmpty())
     {
@@ -256,7 +259,6 @@ void UItemHandler::RandomizeWeaponItem(float RandomValue)
     }
 
     CachedWeaponStats = GetWeaponStatsForItem(CachedWeaponStats.ItemId.ToString());
-    ApplyRandomizedWeaponStats(RandomValue);
 
     // Roll how many modifiers this item gets: 3-6, weighted so 4 and 5 are the common outcomes.
     {
@@ -323,6 +325,9 @@ void UItemHandler::RandomizeWeaponItem(float RandomValue)
             UE_LOG(LogTemp, Warning, TEXT("ItemHandler: assigned modifier %s (%s) value=%d"),
                 *ModifierId, *UEnum::GetValueAsString(AffixType), RolledValue);
         }
+
+        // Fold the rolled damage modifiers into the item's local damage values.
+        RecalculateWeaponLocalDamage();
     }
     else
     {
@@ -337,7 +342,7 @@ void UItemHandler::RandomizeWeaponItem(float RandomValue)
             DamageSummary += TEXT(" | ");
         }
 
-        DamageSummary += FString::Printf(TEXT("%s:%d-%d"),
+        DamageSummary += FString::Printf(TEXT("%s: %d-%d"),
             *DamageEntry.Key,
             DamageEntry.Value.BasePhysicalDamage.X,
             DamageEntry.Value.BasePhysicalDamage.Y);
@@ -378,9 +383,8 @@ void UItemHandler::RandomizeWeaponItem(float RandomValue)
     }
 
     FString Message = FString::Printf(
-        TEXT("ItemHandler randomized weapon stats:\nUUID:%s\nRandomModifierValue=%.2f\nAttackRate=%.2f\nBase:%s\nLocal:%s"),
+        TEXT("ItemHandler randomized weapon stats:\nUUID:%s\nAttackRate=%.2f\nBase:%s\nLocal:%s"),
         *CachedWeaponStats.UUID.ToString(),
-        RandomValue,
         CachedWeaponStats.AttackRate,
         *DamageSummary,
         *LocalDamageSummary);
@@ -391,7 +395,7 @@ void UItemHandler::RandomizeWeaponItem(float RandomValue)
     }
 
     const FString ActiveItemText = FString::Printf(
-        TEXT("%s\nBase Damage:\n%s\nLocal Damage:\n%s\nAttack Rate: %.2f\nModifiers:\n%s"),
+        TEXT("%s\n%s\nLocal Damage:\n\t%s\nAttack Rate: %.2f\nModifiers:\n%s"),
         *RandomizeItemName,
         *DamageSummary,
         *LocalDamageSummary,
@@ -407,46 +411,106 @@ void UItemHandler::RandomizeWeaponItem(float RandomValue)
     UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
 }
 
-void UItemHandler::ApplyRandomizedWeaponStats(float RandomValue)
+void UItemHandler::RecalculateWeaponLocalDamage()
 {
-    if (CachedWeaponStats.ItemId.IsEmpty())
+    // Local damage starts as the item's base damage, then the rolled modifiers adjust it:
+    //   - Addition modifiers add their rolled value (scaled by the DamageModifier weight) as flat damage.
+    //   - Multiplication modifiers then scale the result by (1 + rolled%) for any damage type whose
+    //     ModifiedAttribute.DamageModifier entry is non-zero (the magnitude only has to be non-zero, it
+    //     does not need to match).
+    FWeaponBaseDamage BaseDamage;
+    if (const FWeaponBaseDamage* FoundBase = CachedWeaponStats.WeaponDamage.Find(TEXT("BaseDamage")))
     {
-        UE_LOG(LogTemp, Warning, TEXT("No Cached Weapon Stats to apply random values to!"));
-        return;
+        BaseDamage = *FoundBase;
     }
 
-    CachedWeaponStats.AttackRate *= RandomValue;
-
-    for (TPair<FString, FWeaponBaseDamage>& DamageEntry : CachedWeaponStats.WeaponDamage)
+    // Pair every rolled modifier with its data-table row and the value it rolled.
+    struct FRolledModifier { const FItemModifierStruct* Row = nullptr; int32 Value = 0; };
+    TArray<FRolledModifier> RolledModifiers;
+    auto GatherRolled = [this, &RolledModifiers](const TMap<FString, int32>& Modifiers)
     {
-        DamageEntry.Value.BasePhysicalDamage.X = FMath::Max(1, FMath::RoundToInt(DamageEntry.Value.BasePhysicalDamage.X * RandomValue));
-        DamageEntry.Value.BasePhysicalDamage.Y = FMath::Max(1, FMath::RoundToInt(DamageEntry.Value.BasePhysicalDamage.Y * RandomValue));
-    }
-
-    FString DamageSummary;
-    for (const TPair<FString, FWeaponBaseDamage>& DamageEntry : CachedWeaponStats.WeaponDamage)
-    {
-        if (!DamageSummary.IsEmpty())
+        for (const TPair<FString, int32>& Entry : Modifiers)
         {
-            DamageSummary += TEXT(" | ");
+            const FItemModifierStruct* Row = ItemModifierAssigner.GetModifierPool().FindByPredicate(
+                [&Entry](const FItemModifierStruct& Modifier)
+                {
+                    return Modifier.ModifierId.ToString().Equals(Entry.Key, ESearchCase::IgnoreCase);
+                });
+            if (Row)
+            {
+                RolledModifiers.Add({ Row, Entry.Value });
+            }
+        }
+    };
+    GatherRolled(CachedWeaponStats.ImplicitModifiers);
+    GatherRolled(CachedWeaponStats.PrefixModifiers);
+    GatherRolled(CachedWeaponStats.SuffixModifiers);
+
+    struct FDamageChannel
+    {
+        FIntPoint FWeaponBaseDamage::* BaseField;
+        FIntPoint FWeaponLocalDamage::* LocalField;
+        float FItemModifierDamageStruct::* ModifierField;
+    };
+    static const FDamageChannel DamageChannels[] = {
+        { &FWeaponBaseDamage::BasePhysicalDamage, &FWeaponLocalDamage::LocalPhysicalDamage, &FItemModifierDamageStruct::PhysicalDamage },
+        { &FWeaponBaseDamage::BaseFireDamage,     &FWeaponLocalDamage::LocalFireDamage,     &FItemModifierDamageStruct::FireDamage },
+        { &FWeaponBaseDamage::BaseIceDamage,      &FWeaponLocalDamage::LocalIceDamage,      &FItemModifierDamageStruct::IceDamage },
+        { &FWeaponBaseDamage::BaseElectricDamage, &FWeaponLocalDamage::LocalElectricDamage, &FItemModifierDamageStruct::ElectricDamage },
+        { &FWeaponBaseDamage::BasePoisonDamage,   &FWeaponLocalDamage::LocalPoisonDamage,   &FItemModifierDamageStruct::PoisonDamage },
+    };
+
+    FWeaponLocalDamage LocalDamage;
+    for (const FDamageChannel& Channel : DamageChannels)
+    {
+        const FIntPoint BaseRange = BaseDamage.*Channel.BaseField;
+        double MinValue = BaseRange.X;
+        double MaxValue = BaseRange.Y;
+
+        // Flat additions from Addition-operator modifiers that touch this damage type.
+        for (const FRolledModifier& Rolled : RolledModifiers)
+        {
+            if (Rolled.Row->ModifierOperator != EModifierOperator::Addition)
+            {
+                continue;
+            }
+
+            const float DamageWeight = Rolled.Row->ModifiedAttribute.DamageModifier.*Channel.ModifierField;
+            if (DamageWeight == 0.f)
+            {
+                continue;
+            }
+
+            const double FlatAmount = static_cast<double>(Rolled.Value) * DamageWeight;
+            MinValue += FlatAmount;
+            MaxValue += FlatAmount;
         }
 
-        DamageSummary += FString::Printf(TEXT("%s: %d-%d"),
-            *DamageEntry.Key,
-            DamageEntry.Value.BasePhysicalDamage.X,
-            DamageEntry.Value.BasePhysicalDamage.Y);
+        // Percentage scaling from Multiplication-operator modifiers that touch this damage type.
+        for (const FRolledModifier& Rolled : RolledModifiers)
+        {
+            if (Rolled.Row->ModifierOperator != EModifierOperator::Multiplication)
+            {
+                continue;
+            }
+
+            if (Rolled.Row->ModifiedAttribute.DamageModifier.*Channel.ModifierField == 0.f)
+            {
+                continue;
+            }
+
+            const double Multiplier = 1.0 + (static_cast<double>(Rolled.Value) / 100.0);
+            MinValue *= Multiplier;
+            MaxValue *= Multiplier;
+        }
+
+        FIntPoint& LocalRange = LocalDamage.*Channel.LocalField;
+        LocalRange.X = FMath::RoundToInt(MinValue);
+        LocalRange.Y = FMath::RoundToInt(MaxValue);
     }
 
-    const FString Message = FString::Printf(
-        TEXT("Randomized %s: AttackRate=%.2f, Damage=[%s]"),
-        *CachedWeaponStats.ItemId.ToString(),
-        CachedWeaponStats.AttackRate,
-        *DamageSummary);
-
-    if (BoundCoreMenu)
-    {
-        BoundCoreMenu->LogToScreen(Message);
-    }
+    CachedWeaponStats.WeaponLocalDamage.Empty();
+    CachedWeaponStats.WeaponLocalDamage.Add(TEXT("LocalDamage"), LocalDamage);
 }
 
 void UItemHandler::OnSaveItemButtonClicked(FString ItemId)

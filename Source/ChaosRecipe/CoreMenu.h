@@ -19,7 +19,7 @@ class UHorizontalBox;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBuyButtonClickedEvent, FString, ItemType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSellButtonClickedEvent, FString, ItemType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemInfoButtonClickedEvent, FString, ItemId);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRandomizeItemEvent, float, RandomValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRandomizeItemEvent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSaveItemButtonClickedEvent, FString, ItemId);
 
 class UCoreMenu;
