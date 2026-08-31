@@ -7,9 +7,59 @@
 		"WeaponSlot": "MainHand",
 		"WeaponBaseDamage":
 		{
-			"MinDamage": 5,
-			"MaxDamage": 8,
-			"DamageType": "Physical"
+			"BasePhysicalDamage":
+			{
+				"X": 5,
+				"Y": 8
+			},
+			"BaseFireDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"BaseIceDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"BaseElectricDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"BasePoisonDamage":
+			{
+				"X": 0,
+				"Y": 0
+			}
+		},
+		"WeaponLocalDamage":
+		{
+			"LocalPhysicalDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"LocalFireDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"LocalIceDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"LocalElectricDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"LocalPoisonDamage":
+			{
+				"X": 0,
+				"Y": 0
+			}
 		},
 		"WeaponBaseAttackRate": 1.3,
 		"WeaponBaseCritChance": 6,
@@ -23,9 +73,59 @@
 		"WeaponSlot": "TwoHand",
 		"WeaponBaseDamage":
 		{
-			"MinDamage": 12,
-			"MaxDamage": 18,
-			"DamageType": "Physical"
+			"BasePhysicalDamage":
+			{
+				"X": 10,
+				"Y": 16
+			},
+			"BaseFireDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"BaseIceDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"BaseElectricDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"BasePoisonDamage":
+			{
+				"X": 0,
+				"Y": 0
+			}
+		},
+		"WeaponLocalDamage":
+		{
+			"LocalPhysicalDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"LocalFireDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"LocalIceDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"LocalElectricDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"LocalPoisonDamage":
+			{
+				"X": 0,
+				"Y": 0
+			}
 		},
 		"WeaponBaseAttackRate": 1,
 		"WeaponBaseCritChance": 6,
@@ -39,9 +139,59 @@
 		"WeaponSlot": "MainHand",
 		"WeaponBaseDamage":
 		{
-			"MinDamage": 7,
-			"MaxDamage": 9,
-			"DamageType": "Physical"
+			"BasePhysicalDamage":
+			{
+				"X": 6,
+				"Y": 8
+			},
+			"BaseFireDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"BaseIceDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"BaseElectricDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"BasePoisonDamage":
+			{
+				"X": 0,
+				"Y": 0
+			}
+		},
+		"WeaponLocalDamage":
+		{
+			"LocalPhysicalDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"LocalFireDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"LocalIceDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"LocalElectricDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"LocalPoisonDamage":
+			{
+				"X": 0,
+				"Y": 0
+			}
 		},
 		"WeaponBaseAttackRate": 1.2,
 		"WeaponBaseCritChance": 3,
@@ -55,9 +205,59 @@
 		"WeaponSlot": "TwoHand",
 		"WeaponBaseDamage":
 		{
-			"MinDamage": 15,
-			"MaxDamage": 19,
-			"DamageType": "Physical"
+			"BasePhysicalDamage":
+			{
+				"X": 12,
+				"Y": 20
+			},
+			"BaseFireDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"BaseIceDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"BaseElectricDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"BasePoisonDamage":
+			{
+				"X": 0,
+				"Y": 0
+			}
+		},
+		"WeaponLocalDamage":
+		{
+			"LocalPhysicalDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"LocalFireDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"LocalIceDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"LocalElectricDamage":
+			{
+				"X": 0,
+				"Y": 0
+			},
+			"LocalPoisonDamage":
+			{
+				"X": 0,
+				"Y": 0
+			}
 		},
 		"WeaponBaseAttackRate": 0.95,
 		"WeaponBaseCritChance": 3,

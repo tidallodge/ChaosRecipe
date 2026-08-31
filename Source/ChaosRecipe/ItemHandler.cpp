@@ -114,6 +114,8 @@ bool UItemHandler::BuildWeaponStatsForItem(const FString& ItemId, FItemWeaponSta
     OutWeaponStats.AttackRate = WeaponData.WeaponBaseAttackRate;
     OutWeaponStats.WeaponDamage.Empty();
     OutWeaponStats.WeaponDamage.Add(TEXT("BaseDamage"), WeaponData.WeaponBaseDamage);
+    OutWeaponStats.WeaponLocalDamage.Empty();
+    OutWeaponStats.WeaponLocalDamage.Add(TEXT("LocalDamage"), WeaponData.WeaponLocalDamage);
     OutWeaponStats.ImplicitModifiers.Empty();
     OutWeaponStats.PrefixModifiers.Empty();
     OutWeaponStats.SuffixModifiers.Empty();
@@ -231,6 +233,11 @@ void UItemHandler::OnRandomizeItem(float RandomValue)
         return;
     }
 
+    RandomizeWeaponItem(RandomValue);
+}
+
+void UItemHandler::RandomizeWeaponItem(float RandomValue)
+{
     if (CachedWeaponStats.ItemId.IsEmpty())
     {
         UE_LOG(LogTemp, Warning, TEXT("ItemHandler: No cached weapon stats available to randomize."));
@@ -336,12 +343,47 @@ void UItemHandler::OnRandomizeItem(float RandomValue)
             DamageEntry.Value.BasePhysicalDamage.Y);
     }
 
+    FString LocalDamageSummary;
+    for (const TPair<FString, FWeaponLocalDamage>& LocalEntry : CachedWeaponStats.WeaponLocalDamage)
+    {
+        struct FLocalDamageLine { const TCHAR* Label; FIntPoint Range; };
+        const FLocalDamageLine LocalLines[] = {
+            { TEXT("Physical"), LocalEntry.Value.LocalPhysicalDamage },
+            { TEXT("Fire"),     LocalEntry.Value.LocalFireDamage },
+            { TEXT("Ice"),      LocalEntry.Value.LocalIceDamage },
+            { TEXT("Electric"), LocalEntry.Value.LocalElectricDamage },
+            { TEXT("Poison"),   LocalEntry.Value.LocalPoisonDamage },
+        };
+
+        for (const FLocalDamageLine& LocalLine : LocalLines)
+        {
+            if (LocalLine.Range.X == 0 && LocalLine.Range.Y == 0)
+            {
+                continue;
+            }
+
+            if (!LocalDamageSummary.IsEmpty())
+            {
+                LocalDamageSummary += TEXT(" | ");
+            }
+
+            LocalDamageSummary += FString::Printf(TEXT("%s:%d-%d"),
+                LocalLine.Label, LocalLine.Range.X, LocalLine.Range.Y);
+        }
+    }
+
+    if (LocalDamageSummary.IsEmpty())
+    {
+        LocalDamageSummary = TEXT("none");
+    }
+
     FString Message = FString::Printf(
-        TEXT("ItemHandler randomized weapon stats:\nUUID:%s\nRandomModifierValue=%.2f\nAttackRate=%.2f\n%s"),
+        TEXT("ItemHandler randomized weapon stats:\nUUID:%s\nRandomModifierValue=%.2f\nAttackRate=%.2f\nBase:%s\nLocal:%s"),
         *CachedWeaponStats.UUID.ToString(),
         RandomValue,
         CachedWeaponStats.AttackRate,
-        *DamageSummary);
+        *DamageSummary,
+        *LocalDamageSummary);
 
     if (ModifiersText.IsEmpty())
     {
@@ -349,9 +391,10 @@ void UItemHandler::OnRandomizeItem(float RandomValue)
     }
 
     const FString ActiveItemText = FString::Printf(
-        TEXT("%s\nBase Damage:\n%s\nAttack Rate: %.2f\nModifiers:\n%s"),
+        TEXT("%s\nBase Damage:\n%s\nLocal Damage:\n%s\nAttack Rate: %.2f\nModifiers:\n%s"),
         *RandomizeItemName,
         *DamageSummary,
+        *LocalDamageSummary,
         CachedWeaponStats.AttackRate,
         *ModifiersText);
 

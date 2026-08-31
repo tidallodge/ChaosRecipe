@@ -36,6 +36,9 @@ struct FItemWeaponStatsStruct : public FTableRowBase
     TMap<FString, FWeaponBaseDamage> WeaponDamage; // FString for easy look up for what damage type, FWeaponBaseDamage struct for full damage info
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
+    TMap<FString, FWeaponLocalDamage> WeaponLocalDamage; // local (weapon-only) damage, added on top of base damage by mods
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
     float AttackRate;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
@@ -111,6 +114,9 @@ public:
 
     UFUNCTION()
     void OnRandomizeItem(float RandomValue);
+
+    UFUNCTION()
+    void RandomizeWeaponItem(float RandomValue);
 
     UFUNCTION()
     void OnSaveItemButtonClicked(FString ItemId);
