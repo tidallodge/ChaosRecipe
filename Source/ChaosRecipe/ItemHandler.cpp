@@ -318,6 +318,12 @@ void UItemHandler::RandomizeWeaponItem()
             default:                   CachedWeaponStats.PrefixModifiers.Add(ModifierId, RolledValue);   break;
             }
 
+            // Attack speed modifiers scale the base attack rate by their rolled percentage.
+            if (ModifierRow && ModifierRow->ModifiedAttribute.WeaponAttackRate != 0.f)
+            {
+                CachedWeaponStats.AttackRate *= 1.f + (RolledValue / 100.f);
+            }
+
             ModifiersText += FString::Printf(TEXT("  %s: %s (%d)\n"),
                 *UEnum::GetValueAsString(AffixType).RightChop(FString(TEXT("EAffixType::")).Len()),
                 *ModifierId, RolledValue);
@@ -414,7 +420,9 @@ void UItemHandler::RandomizeWeaponItem()
 void UItemHandler::RecalculateWeaponLocalDamage()
 {
     // Local damage starts as the item's base damage, then the rolled modifiers adjust it:
-    //   - Addition modifiers add their rolled value (scaled by the DamageModifier weight) as flat damage.
+    //   - Addition modifiers roll two independent values within their MinMaxRange and add the lower to
+    //     the min damage and the higher to the max damage (each scaled by the DamageModifier weight),
+    //     so the modifier contributes its own spread.
     //   - Multiplication modifiers then scale the result by (1 + rolled%) for any damage type whose
     //     ModifiedAttribute.DamageModifier entry is non-zero (the magnitude only has to be non-zero, it
     //     does not need to match).
@@ -481,9 +489,19 @@ void UItemHandler::RecalculateWeaponLocalDamage()
                 continue;
             }
 
-            const double FlatAmount = static_cast<double>(Rolled.Value) * DamageWeight;
-            MinValue += FlatAmount;
-            MaxValue += FlatAmount;
+            // Pick a value between the modifier's MinMaxRange bounds for each end of the damage spread.
+            int32 LowRoll = Rolled.Value;
+            int32 HighRoll = Rolled.Value;
+            if (Rolled.Row->MinMaxRange.Num() >= 2)
+            {
+                const int32 RollA = FMath::RandRange(Rolled.Row->MinMaxRange[0], Rolled.Row->MinMaxRange[1]);
+                const int32 RollB = FMath::RandRange(Rolled.Row->MinMaxRange[0], Rolled.Row->MinMaxRange[1]);
+                LowRoll = FMath::Min(RollA, RollB);
+                HighRoll = FMath::Max(RollA, RollB);
+            }
+
+            MinValue += static_cast<double>(LowRoll) * DamageWeight;
+            MaxValue += static_cast<double>(HighRoll) * DamageWeight;
         }
 
         // Percentage scaling from Multiplication-operator modifiers that touch this damage type.
