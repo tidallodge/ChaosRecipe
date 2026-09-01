@@ -70,10 +70,7 @@ struct FItemArmorStatsStruct : public FTableRowBase
     FTagsStruct Tags;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor Stats")
-    FArmorPrimaryBaseDefense ArmorPrimaryBaseDefense;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor Stats")
-    FArmorSecondaryBaseDefense ArmorSecondaryBaseDefense;
+    FBaseDefense BaseDefense;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor Stats")
     TMap<FString, int32> ImplicitModifiers;

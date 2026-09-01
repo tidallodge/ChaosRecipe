@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
 #include "EDamageType.h"
-#include "EMitigationType.h"
+#include "ModifierBucketsStruct.h"
 #include "BaseArmorStruct.generated.h"
 
 UENUM(BlueprintType)
@@ -27,33 +27,18 @@ enum class EArmorSlot : uint8
 };
 
 USTRUCT(BlueprintType)
-struct FArmorPrimaryBaseDefense
+struct FBaseDefense
 {
     GENERATED_BODY()
 
     UPROPERTY(EditAnywhere)
-    int32 MinDefense;
+    FIntPoint BasePhysicalMitigation;
 
     UPROPERTY(EditAnywhere)
-    int32 MaxDefense;
+    FIntPoint BaseEvade;
 
     UPROPERTY(EditAnywhere)
-    EMitigationType MitigationType;
-};
-
-USTRUCT(BlueprintType)
-struct FArmorSecondaryBaseDefense
-{
-    GENERATED_BODY()
-
-    UPROPERTY(EditAnywhere)
-    int32 MinDefense;
-
-    UPROPERTY(EditAnywhere)
-    int32 MaxDefense;
-
-    UPROPERTY(EditAnywhere)
-    EMitigationType MitigationType;
+    FIntPoint BaseOvershield;
 };
 
 USTRUCT(BlueprintType)
@@ -74,8 +59,11 @@ struct FBaseArmorStruct : public FTableRowBase
     EArmorSlot ArmorSlot;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-    FArmorPrimaryBaseDefense ArmorPrimaryBaseDefense;
+    FBaseDefense BaseDefense;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item", meta=(DataTable="/Game/ItemData/ItemModifier_DT.ItemModifier_DT"))
+    TArray<FName> ImplicitModifiers;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-    FArmorSecondaryBaseDefense ArmorSecondaryBaseDefense;
+    FModifierBuckets ModifierBuckets;
 };

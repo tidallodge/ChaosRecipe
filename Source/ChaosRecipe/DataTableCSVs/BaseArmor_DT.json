@@ -5,17 +5,11 @@
 		"ItemName": "NSLOCTEXT(\"[9B9DCC1A10C55B010022703F68E07FA8]\", \"642B365945A44AF6D171B79A9A6DA165\", \"Buckler\")",
 		"ArmorType": "Shield",
 		"ArmorSlot": "OffHand",
-		"ArmorPrimaryBaseDefense":
+		"BaseDefense":
 		{
-			"MinDefense": 10,
-			"MaxDefense": 12,
-			"MitigationType": "PhysicalReduction"
-		},
-		"ArmorSecondaryBaseDefense":
-		{
-			"MinDefense": 4,
-			"MaxDefense": 6,
-			"MitigationType": "Evade"
+			"BasePhysicalMitigation": { "X": 10, "Y": 12 },
+			"BaseEvade": { "X": 4, "Y": 6 },
+			"BaseOvershield": { "X": 0, "Y": 0 }
 		}
 	},
 	{
@@ -24,17 +18,50 @@
 		"ItemName": "NSLOCTEXT(\"[9B9DCC1A10C55B010022703F68E07FA8]\", \"282F39644B407A2EF7DD8E9FBC93C1A1\", \"Kite Shield\")",
 		"ArmorType": "Shield",
 		"ArmorSlot": "OffHand",
-		"ArmorPrimaryBaseDefense":
+		"BaseDefense":
 		{
-			"MinDefense": 14,
-			"MaxDefense": 16,
-			"MitigationType": "PhysicalReduction"
-		},
-		"ArmorSecondaryBaseDefense":
+			"BasePhysicalMitigation": { "X": 14, "Y": 16 },
+			"BaseEvade": { "X": 0, "Y": 0 },
+			"BaseOvershield": { "X": 0, "Y": 0 }
+		}
+	},
+	{
+		"Name": "armor_chest_001",
+		"ItemId": "NSLOCTEXT(\"[9B9DCC1A10C55B010022703F68E07FA8]\", \"675677674759A06525B202854F1D2746\", \"armor_chest_001\")",
+		"ItemName": "NSLOCTEXT(\"[9B9DCC1A10C55B010022703F68E07FA8]\", \"65054D6C4EA385D5CBBBA9B124D327D4\", \"Breastplate\")",
+		"ArmorType": "Chest",
+		"ArmorSlot": "Chest",
+		"BaseDefense":
 		{
-			"MinDefense": 0,
-			"MaxDefense": 0,
-			"MitigationType": "PhysicalReduction"
+			"BasePhysicalMitigation": { "X": 10, "Y": 20 },
+			"BaseEvade": { "X": 0, "Y": 0 },
+			"BaseOvershield": { "X": 0, "Y": 0 }
+		}
+	},
+	{
+		"Name": "evade_chest_001",
+		"ItemId": "NSLOCTEXT(\"[9B9DCC1A10C55B010022703F68E07FA8]\", \"21EFE5E2499794E50C9904985CFC18AA\", \"evade_chest_001\")",
+		"ItemName": "NSLOCTEXT(\"[9B9DCC1A10C55B010022703F68E07FA8]\", \"2C94A0984EE03B8258B5F8A3A4733D3B\", \"Leather Cloak\")",
+		"ArmorType": "Chest",
+		"ArmorSlot": "Chest",
+		"BaseDefense":
+		{
+			"BasePhysicalMitigation": { "X": 0, "Y": 0 },
+			"BaseEvade": { "X": 5, "Y": 10 },
+			"BaseOvershield": { "X": 0, "Y": 0 }
+		}
+	},
+	{
+		"Name": "overshield_chest_001",
+		"ItemId": "NSLOCTEXT(\"[9B9DCC1A10C55B010022703F68E07FA8]\", \"72FE45D34F0D8EFEF6D07BB96578DE1B\", \"overshield_chest_001\")",
+		"ItemName": "NSLOCTEXT(\"[9B9DCC1A10C55B010022703F68E07FA8]\", \"294764CF4F7A54A260C855BA68DAA02B\", \"Tassled Garb\")",
+		"ArmorType": "Chest",
+		"ArmorSlot": "Chest",
+		"BaseDefense":
+		{
+			"BasePhysicalMitigation": { "X": 0, "Y": 0 },
+			"BaseEvade": { "X": 0, "Y": 0 },
+			"BaseOvershield": { "X": 20, "Y": 40 }
 		}
 	}
 ]

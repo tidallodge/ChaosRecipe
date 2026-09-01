@@ -157,8 +157,7 @@ bool UItemHandler::BuildArmorStatsForItem(const FString& ItemId, FItemArmorStats
     OutArmorStats.ItemId = BaseItemData.ItemId;
     OutArmorStats.ItemLevel = 1;
     OutArmorStats.Tags = FTagsStruct();
-    OutArmorStats.ArmorPrimaryBaseDefense = ArmorData.ArmorPrimaryBaseDefense;
-    OutArmorStats.ArmorSecondaryBaseDefense = ArmorData.ArmorSecondaryBaseDefense;
+    OutArmorStats.BaseDefense = ArmorData.BaseDefense;
     OutArmorStats.ImplicitModifiers.Empty();
     OutArmorStats.PrefixModifiers.Empty();
     OutArmorStats.SuffixModifiers.Empty();
@@ -747,13 +746,15 @@ void UItemHandler::LogWeaponData(const FBaseWeaponStruct& WeaponData) const
 void UItemHandler::LogArmorData(const FBaseArmorStruct& ArmorData) const
 {
     const FString ArmorInfo = FString::Printf(
-        TEXT("ArmorType: %s\nArmorSlot: %s\nPrimaryMinDefense: %d\nPrimaryMaxDefense: %d\nSecondaryMinDefense: %d\nSecondaryMaxDefense: %d"),
+        TEXT("ArmorType: %s\nArmorSlot: %s\nBasePhysicalMitigation: %d-%d\nBaseEvade: %d-%d\nBaseOvershield: %d-%d"),
         *UEnum::GetValueAsString(ArmorData.ArmorType),
         *UEnum::GetValueAsString(ArmorData.ArmorSlot),
-        ArmorData.ArmorPrimaryBaseDefense.MinDefense,
-        ArmorData.ArmorPrimaryBaseDefense.MaxDefense,
-        ArmorData.ArmorSecondaryBaseDefense.MinDefense,
-        ArmorData.ArmorSecondaryBaseDefense.MaxDefense);
+        ArmorData.BaseDefense.BasePhysicalMitigation.X,
+        ArmorData.BaseDefense.BasePhysicalMitigation.Y,
+        ArmorData.BaseDefense.BaseEvade.X,
+        ArmorData.BaseDefense.BaseEvade.Y,
+        ArmorData.BaseDefense.BaseOvershield.X,
+        ArmorData.BaseDefense.BaseOvershield.Y);
 
     UE_LOG(LogTemp, Warning, TEXT("ItemHandler loaded armor table data:\n%s"), *ArmorInfo);
 }

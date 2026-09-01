@@ -19,7 +19,11 @@
 			"Defense": false,
 			"Resistance": false,
 			"Speed": false,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 1000,
 		"ModifierTier": 0,
@@ -99,20 +103,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": true,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": false,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": true,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -135,7 +161,11 @@
 			"Defense": false,
 			"Resistance": false,
 			"Speed": false,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 1000,
 		"ModifierTier": 1,
@@ -178,7 +208,7 @@
 		"ValidItemClasses":
 		{
 			"Armor": false,
-			"Weapon": false,
+			"Weapon": true,
 			"Shield": false,
 			"Jewelry": false,
 			"Misc": false
@@ -215,20 +245,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": true,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": false,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": true,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -251,7 +303,11 @@
 			"Defense": false,
 			"Resistance": false,
 			"Speed": false,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 1000,
 		"ModifierTier": 0,
@@ -331,20 +387,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": true,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": false,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": true,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -367,7 +445,11 @@
 			"Defense": false,
 			"Resistance": false,
 			"Speed": false,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 1000,
 		"ModifierTier": 1,
@@ -447,20 +529,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": true,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": false,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": true,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -483,7 +587,11 @@
 			"Defense": false,
 			"Resistance": false,
 			"Speed": false,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 1000,
 		"ModifierTier": 0,
@@ -563,20 +671,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": true,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": false,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": true,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -599,7 +729,11 @@
 			"Defense": false,
 			"Resistance": false,
 			"Speed": false,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 1000,
 		"ModifierTier": 1,
@@ -679,20 +813,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": true,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": false,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": true,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -715,7 +871,11 @@
 			"Defense": false,
 			"Resistance": false,
 			"Speed": false,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 1000,
 		"ModifierTier": 0,
@@ -795,20 +955,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": true,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": false,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": true,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -831,7 +1013,11 @@
 			"Defense": false,
 			"Resistance": false,
 			"Speed": false,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 1000,
 		"ModifierTier": 1,
@@ -911,20 +1097,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": true,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": false,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": true,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -947,7 +1155,11 @@
 			"Defense": false,
 			"Resistance": false,
 			"Speed": false,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 1000,
 		"ModifierTier": 0,
@@ -1027,20 +1239,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": true,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": false,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": true,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -1063,7 +1297,11 @@
 			"Defense": false,
 			"Resistance": false,
 			"Speed": false,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 1000,
 		"ModifierTier": 1,
@@ -1143,20 +1381,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": true,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": false,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": true,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -1179,7 +1439,11 @@
 			"Defense": false,
 			"Resistance": false,
 			"Speed": false,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 1000,
 		"ModifierTier": 0,
@@ -1259,20 +1523,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": true,
-			"LocalAttackRate": false,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": true,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -1295,7 +1581,11 @@
 			"Defense": false,
 			"Resistance": false,
 			"Speed": false,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 1000,
 		"ModifierTier": 1,
@@ -1375,20 +1665,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": true,
-			"LocalAttackRate": false,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": true,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -1411,7 +1723,11 @@
 			"Defense": false,
 			"Resistance": false,
 			"Speed": true,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 500,
 		"ModifierTier": 0,
@@ -1491,20 +1807,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": true,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": true,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -1527,7 +1865,11 @@
 			"Defense": false,
 			"Resistance": false,
 			"Speed": true,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 500,
 		"ModifierTier": 1,
@@ -1607,20 +1949,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": true,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": true,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -1643,7 +2007,11 @@
 			"Defense": false,
 			"Resistance": false,
 			"Speed": true,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 500,
 		"ModifierTier": 2,
@@ -1723,20 +2091,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": true,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": true,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -1759,7 +2149,11 @@
 			"Defense": false,
 			"Resistance": false,
 			"Speed": false,
-			"Critical": true
+			"Critical": true,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 500,
 		"ModifierTier": 0,
@@ -1839,20 +2233,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": false,
-			"LocalCritChance": true,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": true,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -1875,7 +2291,11 @@
 			"Defense": false,
 			"Resistance": false,
 			"Speed": false,
-			"Critical": true
+			"Critical": true,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 500,
 		"ModifierTier": 1,
@@ -1955,20 +2375,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": false,
-			"LocalCritChance": true,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": true,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -1991,7 +2433,11 @@
 			"Defense": false,
 			"Resistance": false,
 			"Speed": false,
-			"Critical": true
+			"Critical": true,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 500,
 		"ModifierTier": 2,
@@ -2071,20 +2517,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": false,
-			"LocalCritChance": true,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": true,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -2107,7 +2575,11 @@
 			"Defense": false,
 			"Resistance": true,
 			"Speed": false,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 1000,
 		"ModifierTier": 0,
@@ -2187,20 +2659,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": false,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": true,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": true,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -2223,7 +2717,11 @@
 			"Defense": false,
 			"Resistance": true,
 			"Speed": false,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 1000,
 		"ModifierTier": 1,
@@ -2303,20 +2801,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": false,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": true,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": true,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -2339,7 +2859,11 @@
 			"Defense": false,
 			"Resistance": true,
 			"Speed": false,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 1000,
 		"ModifierTier": 0,
@@ -2419,20 +2943,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": false,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": true,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": true,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -2455,7 +3001,11 @@
 			"Defense": false,
 			"Resistance": true,
 			"Speed": false,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 1000,
 		"ModifierTier": 1,
@@ -2535,20 +3085,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": false,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": true,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": true,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -2571,7 +3143,11 @@
 			"Defense": false,
 			"Resistance": true,
 			"Speed": false,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 1000,
 		"ModifierTier": 0,
@@ -2651,20 +3227,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": false,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": true,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": true,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -2687,7 +3285,11 @@
 			"Defense": false,
 			"Resistance": true,
 			"Speed": false,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 1000,
 		"ModifierTier": 1,
@@ -2767,20 +3369,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": false,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": true,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": true,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -2803,7 +3427,11 @@
 			"Defense": false,
 			"Resistance": true,
 			"Speed": false,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 1000,
 		"ModifierTier": 0,
@@ -2883,20 +3511,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": false,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": true,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": true,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -2919,7 +3569,11 @@
 			"Defense": false,
 			"Resistance": true,
 			"Speed": false,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 1000,
 		"ModifierTier": 1,
@@ -2999,20 +3653,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": false,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": true,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": true,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -3035,7 +3711,11 @@
 			"Defense": false,
 			"Resistance": false,
 			"Speed": false,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 100,
 		"ModifierTier": 0,
@@ -3114,20 +3794,42 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": false,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": true
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": true,
+				"UniqueSkill": false
+			}
 		}
 	},
 	{
@@ -3150,12 +3852,16 @@
 			"Defense": false,
 			"Resistance": false,
 			"Speed": false,
-			"Critical": false
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
 		},
 		"ModifierWeight": 250,
 		"ModifierTier": 0,
 		"ModifierRequiredLevel": 1,
-		"ModifierAffixType": "Suffix",
+		"ModifierAffixType": "Prefix",
 		"MinMaxRange": [
 			1
 		],
@@ -3191,7 +3897,7 @@
 		"UniqueModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"32C28A0442FEBBDD60E488962A1C3768\", \"uskill_firestorm_01\")",
 		"ValidItemClasses":
 		{
-			"Armor": false,
+			"Armor": true,
 			"Weapon": false,
 			"Shield": false,
 			"Jewelry": false,
@@ -3229,20 +3935,1462 @@
 		},
 		"ModifierBuckets":
 		{
-			"LocalFlatPhysDamage": false,
-			"LocalPercentPhysDamage": false,
-			"LocalFlatFireDamage": false,
-			"LocalFlatColdDamage": false,
-			"LocalFlatElectricDamage": false,
-			"LocalFlatPoisonDamage": false,
-			"LocalAttackRate": false,
-			"LocalCritChance": false,
-			"LocalCritDamage": false,
-			"FireResist": false,
-			"ColdResist": false,
-			"ElectricResist": false,
-			"PoisonResist": false,
-			"GlobalAllSkills": false
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": true
+			}
+		}
+	},
+	{
+		"Name": "generic_life_001",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"AE0A092745942E3546CCDE9EEA1A1D7E\", \"generic_life_001\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"04A559E8413DDCC8A6FDE9B7955D3807\", \"Generic Life 1\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false,
+			"Life": true,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			10,
+			20
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Addition",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": false,
+			"Shield": true,
+			"Jewelry": true,
+			"Misc": true
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		},
+		"ModifierBuckets":
+		{
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": true
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
+		}
+	},
+	{
+		"Name": "chest_life_001",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"02708A5349A0655E23B349B66D7E276A\", \"chest_life_001\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"686B66CB490888468EE5F0AEF5FC2831\", \"Chest Life 1\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false,
+			"Life": true,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			20,
+			30
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Addition",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": false,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": true,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		},
+		"ModifierBuckets":
+		{
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": true
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
+		}
+	},
+	{
+		"Name": "chest_life_002",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"6FA42F9E4406F17B51D40C90E1AF3AD2\", \"chest_life_002\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"67F396CA4B854DC5682F44843C1DB09C\", \"Chest Life 2\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false,
+			"Life": true,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 1,
+		"ModifierRequiredLevel": 5,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			31,
+			40
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Addition",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": true,
+			"Weapon": false,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": true,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		},
+		"ModifierBuckets":
+		{
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": true
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
+		}
+	},
+	{
+		"Name": "chest_life_003",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"BF586887494D3778D9F29C83874E4E13\", \"chest_life_003\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"313865CC4D529945D962A6ADA12AA353\", \"Chest Life 3\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false,
+			"Life": true,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 2,
+		"ModifierRequiredLevel": 10,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			41,
+			50
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Addition",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": true,
+			"Weapon": false,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": true,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		},
+		"ModifierBuckets":
+		{
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": true
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
+		}
+	},
+	{
+		"Name": "chest_armor_flat_001",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"F02798504DDEAF4D5AF2BE888D6A8121\", \"chest_armor_flat_001\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"75614D914B85BD211CE54B9CFB583C56\", \"Chest Armor + 1\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": true,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false,
+			"Life": false,
+			"Armor": true,
+			"Evade": false,
+			"Overshield": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			5,
+			10
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 1,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Addition",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": false,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": true,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		},
+		"ModifierBuckets":
+		{
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": true,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
+		}
+	},
+	{
+		"Name": "chest_armor_flat_002",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"5D306AB44D3318506CDF08BD789537BA\", \"chest_armor_flat_002\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"17D195CC4E25ED869277DF80A14C695B\", \"Chest Armor + 2\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": true,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false,
+			"Life": false,
+			"Armor": true,
+			"Evade": false,
+			"Overshield": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 1,
+		"ModifierRequiredLevel": 5,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			11,
+			15
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 1,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Addition",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": false,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": true,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		},
+		"ModifierBuckets":
+		{
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": true,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
+		}
+	},
+	{
+		"Name": "chest_evade_flat_001",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"5DBBB9F44D6C813938070CAC2AF8516E\", \"chest_evade_flat_001\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"13E41EBD4A4389F36AAB9199AEA43EEB\", \"Chest Evade + 1\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": true,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false,
+			"Life": false,
+			"Armor": true,
+			"Evade": false,
+			"Overshield": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			20,
+			40
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 1,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Addition",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": false,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": true,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		},
+		"ModifierBuckets":
+		{
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": true,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
+		}
+	},
+	{
+		"Name": "chest_evade_flat_002",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"17D79959442174175FEC3A8511504EAD\", \"chest_evade_flat_002\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"5A026C3D4B11A21538C13FA57E8B4F06\", \"Chest Evade + 2\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": true,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false,
+			"Life": false,
+			"Armor": true,
+			"Evade": false,
+			"Overshield": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 1,
+		"ModifierRequiredLevel": 5,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			41,
+			60
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 1,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Addition",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": false,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": true,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		},
+		"ModifierBuckets":
+		{
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": true,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
+		}
+	},
+	{
+		"Name": "chest_overshield_flat_001",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"0381C9014063235945B935A4174182CC\", \"chest_overshield_flat_001\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"D6F3C7B243505296493174B58B4F6857\", \"Chest OS + 1\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": true,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false,
+			"Life": false,
+			"Armor": true,
+			"Evade": false,
+			"Overshield": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			10,
+			20
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 1,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Addition",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": false,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": true,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		},
+		"ModifierBuckets":
+		{
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": true,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
+		}
+	},
+	{
+		"Name": "chest_overshield_flat_002",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"D700BC04486F39191B0CF48CD0992721\", \"chest_overshield_flat_002\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"AE332AE7443F5A89595E10A05D5754C5\", \"Chest OS + 2\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Poison": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": true,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false,
+			"Life": false,
+			"Armor": true,
+			"Evade": false,
+			"Overshield": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 1,
+		"ModifierRequiredLevel": 5,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			11,
+			20
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"PoisonDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 1,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"PoisonResistance": 0
+			}
+		},
+		"ModifierOperator": "Addition",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": false,
+			"Weapon": false,
+			"Shield": false,
+			"Jewelry": false,
+			"Misc": false
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": true,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		},
+		"ModifierBuckets":
+		{
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatColdDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatPoisonDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": true,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"ColdResist": false,
+				"ElectricResist": false,
+				"PoisonResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
 		}
 	}
 ]
