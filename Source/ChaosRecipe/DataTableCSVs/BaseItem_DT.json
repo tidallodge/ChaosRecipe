@@ -1,0 +1,110 @@
+[
+	{
+		"Name": "sword_1h_001",
+		"ItemId": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"02E9A5B6454A4DC787CDF0BE4CC3262A\", \"sword_1h_001\")",
+		"ItemName": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"BADA97664FC962A54B1ED2B8011C602B\", \"Cutlass\")",
+		"ItemClass": "Weapon",
+		"ItemSlot": "HandMain",
+		"ItemAssetData":
+		{
+			"ItemIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/WeaponShieldAssets/CutlassTexture2D.CutlassTexture2D'",
+			"ItemStaticMesh": "/Script/Engine.StaticMesh'/Game/ItemAssets/WeaponShieldAssets/TestCutlass.TestCutlass'"
+		}
+	},
+	{
+		"Name": "sword_2h_001",
+		"ItemId": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"23FC46CB4F2894521D3E5990E931E9BE\", \"sword_2h_001\")",
+		"ItemName": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"1EDB40E44117D7363EF9A6B323C92B68\", \"Claymore\")",
+		"ItemClass": "Weapon",
+		"ItemSlot": "HandBoth",
+		"ItemAssetData":
+		{
+			"ItemIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/WeaponShieldAssets/ClaymoreTexture2D.ClaymoreTexture2D'",
+			"ItemStaticMesh": "/Script/Engine.StaticMesh'/Game/ItemAssets/WeaponShieldAssets/Claymore_Mesh.Claymore_Mesh'"
+		}
+	},
+	{
+		"Name": "axe_1h_001",
+		"ItemId": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"956F5E2A457686299E29248D3D06AED8\", \"axe_1h_001\")",
+		"ItemName": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"CD0A794944343822549766BDF5D2EFD0\", \"Hatchet\")",
+		"ItemClass": "Weapon",
+		"ItemSlot": "HandMain",
+		"ItemAssetData":
+		{
+			"ItemIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/WeaponShieldAssets/HatchetTexture2D.HatchetTexture2D'",
+			"ItemStaticMesh": "/Script/Engine.StaticMesh'/Game/ItemAssets/WeaponShieldAssets/Hatchet_Mesh.Hatchet_Mesh'"
+		}
+	},
+	{
+		"Name": "axe_2h_001",
+		"ItemId": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"BA9BAD6C41125F29BD8901B5CFB0AC90\", \"axe_2h_001\")",
+		"ItemName": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"5743932F42A7464FEFC362BB6010F2F6\", \"Battle Axe\")",
+		"ItemClass": "Weapon",
+		"ItemSlot": "HandBoth",
+		"ItemAssetData":
+		{
+			"ItemIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/WeaponShieldAssets/BattleAxeTexture2D.BattleAxeTexture2D'",
+			"ItemStaticMesh": "/Script/Engine.StaticMesh'/Game/ItemAssets/WeaponShieldAssets/BattleAxe_Mesh.BattleAxe_Mesh'"
+		}
+	},
+	{
+		"Name": "shield_1h_001",
+		"ItemId": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"C839FAE9414ECD9455BB4EBB110E6FE0\", \"shield_1h_001\")",
+		"ItemName": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"3FB502794318CBC36C7D3F9C85E07BC6\", \"Buckler\")",
+		"ItemClass": "Shield",
+		"ItemSlot": "HandOff",
+		"ItemAssetData":
+		{
+			"ItemIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/WeaponShieldAssets/BucklerTexture2D.BucklerTexture2D'",
+			"ItemStaticMesh": "/Script/Engine.StaticMesh'/Game/ItemAssets/WeaponShieldAssets/Buckler_Mesh.Buckler_Mesh'"
+		}
+	},
+	{
+		"Name": "shield_1h_002",
+		"ItemId": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"41A2400E4FB9CEBC9BE7AA87808780B1\", \"shield_1h_002\")",
+		"ItemName": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"CF4F6DA8441C0DD0EFF31A9E704461BC\", \"Kite Shield\")",
+		"ItemClass": "Shield",
+		"ItemSlot": "HandOff",
+		"ItemAssetData":
+		{
+			"ItemIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/WeaponShieldAssets/KiteShieldTexture2D.KiteShieldTexture2D'",
+			"ItemStaticMesh": "/Script/Engine.StaticMesh'/Game/ItemAssets/WeaponShieldAssets/KiteShield_Mesh.KiteShield_Mesh'"
+		}
+	},
+	{
+		"Name": "armor_chest_001",
+		"ItemId": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"56B16F974D01143EBD5A6EBCC1C725E7\", \"armor_chest_001\")",
+		"ItemName": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"8C9B1AC84FB10BBC9EBC00B0978819C8\", \"Iron Breastplate\")",
+		"ItemClass": "Armor",
+		"ItemSlot": "Chest",
+		"ItemAssetData":
+		{
+			"ItemIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/ArmorAssets/ArmorIcons/iron_breastplate_front.iron_breastplate_front'",
+			"ItemStaticMesh": "None"
+		}
+	},
+	{
+		"Name": "evade_chest_001",
+		"ItemId": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"C8ED98494918446B795E0CB5F8D80AB7\", \"evade_chest_001\")",
+		"ItemName": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"492A645E44A024E54AEAFC933D445D4C\", \"Leather Cuirass\")",
+		"ItemClass": "Armor",
+		"ItemSlot": "Chest",
+		"ItemAssetData":
+		{
+			"ItemIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/ArmorAssets/ArmorIcons/leather_cuirass_front.leather_cuirass_front'",
+			"ItemStaticMesh": "None"
+		}
+	},
+	{
+		"Name": "overshield_chest_001",
+		"ItemId": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"24CB13304DBFBFD9413CCB97A51264CE\", \"overshield_chest_001\")",
+		"ItemName": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"A5524108408F2360D5E2DE83A77D0BA7\", \"Scholars Robe\")",
+		"ItemClass": "Armor",
+		"ItemSlot": "Chest",
+		"ItemAssetData":
+		{
+			"ItemIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/ArmorAssets/ArmorIcons/scholar_robes_front.scholar_robes_front'",
+			"ItemStaticMesh": "None"
+		}
+	}
+]

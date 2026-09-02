@@ -37,6 +37,9 @@ void UCoreMenu::NativeConstruct()
     ValidateButton(Item2);
     ValidateButton(Item3);
     ValidateButton(Item4);
+    ValidateButton(Item5);
+    ValidateButton(Item6);
+    ValidateButton(Item7);
     ValidateButton(ItemInfoButton);
     ValidateButton(RandomizeButton);
     ValidateButton(SaveItemButton);
@@ -48,6 +51,9 @@ void UCoreMenu::NativeConstruct()
 	Item2->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectAxeButtonClicked);
 	Item3->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectShieldButtonClicked);
 	Item4->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectHatchetButtonClicked);
+	Item5->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectIronBreastplateButtonClicked);
+	Item6->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectLeatherCuirassButtonClicked);
+	Item7->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectScholarsRobeButtonClicked);
 	ItemInfoButton->OnClicked.AddDynamic(this, &UCoreMenu::OnItemInfoButtonClicked);
 	RandomizeButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeItemButtonClicked);
 	SaveItemButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSaveItemButtonClicked);
@@ -111,6 +117,45 @@ void UCoreMenu::NativeConstruct()
 			UE_LOG(LogTemp, Warning, TEXT("Failed to load Hatchet texture for Image4."));
 		}
 	}
+
+	if (Item5_Icon)
+	{
+		UTexture2D* IronBreastplateTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/ItemAssets/ArmorAssets/ArmorIcons/iron_breastplate_front.iron_breastplate_front"));
+		if (IronBreastplateTexture)
+		{
+			Item5_Icon->SetBrushFromTexture(IronBreastplateTexture);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Failed to load Iron Breastplate texture for Image5."));
+		}
+	}
+
+	if (Item6_Icon)
+	{
+		UTexture2D* LeatherCuirassTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/ItemAssets/ArmorAssets/ArmorIcons/leather_cuirass_front.leather_cuirass_front"));
+		if (LeatherCuirassTexture)
+		{
+			Item6_Icon->SetBrushFromTexture(LeatherCuirassTexture);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Failed to load Leather Cuirass texture for Image6."));
+		}
+	}
+
+	if (Item7_Icon)
+	{
+		UTexture2D* ScholarsRobeTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/ItemAssets/ArmorAssets/ArmorIcons/scholar_robes_front.scholar_robes_front"));
+		if (ScholarsRobeTexture)
+		{
+			Item7_Icon->SetBrushFromTexture(ScholarsRobeTexture);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Failed to load Scholars Robe texture for Image7."));
+		}
+	}
 }
 
 void UCoreMenu::OnSellButtonClicked()
@@ -153,6 +198,21 @@ void UCoreMenu::OnSelectShieldButtonClicked()
 void UCoreMenu::OnSelectHatchetButtonClicked()
 {
 	SelectItemData(FText::FromString(TEXT("axe_1h_001")));
+}
+
+void UCoreMenu::OnSelectIronBreastplateButtonClicked()
+{
+	SelectItemData(FText::FromString(TEXT("armor_chest_001")));
+}
+
+void UCoreMenu::OnSelectLeatherCuirassButtonClicked()
+{
+	SelectItemData(FText::FromString(TEXT("evade_chest_001")));
+}
+
+void UCoreMenu::OnSelectScholarsRobeButtonClicked()
+{
+	SelectItemData(FText::FromString(TEXT("overshield_chest_001")));
 }
 
 void UCoreMenu::SelectItemData(const FText& ItemIdText)

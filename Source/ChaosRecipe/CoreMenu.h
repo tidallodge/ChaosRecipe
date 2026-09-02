@@ -121,6 +121,12 @@ protected:
 	UImage* Item3_Icon;
 	UPROPERTY(meta = (BindWidget))
 	UImage* Item4_Icon;
+	UPROPERTY(meta = (BindWidget))
+	UImage* Item5_Icon;
+	UPROPERTY(meta = (BindWidget))
+	UImage* Item6_Icon;
+	UPROPERTY(meta = (BindWidget))
+	UImage* Item7_Icon;
 
 	// Bound from the widget blueprint (named 'SellButton')
 	UPROPERTY(meta = (BindWidget))
@@ -136,6 +142,12 @@ protected:
 	UButton* Item3;
 	UPROPERTY(meta = (BindWidget))
 	UButton* Item4;
+	UPROPERTY(meta = (BindWidget))
+	UButton* Item5;
+	UPROPERTY(meta = (BindWidget))
+	UButton* Item6;
+	UPROPERTY(meta = (BindWidget))
+	UButton* Item7;
 	UPROPERTY(meta = (BindWidget))
 	UButton* ItemInfoButton;
 	UPROPERTY(meta = (BindWidget))
@@ -171,6 +183,15 @@ protected:
 	// Click handler for the 1H axe selection button
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void OnSelectHatchetButtonClicked();
+	// Click handler for the Iron Breastplate selection button
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void OnSelectIronBreastplateButtonClicked();
+	// Click handler for the Leather Cuirass selection button
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void OnSelectLeatherCuirassButtonClicked();
+	// Click handler for the Scholars Robe selection button
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void OnSelectScholarsRobeButtonClicked();
 	// Generic item lookup helper
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void SelectItemData(const FText& ItemIdText);
