@@ -116,6 +116,9 @@ public:
     void RandomizeWeaponItem();
 
     UFUNCTION()
+    void RandomizeArmorItem();
+
+    UFUNCTION()
     void OnSaveItemButtonClicked(FString ItemId);
 
     UFUNCTION()
@@ -141,6 +144,9 @@ protected:
 
     // Rebuilds CachedWeaponStats.WeaponLocalDamage from the item's base damage plus the rolled damage modifiers.
     void RecalculateWeaponLocalDamage();
+
+    // Rebuilds CachedArmorStats.BaseDefense from the item's base defense plus the rolled defense modifiers.
+    void RecalculateArmorDefense();
 
     bool LoadItemDataRow(const FString& ItemId, FBaseItemStruct& OutItemData) const;
     bool LoadWeaponDataRow(const FString& ItemId, FBaseWeaponStruct& OutWeaponData) const;

@@ -230,6 +230,10 @@ void UItemHandler::OnRandomizeItem()
     {
         RandomizeWeaponItem();
     }
+    else if (LastSelectedItemClass == EItemClass::Armor)
+    {
+        RandomizeArmorItem();
+    }
     else
     {
         UE_LOG(LogTemp, Warning,
@@ -416,6 +420,135 @@ void UItemHandler::RandomizeWeaponItem()
     UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
 }
 
+void UItemHandler::RandomizeArmorItem()
+{
+    if (CachedArmorStats.ItemId.IsEmpty())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: No cached armor stats available to randomize."));
+        return;
+    }
+
+    // Load every possible item modifier and hand the full pool to the ModifierAssigner.
+    TArray<FItemModifierStruct> AllItemModifiers;
+    if (LoadAllItemModifierRows(AllItemModifiers))
+    {
+        ItemModifierAssigner.SetModifierPool(AllItemModifiers);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Failed to load modifiers from ItemModifier_DT."));
+    }
+
+    CachedArmorStats = GetArmorStatsForItem(CachedArmorStats.ItemId.ToString());
+
+    // Roll how many modifiers this item gets: 3-6, weighted so 4 and 5 are the common outcomes.
+    {
+        static const int32 ModifierCountChoices[] = { 3, 4, 4, 5, 5, 6 };
+        ItemModifierAssigner.ModifierCount = ModifierCountChoices[FMath::RandRange(0, UE_ARRAY_COUNT(ModifierCountChoices) - 1)];
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: rolled ModifierCount=%d for this randomize."), ItemModifierAssigner.ModifierCount);
+    }
+
+    // Resolve this item's class and type, then let the ModifierAssigner pick the modifiers.
+    const FString RandomizeItemId = CachedArmorStats.ItemId.ToString();
+    FString RandomizeItemName = RandomizeItemId;
+    FString ModifiersText;
+    FBaseItemStruct RandomizeItemData;
+    FBaseArmorStruct RandomizeArmorData;
+    if (LoadItemDataRow(RandomizeItemId, RandomizeItemData) && LoadArmorDataRow(RandomizeItemId, RandomizeArmorData))
+    {
+        RandomizeItemName = RandomizeItemData.ItemName.ToString();
+        const EItemClass RandomizeItemClass = RandomizeItemData.ItemClass;
+        const FString RandomizeItemType = UEnum::GetValueAsString(RandomizeArmorData.ArmorType)
+            .RightChop(FString(TEXT("EArmorType::")).Len());
+
+        const TArray<FString> AssignedModifierIds =
+            ItemModifierAssigner.AssignModifiers(RandomizeItemId, RandomizeItemClass, RandomizeItemType, ItemModifierAssigner.ModifierCount);
+
+        CachedArmorStats.ImplicitModifiers.Empty();
+        CachedArmorStats.PrefixModifiers.Empty();
+        CachedArmorStats.SuffixModifiers.Empty();
+
+        for (const FString& ModifierId : AssignedModifierIds)
+        {
+            const FItemModifierStruct* ModifierRow = ItemModifierAssigner.GetModifierPool().FindByPredicate(
+                [&ModifierId](const FItemModifierStruct& Modifier)
+                {
+                    return Modifier.ModifierId.ToString().Equals(ModifierId, ESearchCase::IgnoreCase);
+                });
+
+            int32 RolledValue = 0;
+            EAffixType AffixType = EAffixType::Prefix;
+            if (ModifierRow)
+            {
+                AffixType = ModifierRow->ModifierAffixType;
+                if (ModifierRow->MinMaxRange.Num() >= 2)
+                {
+                    RolledValue = FMath::RandRange(ModifierRow->MinMaxRange[0], ModifierRow->MinMaxRange[1]);
+                }
+                else if (ModifierRow->MinMaxRange.Num() == 1)
+                {
+                    RolledValue = ModifierRow->MinMaxRange[0];
+                }
+            }
+
+            switch (AffixType)
+            {
+            case EAffixType::Implicit: CachedArmorStats.ImplicitModifiers.Add(ModifierId, RolledValue); break;
+            case EAffixType::Suffix:   CachedArmorStats.SuffixModifiers.Add(ModifierId, RolledValue);   break;
+            case EAffixType::Prefix:
+            default:                   CachedArmorStats.PrefixModifiers.Add(ModifierId, RolledValue);   break;
+            }
+
+            ModifiersText += FString::Printf(TEXT("  %s: %s (%d)\n"),
+                *UEnum::GetValueAsString(AffixType).RightChop(FString(TEXT("EAffixType::")).Len()),
+                *ModifierId, RolledValue);
+
+            UE_LOG(LogTemp, Warning, TEXT("ItemHandler: assigned modifier %s (%s) value=%d"),
+                *ModifierId, *UEnum::GetValueAsString(AffixType), RolledValue);
+        }
+
+        // Fold the rolled defense modifiers into the item's defense values.
+        RecalculateArmorDefense();
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Could not resolve class/type for '%s' to assign modifiers."), *RandomizeItemId);
+    }
+
+    const FString DefenseSummary = FString::Printf(
+        TEXT("PhysicalMitigation:%d-%d | Evade:%d-%d | Overshield:%d-%d"),
+        CachedArmorStats.BaseDefense.BasePhysicalMitigation.X,
+        CachedArmorStats.BaseDefense.BasePhysicalMitigation.Y,
+        CachedArmorStats.BaseDefense.BaseEvade.X,
+        CachedArmorStats.BaseDefense.BaseEvade.Y,
+        CachedArmorStats.BaseDefense.BaseOvershield.X,
+        CachedArmorStats.BaseDefense.BaseOvershield.Y);
+
+    const FString Message = FString::Printf(
+        TEXT("ItemHandler randomized armor stats:\nUUID:%s\nDefense:%s"),
+        *CachedArmorStats.UUID.ToString(),
+        *DefenseSummary);
+
+    if (ModifiersText.IsEmpty())
+    {
+        ModifiersText = TEXT("  none\n");
+    }
+
+    const FString ActiveItemText = FString::Printf(
+        TEXT("%s\nDefense:\n\t%s\nModifiers:\n%s"),
+        *RandomizeItemName,
+        *DefenseSummary,
+        *ModifiersText);
+
+    if (BoundCoreMenu)
+    {
+        BoundCoreMenu->LogToScreen(Message);
+        BoundCoreMenu->SetActiveItemText(ActiveItemText);
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
+}
+
 void UItemHandler::RecalculateWeaponLocalDamage()
 {
     // Local damage starts as the item's base damage, then the rolled modifiers adjust it:
@@ -528,6 +661,116 @@ void UItemHandler::RecalculateWeaponLocalDamage()
 
     CachedWeaponStats.WeaponLocalDamage.Empty();
     CachedWeaponStats.WeaponLocalDamage.Add(TEXT("LocalDamage"), LocalDamage);
+}
+
+void UItemHandler::RecalculateArmorDefense()
+{
+    // Defense starts from the item's base row (reloaded here since CachedArmorStats.BaseDefense
+    // is itself overwritten below), then the rolled modifiers adjust it the same way weapon damage
+    // modifiers do: Addition modifiers roll two independent values within their MinMaxRange and add
+    // the lower to the min and the higher to the max (each scaled by the mitigation weight), and
+    // Multiplication modifiers then scale the result by (1 + rolled%) for any channel whose
+    // ModifiedAttribute.MigitationModifier entry is non-zero.
+    FBaseDefense BaseDefenseValue;
+    FBaseArmorStruct ArmorData;
+    if (LoadArmorDataRow(CachedArmorStats.ItemId.ToString(), ArmorData))
+    {
+        BaseDefenseValue = ArmorData.BaseDefense;
+    }
+
+    // Pair every rolled modifier with its data-table row and the value it rolled.
+    struct FRolledModifier { const FItemModifierStruct* Row = nullptr; int32 Value = 0; };
+    TArray<FRolledModifier> RolledModifiers;
+    auto GatherRolled = [this, &RolledModifiers](const TMap<FString, int32>& Modifiers)
+    {
+        for (const TPair<FString, int32>& Entry : Modifiers)
+        {
+            const FItemModifierStruct* Row = ItemModifierAssigner.GetModifierPool().FindByPredicate(
+                [&Entry](const FItemModifierStruct& Modifier)
+                {
+                    return Modifier.ModifierId.ToString().Equals(Entry.Key, ESearchCase::IgnoreCase);
+                });
+            if (Row)
+            {
+                RolledModifiers.Add({ Row, Entry.Value });
+            }
+        }
+    };
+    GatherRolled(CachedArmorStats.ImplicitModifiers);
+    GatherRolled(CachedArmorStats.PrefixModifiers);
+    GatherRolled(CachedArmorStats.SuffixModifiers);
+
+    struct FDefenseChannel
+    {
+        FIntPoint FBaseDefense::* Field;
+        float FItemModifierMitigationStruct::* ModifierField;
+    };
+    static const FDefenseChannel DefenseChannels[] = {
+        { &FBaseDefense::BasePhysicalMitigation, &FItemModifierMitigationStruct::PhysicalReduction },
+        { &FBaseDefense::BaseEvade,               &FItemModifierMitigationStruct::Evade },
+        { &FBaseDefense::BaseOvershield,          &FItemModifierMitigationStruct::Overshield },
+    };
+
+    FBaseDefense NewDefense{};
+    for (const FDefenseChannel& Channel : DefenseChannels)
+    {
+        const FIntPoint BaseRange = BaseDefenseValue.*Channel.Field;
+        double MinValue = BaseRange.X;
+        double MaxValue = BaseRange.Y;
+
+        // Flat additions from Addition-operator modifiers that touch this defense channel.
+        for (const FRolledModifier& Rolled : RolledModifiers)
+        {
+            if (Rolled.Row->ModifierOperator != EModifierOperator::Addition)
+            {
+                continue;
+            }
+
+            const float MitigationWeight = Rolled.Row->ModifiedAttribute.MigitationModifier.*Channel.ModifierField;
+            if (MitigationWeight == 0.f)
+            {
+                continue;
+            }
+
+            // Pick a value between the modifier's MinMaxRange bounds for each end of the defense spread.
+            int32 LowRoll = Rolled.Value;
+            int32 HighRoll = Rolled.Value;
+            if (Rolled.Row->MinMaxRange.Num() >= 2)
+            {
+                const int32 RollA = FMath::RandRange(Rolled.Row->MinMaxRange[0], Rolled.Row->MinMaxRange[1]);
+                const int32 RollB = FMath::RandRange(Rolled.Row->MinMaxRange[0], Rolled.Row->MinMaxRange[1]);
+                LowRoll = FMath::Min(RollA, RollB);
+                HighRoll = FMath::Max(RollA, RollB);
+            }
+
+            MinValue += static_cast<double>(LowRoll) * MitigationWeight;
+            MaxValue += static_cast<double>(HighRoll) * MitigationWeight;
+        }
+
+        // Percentage scaling from Multiplication-operator modifiers that touch this defense channel.
+        for (const FRolledModifier& Rolled : RolledModifiers)
+        {
+            if (Rolled.Row->ModifierOperator != EModifierOperator::Multiplication)
+            {
+                continue;
+            }
+
+            if (Rolled.Row->ModifiedAttribute.MigitationModifier.*Channel.ModifierField == 0.f)
+            {
+                continue;
+            }
+
+            const double Multiplier = 1.0 + (static_cast<double>(Rolled.Value) / 100.0);
+            MinValue *= Multiplier;
+            MaxValue *= Multiplier;
+        }
+
+        FIntPoint& OutRange = NewDefense.*Channel.Field;
+        OutRange.X = FMath::RoundToInt(MinValue);
+        OutRange.Y = FMath::RoundToInt(MaxValue);
+    }
+
+    CachedArmorStats.BaseDefense = NewDefense;
 }
 
 void UItemHandler::OnSaveItemButtonClicked(FString ItemId)
