@@ -16,6 +16,38 @@
 #include "ItemInstanceManager.h"
 #include "Engine/Engine.h"
 
+namespace
+{
+	// Builds the modifiers summary text grouped by affix type (Implicit, then Prefix, then Suffix)
+	// rather than roll order, so the ActiveItemText box lists prefixes before suffixes. Looks each
+	// ModifierId up in ModifierPool to display its ModifierName instead of the raw id.
+	FString BuildAffixOrderedModifiersText(const TArray<FItemModifierStruct>& ModifierPool, const TMap<FString, int32>& ImplicitModifiers, const TMap<FString, int32>& PrefixModifiers, const TMap<FString, int32>& SuffixModifiers)
+	{
+		FString Text;
+		auto AppendGroup = [&Text, &ModifierPool](const TMap<FString, int32>& Modifiers, EAffixType AffixType)
+		{
+			const FString AffixName = UEnum::GetValueAsString(AffixType).RightChop(FString(TEXT("EAffixType::")).Len());
+			for (const TPair<FString, int32>& Entry : Modifiers)
+			{
+				const FItemModifierStruct* ModifierRow = ModifierPool.FindByPredicate(
+					[&Entry](const FItemModifierStruct& Modifier)
+					{
+						return Modifier.ModifierId.ToString().Equals(Entry.Key, ESearchCase::IgnoreCase);
+					});
+				const FString DisplayName = ModifierRow ? ModifierRow->ModifierName.ToString() : Entry.Key;
+
+				Text += FString::Printf(TEXT("  %s: %s (%d)\n"), *AffixName, *DisplayName, Entry.Value);
+			}
+		};
+
+		AppendGroup(ImplicitModifiers, EAffixType::Implicit);
+		AppendGroup(PrefixModifiers, EAffixType::Prefix);
+		AppendGroup(SuffixModifiers, EAffixType::Suffix);
+
+		return Text;
+	}
+}
+
 void UItemHandler::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
 {
     if (!CoreMenu)
@@ -327,13 +359,13 @@ void UItemHandler::RandomizeWeaponItem()
                 CachedWeaponStats.AttackRate *= 1.f + (RolledValue / 100.f);
             }
 
-            ModifiersText += FString::Printf(TEXT("  %s: %s (%d)\n"),
-                *UEnum::GetValueAsString(AffixType).RightChop(FString(TEXT("EAffixType::")).Len()),
-                *ModifierId, RolledValue);
-
             UE_LOG(LogTemp, Warning, TEXT("ItemHandler: assigned modifier %s (%s) value=%d"),
                 *ModifierId, *UEnum::GetValueAsString(AffixType), RolledValue);
         }
+
+        // List prefixes before suffixes in the summary text, regardless of roll order.
+        ModifiersText = BuildAffixOrderedModifiersText(ItemModifierAssigner.GetModifierPool(),
+            CachedWeaponStats.ImplicitModifiers, CachedWeaponStats.PrefixModifiers, CachedWeaponStats.SuffixModifiers);
 
         // Fold the rolled damage modifiers into the item's local damage values.
         RecalculateWeaponLocalDamage();
@@ -499,13 +531,13 @@ void UItemHandler::RandomizeArmorItem()
             default:                   CachedArmorStats.PrefixModifiers.Add(ModifierId, RolledValue);   break;
             }
 
-            ModifiersText += FString::Printf(TEXT("  %s: %s (%d)\n"),
-                *UEnum::GetValueAsString(AffixType).RightChop(FString(TEXT("EAffixType::")).Len()),
-                *ModifierId, RolledValue);
-
             UE_LOG(LogTemp, Warning, TEXT("ItemHandler: assigned modifier %s (%s) value=%d"),
                 *ModifierId, *UEnum::GetValueAsString(AffixType), RolledValue);
         }
+
+        // List prefixes before suffixes in the summary text, regardless of roll order.
+        ModifiersText = BuildAffixOrderedModifiersText(ItemModifierAssigner.GetModifierPool(),
+            CachedArmorStats.ImplicitModifiers, CachedArmorStats.PrefixModifiers, CachedArmorStats.SuffixModifiers);
 
         // Fold the rolled defense modifiers into the item's defense values.
         RecalculateArmorDefense();

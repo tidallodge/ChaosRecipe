@@ -247,19 +247,43 @@ TArray<FModifierBuckets> ModifierAssigner::GetAssignedModifierBuckets(const TArr
 	return AssignedBuckets;
 }
 
+namespace
+{
+	// FModifierBuckets' actual bool flags live one level down, inside nested structs like
+	// FArmorModifierBuckets - so this has to recurse into FStructProperty fields to find them,
+	// rather than only looking at the immediate fields of StructType.
+	bool StructBucketsOverlap(const UStruct* StructType, const void* A, const void* B)
+	{
+		for (TFieldIterator<FProperty> It(StructType); It; ++It)
+		{
+			const FProperty* Prop = *It;
+			if (const FBoolProperty* BoolProp = CastField<FBoolProperty>(Prop))
+			{
+				if (BoolProp->GetPropertyValue_InContainer(A) && BoolProp->GetPropertyValue_InContainer(B))
+				{
+					return true;
+				}
+			}
+			else if (const FStructProperty* StructProp = CastField<FStructProperty>(Prop))
+			{
+				const void* SubA = StructProp->ContainerPtrToValuePtr<void>(A);
+				const void* SubB = StructProp->ContainerPtrToValuePtr<void>(B);
+				if (StructBucketsOverlap(StructProp->Struct, SubA, SubB))
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+}
+
 bool ModifierAssigner::BucketsOverlap(const FModifierBuckets& A, const FModifierBuckets& B)
 {
-	// Walk every bool UPROPERTY on FModifierBuckets so new buckets are picked up automatically.
-	for (TFieldIterator<FBoolProperty> It(FModifierBuckets::StaticStruct()); It; ++It)
-	{
-		const FBoolProperty* Prop = *It;
-		if (Prop->GetPropertyValue_InContainer(&A) && Prop->GetPropertyValue_InContainer(&B))
-		{
-			return true;
-		}
-	}
-
-	return false;
+	// Walk every bool UPROPERTY on FModifierBuckets (recursing into its nested bucket structs)
+	// so new buckets are picked up automatically.
+	return StructBucketsOverlap(FModifierBuckets::StaticStruct(), &A, &B);
 }
 
 bool ModifierAssigner::IsModifierInAssignedBuckets(const FModifierBuckets& ModifierBuckets, const TArray<FModifierBuckets>& AssignedBuckets)
