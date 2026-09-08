@@ -9,6 +9,10 @@ TODO:
 
     just give me the green dot tday please
 
+    - added Shop button
+        - make a new grid widget to show when this is clicked
+        - pouplate grid with item icon buttons instead of the static list
+
 
 ART
     - Continue with tutorial, Cutlass looks good
