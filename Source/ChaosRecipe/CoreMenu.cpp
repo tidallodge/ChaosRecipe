@@ -8,6 +8,9 @@
 #include "Components/Image.h"
 #include "Components/VerticalBox.h"
 #include "Components/HorizontalBox.h"
+#include "Components/GridPanel.h"
+#include "Components/GridSlot.h"
+#include "Blueprint/WidgetTree.h"
 #include "Engine/DataTable.h"
 #include "Engine/Engine.h"
 #include "Engine/Texture2D.h"
@@ -44,6 +47,7 @@ void UCoreMenu::NativeConstruct()
     ValidateButton(RandomizeButton);
     ValidateButton(SaveItemButton);
     ValidateButton(LoadItemButton);
+    ValidateButton(ShopButton);
 
 	BuyButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBuyButtonClicked);
 	SellButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSellButtonClicked);
@@ -58,6 +62,7 @@ void UCoreMenu::NativeConstruct()
 	RandomizeButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeItemButtonClicked);
 	SaveItemButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSaveItemButtonClicked);
 	LoadItemButton->OnClicked.AddDynamic(this, &UCoreMenu::OnLoadItemButtonClicked);
+	ShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnShopButtonClicked);
 
 	PlayerSwordCount = 1;
 	PlayerMoneyCount = 20;
@@ -642,6 +647,97 @@ void UCoreMenu::CreateCloseLoadItemButton()
 	}
 
 	LoadItemHeaderBox->AddChildToVerticalBox(CloseButtonWidget);
+}
+
+void UShopItemButtonProxy::HandleClicked()
+{
+	if (OwningMenu)
+	{
+		OwningMenu->OnShopItemButtonClicked(ItemId);
+	}
+}
+
+void UCoreMenu::OnShopButtonClicked()
+{
+	UE_LOG(LogTemp, Warning, TEXT("ShopButton Clicked."));
+
+	if (!ShopGridPanel)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ShopGridPanel is null or not found!"));
+		return;
+	}
+
+	ShopGridPanel->SetVisibility(ESlateVisibility::Visible);
+	PopulateShopGrid();
+}
+
+void UCoreMenu::PopulateShopGrid()
+{
+	if (!ShopGridPanel)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ShopGridPanel is null or not found!"));
+		return;
+	}
+
+	ShopGridPanel->ClearChildren();
+	ShopItemButtonProxies.Empty();
+
+	UDataTable* ItemDataTable = LoadObject<UDataTable>(nullptr, TEXT("/Game/ItemData/BaseItem_DT"));
+	if (!ItemDataTable)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load BaseItem_DT data table."));
+		return;
+	}
+
+	constexpr int32 NumColumns = 4;
+	int32 Index = 0;
+
+	for (const FName& RowName : ItemDataTable->GetRowNames())
+	{
+		const FBaseItemStruct* ItemRow = ItemDataTable->FindRow<FBaseItemStruct>(RowName, TEXT("CoreMenu::PopulateShopGrid"));
+		if (!ItemRow)
+		{
+			continue;
+		}
+
+		UButton* ItemButton = WidgetTree->ConstructWidget<UButton>(UButton::StaticClass());
+		UImage* ItemIcon = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+		if (!ItemButton || !ItemIcon)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed to construct shop item button/icon widgets."));
+			continue;
+		}
+
+		if (ItemRow->ItemAssetData.ItemIcon)
+		{
+			ItemIcon->SetBrushFromTexture(ItemRow->ItemAssetData.ItemIcon);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("No ItemIcon set for item: %s"), *ItemRow->ItemId.ToString());
+		}
+
+		ItemButton->AddChild(ItemIcon);
+
+		UShopItemButtonProxy* Proxy = NewObject<UShopItemButtonProxy>(this);
+		Proxy->ItemId = ItemRow->ItemId.ToString();
+		Proxy->OwningMenu = this;
+		ShopItemButtonProxies.Add(Proxy);
+		ItemButton->OnClicked.AddDynamic(Proxy, &UShopItemButtonProxy::HandleClicked);
+
+		if (UGridSlot* GridSlot = ShopGridPanel->AddChildToGrid(ItemButton, Index / NumColumns, Index % NumColumns))
+		{
+			GridSlot->SetPadding(FMargin(4.f));
+		}
+
+		++Index;
+	}
+}
+
+void UCoreMenu::OnShopItemButtonClicked(FString ItemId)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Shop item button clicked for ItemId: %s"), *ItemId);
+	SelectItemData(FText::FromString(ItemId));
 }
 
 void UCoreMenu::ValidateButton(UButton* InputButton)

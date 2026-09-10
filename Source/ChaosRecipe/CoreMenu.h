@@ -15,6 +15,7 @@ class UImage;
 class UTextBlock;
 class UVerticalBox;
 class UHorizontalBox;
+class UGridPanel;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBuyButtonClickedEvent, FString, ItemType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSellButtonClickedEvent, FString, ItemType);
@@ -42,6 +43,24 @@ public:
 	void HandleClicked();
 };
 
+// Carries an item's ItemId for a dynamically created shop grid item button, since
+// UButton::OnClicked takes no parameters and can't otherwise identify its sender.
+UCLASS()
+class UShopItemButtonProxy : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY()
+	FString ItemId;
+
+	UPROPERTY()
+	TObjectPtr<UCoreMenu> OwningMenu;
+
+	UFUNCTION()
+	void HandleClicked();
+};
+
 /**
  *
  */
@@ -51,6 +70,7 @@ class CHAOSRECIPE_API UCoreMenu : public UUserWidget
 	GENERATED_BODY()
 
 	friend class ULoadItemButtonProxy;
+	friend class UShopItemButtonProxy;
 
 public:
 
@@ -157,6 +177,10 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UButton* LoadItemButton;
 	UPROPERTY(meta = (BindWidget))
+	UButton* ShopButton;
+	UPROPERTY(meta = (BindWidget))
+	UGridPanel* ShopGridPanel;
+	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* LoadItemVertBox;
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* LoadItemHeaderBox;
@@ -210,6 +234,14 @@ protected:
 	// Click handler for a dynamically created saved-item button
 	UFUNCTION()
 	void OnSingleLoadItemButtonClicked(FString ItemUUID);
+	// Click handler for the Shop button; populates ShopGridPanel with every item in BaseItem_DT
+	UFUNCTION()
+	void OnShopButtonClicked();
+	// Click handler for a dynamically created shop grid item button
+	UFUNCTION()
+	void OnShopItemButtonClicked(FString ItemId);
+	// Clears and repopulates ShopGridPanel with an item button + icon for every row in BaseItem_DT
+	void PopulateShopGrid();
 	// Click handler for the close ("X") button that hides LoadItemHorizBox
 	UFUNCTION()
 	void OnCloseLoadItemBoxButtonClicked();
@@ -245,5 +277,9 @@ protected:
 	// Keeps the per-button proxies alive (and their click bindings valid) between repopulations.
 	UPROPERTY()
 	TArray<TObjectPtr<ULoadItemButtonProxy>> LoadItemButtonProxies;
+
+	// Keeps the per-button proxies alive (and their click bindings valid) between shop grid repopulations.
+	UPROPERTY()
+	TArray<TObjectPtr<UShopItemButtonProxy>> ShopItemButtonProxies;
 
 };
