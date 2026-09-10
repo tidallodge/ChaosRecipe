@@ -8,8 +8,10 @@
 #include "Components/Image.h"
 #include "Components/VerticalBox.h"
 #include "Components/HorizontalBox.h"
-#include "Components/GridPanel.h"
-#include "Components/GridSlot.h"
+#include "Components/UniformGridPanel.h"
+#include "Components/UniformGridSlot.h"
+#include "Components/SizeBox.h"
+#include "Components/ButtonSlot.h"
 #include "Blueprint/WidgetTree.h"
 #include "Engine/DataTable.h"
 #include "Engine/Engine.h"
@@ -63,6 +65,8 @@ void UCoreMenu::NativeConstruct()
 	SaveItemButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSaveItemButtonClicked);
 	LoadItemButton->OnClicked.AddDynamic(this, &UCoreMenu::OnLoadItemButtonClicked);
 	ShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnShopButtonClicked);
+
+	TempShopButtons->SetVisibility(ESlateVisibility::Collapsed);
 
 	PlayerSwordCount = 1;
 	PlayerMoneyCount = 20;
@@ -661,25 +665,32 @@ void UCoreMenu::OnShopButtonClicked()
 {
 	UE_LOG(LogTemp, Warning, TEXT("ShopButton Clicked."));
 
-	if (!ShopGridPanel)
+	if (!ShopUniGrid)
 	{
-		UE_LOG(LogTemp, Error, TEXT("ShopGridPanel is null or not found!"));
+		UE_LOG(LogTemp, Error, TEXT("ShopUniGrid is null or not found!"));
 		return;
 	}
 
-	ShopGridPanel->SetVisibility(ESlateVisibility::Visible);
+	if (ShopUniGrid->GetVisibility() == ESlateVisibility::Visible)
+	{
+		ShopUniGrid->SetVisibility(ESlateVisibility::Collapsed);
+		return;
+	}
+
+	ShopUniGrid->SetVisibility(ESlateVisibility::Visible);
 	PopulateShopGrid();
 }
 
 void UCoreMenu::PopulateShopGrid()
 {
-	if (!ShopGridPanel)
+	if (!ShopUniGrid)
 	{
-		UE_LOG(LogTemp, Error, TEXT("ShopGridPanel is null or not found!"));
+		UE_LOG(LogTemp, Error, TEXT("ShopUniGrid is null or not found!"));
 		return;
 	}
 
-	ShopGridPanel->ClearChildren();
+	ShopUniGrid->ClearChildren();
+	ShopUniGrid->SetSlotPadding(FMargin(4.f));
 	ShopItemButtonProxies.Empty();
 
 	UDataTable* ItemDataTable = LoadObject<UDataTable>(nullptr, TEXT("/Game/ItemData/BaseItem_DT"));
@@ -690,6 +701,7 @@ void UCoreMenu::PopulateShopGrid()
 	}
 
 	constexpr int32 NumColumns = 4;
+	constexpr float ShopItemSlotSize = 256.f;
 	int32 Index = 0;
 
 	for (const FName& RowName : ItemDataTable->GetRowNames())
@@ -702,11 +714,18 @@ void UCoreMenu::PopulateShopGrid()
 
 		UButton* ItemButton = WidgetTree->ConstructWidget<UButton>(UButton::StaticClass());
 		UImage* ItemIcon = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
-		if (!ItemButton || !ItemIcon)
+		USizeBox* ItemSlotBox = WidgetTree->ConstructWidget<USizeBox>(USizeBox::StaticClass());
+		if (!ItemButton || !ItemIcon || !ItemSlotBox)
 		{
 			UE_LOG(LogTemp, Error, TEXT("Failed to construct shop item button/icon widgets."));
 			continue;
 		}
+
+		// Forcing the size here (rather than on the icon alone) guarantees every
+		// uniform grid cell is exactly ShopItemSlotSize, since UUniformGridPanel
+		// sizes all cells to match the largest child added to the grid.
+		ItemSlotBox->SetWidthOverride(ShopItemSlotSize);
+		ItemSlotBox->SetHeightOverride(ShopItemSlotSize);
 
 		if (ItemRow->ItemAssetData.ItemIcon)
 		{
@@ -717,7 +736,14 @@ void UCoreMenu::PopulateShopGrid()
 			UE_LOG(LogTemp, Warning, TEXT("No ItemIcon set for item: %s"), *ItemRow->ItemId.ToString());
 		}
 
-		ItemButton->AddChild(ItemIcon);
+		// UButtonSlot defaults to Center/Center, which would leave the icon at its
+		// native brush resolution instead of filling the slot; force it to Fill.
+		if (UButtonSlot* ButtonContentSlot = Cast<UButtonSlot>(ItemButton->AddChild(ItemIcon)))
+		{
+			ButtonContentSlot->SetHorizontalAlignment(HAlign_Fill);
+			ButtonContentSlot->SetVerticalAlignment(VAlign_Fill);
+		}
+		ItemSlotBox->AddChild(ItemButton);
 
 		UShopItemButtonProxy* Proxy = NewObject<UShopItemButtonProxy>(this);
 		Proxy->ItemId = ItemRow->ItemId.ToString();
@@ -725,10 +751,7 @@ void UCoreMenu::PopulateShopGrid()
 		ShopItemButtonProxies.Add(Proxy);
 		ItemButton->OnClicked.AddDynamic(Proxy, &UShopItemButtonProxy::HandleClicked);
 
-		if (UGridSlot* GridSlot = ShopGridPanel->AddChildToGrid(ItemButton, Index / NumColumns, Index % NumColumns))
-		{
-			GridSlot->SetPadding(FMargin(4.f));
-		}
+		ShopUniGrid->AddChildToUniformGrid(ItemSlotBox, Index / NumColumns, Index % NumColumns);
 
 		++Index;
 	}

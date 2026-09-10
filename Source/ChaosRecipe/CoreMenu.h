@@ -15,7 +15,7 @@ class UImage;
 class UTextBlock;
 class UVerticalBox;
 class UHorizontalBox;
-class UGridPanel;
+class UUniformGridPanel;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBuyButtonClickedEvent, FString, ItemType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSellButtonClickedEvent, FString, ItemType);
@@ -179,13 +179,15 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UButton* ShopButton;
 	UPROPERTY(meta = (BindWidget))
-	UGridPanel* ShopGridPanel;
+	UUniformGridPanel* ShopUniGrid;
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* LoadItemVertBox;
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* LoadItemHeaderBox;
 	UPROPERTY(meta = (BindWidget))
 	UHorizontalBox* LoadItemHorizBox;
+	UPROPERTY(meta = (BindWidget))
+	UHorizontalBox* TempShopButtons;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ActiveItemTextBox;
 
@@ -234,13 +236,13 @@ protected:
 	// Click handler for a dynamically created saved-item button
 	UFUNCTION()
 	void OnSingleLoadItemButtonClicked(FString ItemUUID);
-	// Click handler for the Shop button; populates ShopGridPanel with every item in BaseItem_DT
+	// Click handler for the Shop button; populates ShopUniGrid with every item in BaseItem_DT
 	UFUNCTION()
 	void OnShopButtonClicked();
 	// Click handler for a dynamically created shop grid item button
 	UFUNCTION()
 	void OnShopItemButtonClicked(FString ItemId);
-	// Clears and repopulates ShopGridPanel with an item button + icon for every row in BaseItem_DT
+	// Clears and repopulates ShopUniGrid with an item button + icon for every row in BaseItem_DT
 	void PopulateShopGrid();
 	// Click handler for the close ("X") button that hides LoadItemHorizBox
 	UFUNCTION()
