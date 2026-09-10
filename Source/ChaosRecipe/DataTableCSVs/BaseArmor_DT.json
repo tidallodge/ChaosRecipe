@@ -31,7 +31,7 @@
 				"LocalFlatPhysDamage": false,
 				"LocalPercentPhysDamage": false,
 				"LocalFlatFireDamage": false,
-				"LocalFlatColdDamage": false,
+				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
 				"LocalFlatPoisonDamage": false,
 				"LocalAttackRate": false,
@@ -56,7 +56,7 @@
 			"GlobalModifierBuckets":
 			{
 				"FireResist": false,
-				"ColdResist": false,
+				"IceResist": false,
 				"ElectricResist": false,
 				"PoisonResist": false,
 				"GlobalAllSkills": false,
@@ -96,7 +96,7 @@
 				"LocalFlatPhysDamage": false,
 				"LocalPercentPhysDamage": false,
 				"LocalFlatFireDamage": false,
-				"LocalFlatColdDamage": false,
+				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
 				"LocalFlatPoisonDamage": false,
 				"LocalAttackRate": false,
@@ -121,7 +121,7 @@
 			"GlobalModifierBuckets":
 			{
 				"FireResist": false,
-				"ColdResist": false,
+				"IceResist": false,
 				"ElectricResist": false,
 				"PoisonResist": false,
 				"GlobalAllSkills": false,
@@ -161,7 +161,7 @@
 				"LocalFlatPhysDamage": false,
 				"LocalPercentPhysDamage": false,
 				"LocalFlatFireDamage": false,
-				"LocalFlatColdDamage": false,
+				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
 				"LocalFlatPoisonDamage": false,
 				"LocalAttackRate": false,
@@ -186,7 +186,7 @@
 			"GlobalModifierBuckets":
 			{
 				"FireResist": false,
-				"ColdResist": false,
+				"IceResist": false,
 				"ElectricResist": false,
 				"PoisonResist": false,
 				"GlobalAllSkills": false,
@@ -226,7 +226,7 @@
 				"LocalFlatPhysDamage": false,
 				"LocalPercentPhysDamage": false,
 				"LocalFlatFireDamage": false,
-				"LocalFlatColdDamage": false,
+				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
 				"LocalFlatPoisonDamage": false,
 				"LocalAttackRate": false,
@@ -251,7 +251,7 @@
 			"GlobalModifierBuckets":
 			{
 				"FireResist": false,
-				"ColdResist": false,
+				"IceResist": false,
 				"ElectricResist": false,
 				"PoisonResist": false,
 				"GlobalAllSkills": false,
@@ -291,7 +291,7 @@
 				"LocalFlatPhysDamage": false,
 				"LocalPercentPhysDamage": false,
 				"LocalFlatFireDamage": false,
-				"LocalFlatColdDamage": false,
+				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
 				"LocalFlatPoisonDamage": false,
 				"LocalAttackRate": false,
@@ -316,7 +316,7 @@
 			"GlobalModifierBuckets":
 			{
 				"FireResist": false,
-				"ColdResist": false,
+				"IceResist": false,
 				"ElectricResist": false,
 				"PoisonResist": false,
 				"GlobalAllSkills": false,

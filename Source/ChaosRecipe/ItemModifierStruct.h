@@ -41,7 +41,7 @@ enum class EModifierOperator : uint8
 //     bool LocalFlatFireDamage;
 
 //     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool LocalFlatColdDamage;
+//     bool LocalFlatIceDamage;
 
 //     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
 //     bool LocalFlatElectricDamage;
@@ -104,7 +104,7 @@ enum class EModifierOperator : uint8
 //     bool FireResist;
 
 //     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool ColdResist;
+//     bool IceResist;
 
 //     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
 //     bool ElectricResist;
