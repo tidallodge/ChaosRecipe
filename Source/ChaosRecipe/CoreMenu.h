@@ -181,6 +181,8 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UUniformGridPanel* ShopUniGrid;
 	UPROPERTY(meta = (BindWidget))
+	UHorizontalBox* ShopWindowHeader;
+	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* LoadItemVertBox;
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* LoadItemHeaderBox;

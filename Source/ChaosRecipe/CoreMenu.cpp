@@ -674,10 +674,18 @@ void UCoreMenu::OnShopButtonClicked()
 	if (ShopUniGrid->GetVisibility() == ESlateVisibility::Visible)
 	{
 		ShopUniGrid->SetVisibility(ESlateVisibility::Collapsed);
+		if (ShopWindowHeader)
+		{
+			ShopWindowHeader->SetVisibility(ESlateVisibility::Collapsed);
+		}
 		return;
 	}
 
 	ShopUniGrid->SetVisibility(ESlateVisibility::Visible);
+	if (ShopWindowHeader)
+	{
+		ShopWindowHeader->SetVisibility(ESlateVisibility::Visible);
+	}
 	PopulateShopGrid();
 }
 
