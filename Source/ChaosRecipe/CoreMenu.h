@@ -16,6 +16,7 @@ class UTextBlock;
 class UVerticalBox;
 class UHorizontalBox;
 class UUniformGridPanel;
+class UDataTable;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBuyButtonClickedEvent, FString, ItemType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSellButtonClickedEvent, FString, ItemType);
@@ -127,6 +128,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void ClearSelectedItemUUID() { SelectedItemUUID.Empty(); }
 
+	UPROPERTY()
+	TArray<FName> ItemDataTableRowNames;
+
+	UPROPERTY()
+	TArray<FName> CurrentShopItems;
+
 protected:
 	virtual void NativeConstruct() override;
 
@@ -178,6 +185,8 @@ protected:
 	UButton* LoadItemButton;
 	UPROPERTY(meta = (BindWidget))
 	UButton* ShopButton;
+	UPROPERTY(meta = (BindWidget))
+	UButton* RandomizeShopButton;
 	UPROPERTY(meta = (BindWidget))
 	UUniformGridPanel* ShopUniGrid;
 	UPROPERTY(meta = (BindWidget))
@@ -241,6 +250,9 @@ protected:
 	// Click handler for the Shop button; populates ShopUniGrid with every item in BaseItem_DT
 	UFUNCTION()
 	void OnShopButtonClicked();
+	// Click handler for the Randomize Shop button
+	UFUNCTION()
+	void OnRandomizeShopButtonClicked();
 	// Click handler for a dynamically created shop grid item button
 	UFUNCTION()
 	void OnShopItemButtonClicked(FString ItemId);
@@ -255,11 +267,24 @@ protected:
 	UFUNCTION()
 	void ValidateButton(UButton* InputButton);
 
+	UFUNCTION()
+	void RandomizeShopItems();
+
+	UPROPERTY()
+	int32 ShopItemCount = 8;
+
+	UPROPERTY()
+	int32 ItemDataTableRowCount;
+
 	UPROPERTY()
 	int32 Cost = 5;
 
 	UPROPERTY()
 	FString ItemType = TEXT("Sword");
+
+	// Shared reference to BaseItem_DT, loaded once in NativeConstruct.
+	UPROPERTY()
+	UDataTable* ItemDataTable;
 
 	UPROPERTY()
 	FBaseItemStruct SelectedItemData;

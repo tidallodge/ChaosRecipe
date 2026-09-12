@@ -36,6 +36,18 @@ void UCoreMenu::NativeConstruct()
 		UE_LOG(LogTemp, Warning, TEXT("Failed to get OwningPlayer PlayerController!"));
 	}
 
+	ItemDataTable = LoadObject<UDataTable>(nullptr, TEXT("/Game/ItemData/BaseItem_DT"));
+	if (ItemDataTable)
+	{
+		ItemDataTableRowNames = ItemDataTable->GetRowNames();
+		ItemDataTableRowCount = ItemDataTable->GetRowMap().Num();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load BaseItem_DT data table."));
+	}
+
+
     ValidateButton(BuyButton);
     ValidateButton(SellButton);
     ValidateButton(Item1);
@@ -50,6 +62,7 @@ void UCoreMenu::NativeConstruct()
     ValidateButton(SaveItemButton);
     ValidateButton(LoadItemButton);
     ValidateButton(ShopButton);
+    ValidateButton(RandomizeShopButton);
 
 	BuyButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBuyButtonClicked);
 	SellButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSellButtonClicked);
@@ -65,6 +78,7 @@ void UCoreMenu::NativeConstruct()
 	SaveItemButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSaveItemButtonClicked);
 	LoadItemButton->OnClicked.AddDynamic(this, &UCoreMenu::OnLoadItemButtonClicked);
 	ShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnShopButtonClicked);
+	RandomizeShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeShopButtonClicked);
 
 	TempShopButtons->SetVisibility(ESlateVisibility::Collapsed);
 
@@ -226,14 +240,13 @@ void UCoreMenu::OnSelectScholarsRobeButtonClicked()
 
 void UCoreMenu::SelectItemData(const FText& ItemIdText)
 {
-	UDataTable* ItemDataTable = LoadObject<UDataTable>(nullptr, TEXT("/Game/ItemData/BaseItem_DT"));
 	if (!ItemDataTable)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to load BaseItem_DT data table."));
+		UE_LOG(LogTemp, Error, TEXT("BaseItem_DT data table is not loaded."));
 		bHasSelectedItemData = false;
 		return;
 	}
-	
+
 	const FString SearchText = ItemIdText.ToString();
 	TArray<FName> RowNames = ItemDataTable->GetRowNames();
 	for (const FName& RowName : RowNames)
@@ -424,7 +437,7 @@ void UCoreMenu::OnSingleLoadItemButtonClicked(FString ItemUUID)
 
 	// Item display name comes from BaseItem_DT (the saved JSON only stores the ItemId).
 	FString ItemName = ItemId;
-	if (UDataTable* ItemDataTable = LoadObject<UDataTable>(nullptr, TEXT("/Game/ItemData/BaseItem_DT")))
+	if (ItemDataTable)
 	{
 		for (const FName& RowName : ItemDataTable->GetRowNames())
 		{
@@ -689,6 +702,12 @@ void UCoreMenu::OnShopButtonClicked()
 	PopulateShopGrid();
 }
 
+void UCoreMenu::OnRandomizeShopButtonClicked()
+{
+	UE_LOG(LogTemp, Warning, TEXT("RandomizeShopButton Clicked."));
+	RandomizeShopItems();
+}
+
 void UCoreMenu::PopulateShopGrid()
 {
 	if (!ShopUniGrid)
@@ -701,10 +720,16 @@ void UCoreMenu::PopulateShopGrid()
 	ShopUniGrid->SetSlotPadding(FMargin(4.f));
 	ShopItemButtonProxies.Empty();
 
-	UDataTable* ItemDataTable = LoadObject<UDataTable>(nullptr, TEXT("/Game/ItemData/BaseItem_DT"));
 	if (!ItemDataTable)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to load BaseItem_DT data table."));
+		UE_LOG(LogTemp, Error, TEXT("BaseItem_DT data table is not loaded."));
+		return;
+	}
+
+	UClass* SingleImageButtonClass = LoadClass<UUserWidget>(nullptr, TEXT("/Game/WBP_SingleImageButton.WBP_SingleImageButton_C"));
+	if (!SingleImageButtonClass)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load WBP_SingleImageButton class."));
 		return;
 	}
 
@@ -712,7 +737,7 @@ void UCoreMenu::PopulateShopGrid()
 	constexpr float ShopItemSlotSize = 256.f;
 	int32 Index = 0;
 
-	for (const FName& RowName : ItemDataTable->GetRowNames())
+	for (const FName& RowName : CurrentShopItems)
 	{
 		const FBaseItemStruct* ItemRow = ItemDataTable->FindRow<FBaseItemStruct>(RowName, TEXT("CoreMenu::PopulateShopGrid"));
 		if (!ItemRow)
@@ -720,12 +745,11 @@ void UCoreMenu::PopulateShopGrid()
 			continue;
 		}
 
-		UButton* ItemButton = WidgetTree->ConstructWidget<UButton>(UButton::StaticClass());
-		UImage* ItemIcon = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+		UUserWidget* ShopItemWidget = CreateWidget<UUserWidget>(this, SingleImageButtonClass);
 		USizeBox* ItemSlotBox = WidgetTree->ConstructWidget<USizeBox>(USizeBox::StaticClass());
-		if (!ItemButton || !ItemIcon || !ItemSlotBox)
+		if (!ShopItemWidget || !ItemSlotBox)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Failed to construct shop item button/icon widgets."));
+			UE_LOG(LogTemp, Error, TEXT("Failed to construct WBP_SingleImageButton/SizeBox for shop item."));
 			continue;
 		}
 
@@ -735,29 +759,47 @@ void UCoreMenu::PopulateShopGrid()
 		ItemSlotBox->SetWidthOverride(ShopItemSlotSize);
 		ItemSlotBox->SetHeightOverride(ShopItemSlotSize);
 
-		if (ItemRow->ItemAssetData.ItemIcon)
+		if (FObjectProperty* IconProp = FindFProperty<FObjectProperty>(ShopItemWidget->GetClass(), TEXT("SingleImageButtonIcon")))
 		{
-			ItemIcon->SetBrushFromTexture(ItemRow->ItemAssetData.ItemIcon);
+			if (UImage* SingleImageButtonIcon = Cast<UImage>(IconProp->GetPropertyValue_InContainer(ShopItemWidget)))
+			{
+				if (ItemRow->ItemAssetData.ItemIcon)
+				{
+					SingleImageButtonIcon->SetBrushFromTexture(ItemRow->ItemAssetData.ItemIcon);
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("No ItemIcon set for item: %s"), *ItemRow->ItemId.ToString());
+				}
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("SingleImageButtonIcon resolved to a null/non-Image widget."));
+			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("No ItemIcon set for item: %s"), *ItemRow->ItemId.ToString());
+			UE_LOG(LogTemp, Warning, TEXT("SingleImageButtonIcon property not found on WBP_SingleImageButton."));
 		}
 
-		// UButtonSlot defaults to Center/Center, which would leave the icon at its
-		// native brush resolution instead of filling the slot; force it to Fill.
-		if (UButtonSlot* ButtonContentSlot = Cast<UButtonSlot>(ItemButton->AddChild(ItemIcon)))
+		UButton* InnerButton = nullptr;
+		if (FObjectProperty* ButtonProp = FindFProperty<FObjectProperty>(ShopItemWidget->GetClass(), TEXT("SingleImageButton")))
 		{
-			ButtonContentSlot->SetHorizontalAlignment(HAlign_Fill);
-			ButtonContentSlot->SetVerticalAlignment(VAlign_Fill);
+			InnerButton = Cast<UButton>(ButtonProp->GetPropertyValue_InContainer(ShopItemWidget));
 		}
-		ItemSlotBox->AddChild(ItemButton);
+		if (!InnerButton)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SingleImageButton property not found on WBP_SingleImageButton."));
+			continue;
+		}
+
+		ItemSlotBox->AddChild(ShopItemWidget);
 
 		UShopItemButtonProxy* Proxy = NewObject<UShopItemButtonProxy>(this);
 		Proxy->ItemId = ItemRow->ItemId.ToString();
 		Proxy->OwningMenu = this;
 		ShopItemButtonProxies.Add(Proxy);
-		ItemButton->OnClicked.AddDynamic(Proxy, &UShopItemButtonProxy::HandleClicked);
+		InnerButton->OnClicked.AddDynamic(Proxy, &UShopItemButtonProxy::HandleClicked);
 
 		ShopUniGrid->AddChildToUniformGrid(ItemSlotBox, Index / NumColumns, Index % NumColumns);
 
@@ -780,6 +822,29 @@ void UCoreMenu::ValidateButton(UButton* InputButton)
 	}
 
 	UE_LOG(LogTemp, Warning, TEXT("Found button: %s"), *InputButton->GetName());
+}
+
+void UCoreMenu::RandomizeShopItems()
+{
+	CurrentShopItems.Empty();
+
+	ShopItemCount = FMath::RandRange(6,12);
+
+	for (int32 i = 0; i < ShopItemCount; i++)
+	{
+		int32 RandomItemRowName = FMath::RandRange(1, ItemDataTableRowCount);
+		RandomItemRowName -= 1;
+		CurrentShopItems.Add(ItemDataTableRowNames[RandomItemRowName]);
+	}
+
+	FString ShopItemsLog;
+	for (const FName& RowName : CurrentShopItems)
+	{
+		ShopItemsLog += RowName.ToString() + TEXT("\n");
+	}
+	LogToScreen(ShopItemsLog);
+
+	PopulateShopGrid();
 }
 
 void UCoreMenu::UpdateSwordCount(int32 PlayerSwords)
