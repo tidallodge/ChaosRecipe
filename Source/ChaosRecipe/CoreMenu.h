@@ -159,13 +159,9 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UHorizontalBox* ShopWindowHeader;
 	UPROPERTY(meta = (BindWidget))
-	UVerticalBox* LoadItemVertBox;
-	UPROPERTY(meta = (BindWidget))
-	UVerticalBox* LoadItemHeaderBox;
-	UPROPERTY(meta = (BindWidget))
-	UHorizontalBox* LoadItemHorizBox;
-	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ActiveItemTextBox;
+	UPROPERTY(meta = (BindWidget))
+	UUniformGridPanel* PlayerStashUniGrid;
 
 	// Click handler for SellButton
 	UFUNCTION()
@@ -202,11 +198,8 @@ protected:
 	void OnShopItemButtonClicked(FString ItemId);
 	// Clears and repopulates ShopUniGrid with an item button + icon for every row in BaseItem_DT
 	void PopulateShopGrid();
-	// Click handler for the close ("X") button that hides LoadItemHorizBox
-	UFUNCTION()
-	void OnCloseLoadItemBoxButtonClicked();
-	// Creates the "X" close button in LoadItemHeaderBox
-	void CreateCloseLoadItemButton();
+	// Clears and repopulates PlayerStashUniGrid with a WBP_SingleImageButton for every saved item (via ItemInstanceManager)
+	void PopulatePlayerStash();
 
 	UFUNCTION()
 	void ValidateButton(UButton* InputButton);
@@ -243,16 +236,12 @@ protected:
 	UPROPERTY()
 	bool bHasSelectedItemData = false;
 
-	// Guards against creating the "X" close button more than once across repeated LoadItem clicks.
-	UPROPERTY()
-	bool bCloseLoadItemButtonCreated = false;
-
-	// Keeps the per-button proxies alive (and their click bindings valid) between repopulations.
-	UPROPERTY()
-	TArray<TObjectPtr<ULoadItemButtonProxy>> LoadItemButtonProxies;
-
 	// Keeps the per-button proxies alive (and their click bindings valid) between shop grid repopulations.
 	UPROPERTY()
 	TArray<TObjectPtr<UShopItemButtonProxy>> ShopItemButtonProxies;
+
+	// Keeps the per-button proxies alive (and their click bindings valid) between player stash repopulations.
+	UPROPERTY()
+	TArray<TObjectPtr<ULoadItemButtonProxy>> PlayerStashButtonProxies;
 
 };

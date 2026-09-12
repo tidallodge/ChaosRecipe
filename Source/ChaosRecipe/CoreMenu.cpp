@@ -17,6 +17,7 @@
 #include "Engine/Engine.h"
 #include "Engine/Texture2D.h"
 #include "BaseItemStruct.h"
+#include "ItemInstanceManager.h"
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
@@ -73,6 +74,7 @@ void UCoreMenu::NativeConstruct()
 	UpdateSwordCount(PlayerSwordCount);
 	UpdatePlayerMoney(PlayerMoneyCount);
 
+	PopulatePlayerStash();
 }
 
 void UCoreMenu::OnSellButtonClicked()
@@ -183,46 +185,6 @@ void UCoreMenu::OnSaveItemButtonClicked()
 		return;
 	}
 	OnSaveItemButtonClickedEvent.Broadcast(SelectedItemId);
-}
-
-static TArray<FString> GetAllSavedItemUUIDs()
-{
-	TArray<FString> OutUUIDs;
-	const FString SaveFilePath = FPaths::ProjectSavedDir() / TEXT("SavedItems.json");
-
-	FString InputString;
-	if (!FFileHelper::LoadFileToString(InputString, *SaveFilePath))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to load SavedItems.json at %s"), *SaveFilePath);
-		return OutUUIDs;
-	}
-
-	TSharedPtr<FJsonObject> RootObject;
-	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(InputString);
-	if (!FJsonSerializer::Deserialize(Reader, RootObject) || !RootObject.IsValid())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to parse SavedItems.json"));
-		return OutUUIDs;
-	}
-
-	const TArray<TSharedPtr<FJsonValue>>* ItemsArray;
-	if (!RootObject->TryGetArrayField(TEXT("Items"), ItemsArray))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("SavedItems.json has no items."));
-		return OutUUIDs;
-	}
-
-	for (const TSharedPtr<FJsonValue>& ItemValue : *ItemsArray)
-	{
-		const TSharedPtr<FJsonObject>* ItemObject;
-		FString ItemUUID;
-		if (ItemValue->TryGetObject(ItemObject) && (*ItemObject)->TryGetStringField(TEXT("UUID"), ItemUUID) && !ItemUUID.IsEmpty())
-		{
-			OutUUIDs.Add(ItemUUID);
-		}
-	}
-
-	return OutUUIDs;
 }
 
 static bool GetSavedItemJsonByUUID(const FString& UUID, TSharedPtr<FJsonObject>& OutItemObject)
@@ -373,156 +335,125 @@ void UCoreMenu::OnLoadItemButtonClicked()
 {
 	UE_LOG(LogTemp, Warning, TEXT("LoadItemButton Clicked."));
 
-	if (!LoadItemVertBox)
+	PopulatePlayerStash();
+}
+
+void UCoreMenu::PopulatePlayerStash()
+{
+	if (!PlayerStashUniGrid)
 	{
-		UE_LOG(LogTemp, Error, TEXT("LoadItemVertBox is null or not found!"));
+		UE_LOG(LogTemp, Error, TEXT("PlayerStashUniGrid is null or not found!"));
 		return;
 	}
 
-	if (LoadItemHorizBox)
-	{
-		LoadItemHorizBox->SetVisibility(ESlateVisibility::Visible);
-	}
+	PlayerStashUniGrid->ClearChildren();
+	PlayerStashUniGrid->SetSlotPadding(FMargin(4.f));
+	PlayerStashButtonProxies.Empty();
 
-	if (!bCloseLoadItemButtonCreated)
+	if (!ItemDataTable)
 	{
-		CreateCloseLoadItemButton();
-		bCloseLoadItemButtonCreated = true;
-	}
-
-	LoadItemVertBox->ClearChildren();
-	LoadItemButtonProxies.Empty();
-
-	const TArray<FString> SavedUUIDs = GetAllSavedItemUUIDs();
-	if (SavedUUIDs.Num() == 0)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No saved item UUIDs found."));
+		UE_LOG(LogTemp, Error, TEXT("BaseItem_DT data table is not loaded."));
 		return;
 	}
 
-	UClass* SingleButtonClass = LoadClass<UUserWidget>(nullptr, TEXT("/Game/WBP_SingleButton.WBP_SingleButton_C"));
-	if (!SingleButtonClass)
+	UClass* SingleImageButtonClass = LoadClass<UUserWidget>(nullptr, TEXT("/Game/WBP_SingleImageButton.WBP_SingleImageButton_C"));
+	if (!SingleImageButtonClass)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to load WBP_SingleButton class."));
+		UE_LOG(LogTemp, Error, TEXT("Failed to load WBP_SingleImageButton class."));
 		return;
 	}
 
-	for (const FString& UUID : SavedUUIDs)
+	constexpr int32 NumColumns = 3;
+	constexpr float StashItemSlotSize = 64.f;
+	int32 Index = 0;
+
+	ItemInstanceManager StashManager;
+
+	for (const TPair<FString, TSharedPtr<FJsonObject>>& SavedItem : StashManager.GetSavedItems())
 	{
-		UUserWidget* NewSingleButton = CreateWidget<UUserWidget>(this, SingleButtonClass);
-		if (!NewSingleButton)
+		FString ItemId;
+		if (SavedItem.Value.IsValid())
 		{
-			UE_LOG(LogTemp, Error, TEXT("Failed to create WBP_SingleButton widget instance."));
+			SavedItem.Value->TryGetStringField(TEXT("ItemId"), ItemId);
+		}
+
+		const FBaseItemStruct* ItemRow = nullptr;
+		for (const FName& RowName : ItemDataTable->GetRowNames())
+		{
+			const FBaseItemStruct* CandidateRow = ItemDataTable->FindRow<FBaseItemStruct>(RowName, TEXT("CoreMenu::PopulatePlayerStash"));
+			if (CandidateRow && CandidateRow->ItemId.ToString().Equals(ItemId, ESearchCase::IgnoreCase))
+			{
+				ItemRow = CandidateRow;
+				break;
+			}
+		}
+
+		if (!ItemRow)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("No BaseItem_DT row found for saved ItemId: %s"), *ItemId);
 			continue;
 		}
 
-		if (FObjectProperty* TextBlockProp = FindFProperty<FObjectProperty>(NewSingleButton->GetClass(), TEXT("SingleButtonText")))
+		UUserWidget* StashItemWidget = CreateWidget<UUserWidget>(this, SingleImageButtonClass);
+		USizeBox* ItemSlotBox = WidgetTree->ConstructWidget<USizeBox>(USizeBox::StaticClass());
+		if (!StashItemWidget || !ItemSlotBox)
 		{
-			if (UTextBlock* SingleButtonTextBlock = Cast<UTextBlock>(TextBlockProp->GetPropertyValue_InContainer(NewSingleButton)))
+			UE_LOG(LogTemp, Error, TEXT("Failed to construct WBP_SingleImageButton/SizeBox for stash item."));
+			continue;
+		}
+
+		// Forcing the size here (rather than on the icon alone) guarantees every
+		// uniform grid cell is exactly StashItemSlotSize, since UUniformGridPanel
+		// sizes all cells to match the largest child added to the grid.
+		ItemSlotBox->SetWidthOverride(StashItemSlotSize);
+		ItemSlotBox->SetHeightOverride(StashItemSlotSize);
+
+		if (FObjectProperty* IconProp = FindFProperty<FObjectProperty>(StashItemWidget->GetClass(), TEXT("SingleImageButtonIcon")))
+		{
+			if (UImage* SingleImageButtonIcon = Cast<UImage>(IconProp->GetPropertyValue_InContainer(StashItemWidget)))
 			{
-				SingleButtonTextBlock->SetText(FText::FromString(UUID));
+				if (ItemRow->ItemAssetData.ItemIcon)
+				{
+					SingleImageButtonIcon->SetBrushFromTexture(ItemRow->ItemAssetData.ItemIcon);
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("No ItemIcon set for item: %s"), *ItemRow->ItemId.ToString());
+				}
 			}
 			else
 			{
-				UE_LOG(LogTemp, Warning, TEXT("SingleButtonText resolved to a null/non-TextBlock widget."));
+				UE_LOG(LogTemp, Warning, TEXT("SingleImageButtonIcon resolved to a null/non-Image widget."));
 			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("SingleButtonText property not found on WBP_SingleButton."));
+			UE_LOG(LogTemp, Warning, TEXT("SingleImageButtonIcon property not found on WBP_SingleImageButton."));
 		}
 
-		if (FObjectProperty* ButtonProp = FindFProperty<FObjectProperty>(NewSingleButton->GetClass(), TEXT("SingleButton")))
+		UButton* InnerButton = nullptr;
+		if (FObjectProperty* ButtonProp = FindFProperty<FObjectProperty>(StashItemWidget->GetClass(), TEXT("SingleImageButton")))
 		{
-			if (UButton* InnerButton = Cast<UButton>(ButtonProp->GetPropertyValue_InContainer(NewSingleButton)))
-			{
-				ULoadItemButtonProxy* Proxy = NewObject<ULoadItemButtonProxy>(this);
-				Proxy->ItemUUID = UUID;
-				Proxy->OwningMenu = this;
-				LoadItemButtonProxies.Add(Proxy);
-
-				InnerButton->OnClicked.AddDynamic(Proxy, &ULoadItemButtonProxy::HandleClicked);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("SingleButton resolved to a null/non-Button widget."));
-			}
+			InnerButton = Cast<UButton>(ButtonProp->GetPropertyValue_InContainer(StashItemWidget));
 		}
-		else
+		if (!InnerButton)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("SingleButton property not found on WBP_SingleButton."));
+			UE_LOG(LogTemp, Warning, TEXT("SingleImageButton property not found on WBP_SingleImageButton."));
+			continue;
 		}
 
-		LoadItemVertBox->AddChildToVerticalBox(NewSingleButton);
-	}
-}
+		ItemSlotBox->AddChild(StashItemWidget);
 
-void UCoreMenu::OnCloseLoadItemBoxButtonClicked()
-{
-	if (!LoadItemHorizBox)
-	{
-		UE_LOG(LogTemp, Error, TEXT("LoadItemHorizBox is null or not found!"));
-		return;
-	}
+		ULoadItemButtonProxy* Proxy = NewObject<ULoadItemButtonProxy>(this);
+		Proxy->ItemUUID = SavedItem.Key;
+		Proxy->OwningMenu = this;
+		PlayerStashButtonProxies.Add(Proxy);
+		InnerButton->OnClicked.AddDynamic(Proxy, &ULoadItemButtonProxy::HandleClicked);
 
-	LoadItemHorizBox->SetVisibility(ESlateVisibility::Collapsed);
-}
+		PlayerStashUniGrid->AddChildToUniformGrid(ItemSlotBox, Index / NumColumns, Index % NumColumns);
 
-void UCoreMenu::CreateCloseLoadItemButton()
-{
-	if (!LoadItemHeaderBox)
-	{
-		UE_LOG(LogTemp, Error, TEXT("LoadItemHeaderBox is null or not found!"));
-		return;
+		++Index;
 	}
-
-	UClass* SingleButtonClass = LoadClass<UUserWidget>(nullptr, TEXT("/Game/WBP_SingleButton.WBP_SingleButton_C"));
-	if (!SingleButtonClass)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to load WBP_SingleButton class."));
-		return;
-	}
-
-	UUserWidget* CloseButtonWidget = CreateWidget<UUserWidget>(this, SingleButtonClass);
-	if (!CloseButtonWidget)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to create WBP_SingleButton widget instance."));
-		return;
-	}
-
-	if (FObjectProperty* TextBlockProp = FindFProperty<FObjectProperty>(CloseButtonWidget->GetClass(), TEXT("SingleButtonText")))
-	{
-		if (UTextBlock* CloseButtonTextBlock = Cast<UTextBlock>(TextBlockProp->GetPropertyValue_InContainer(CloseButtonWidget)))
-		{
-			CloseButtonTextBlock->SetText(FText::FromString(TEXT("X")));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("SingleButtonText resolved to a null/non-TextBlock widget."));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("SingleButtonText property not found on WBP_SingleButton."));
-	}
-
-	if (FObjectProperty* ButtonProp = FindFProperty<FObjectProperty>(CloseButtonWidget->GetClass(), TEXT("SingleButton")))
-	{
-		if (UButton* InnerButton = Cast<UButton>(ButtonProp->GetPropertyValue_InContainer(CloseButtonWidget)))
-		{
-			InnerButton->OnClicked.AddDynamic(this, &UCoreMenu::OnCloseLoadItemBoxButtonClicked);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("SingleButton resolved to a null/non-Button widget."));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("SingleButton property not found on WBP_SingleButton."));
-	}
-
-	LoadItemHeaderBox->AddChildToVerticalBox(CloseButtonWidget);
 }
 
 void UShopItemButtonProxy::HandleClicked()
