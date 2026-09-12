@@ -50,13 +50,6 @@ void UCoreMenu::NativeConstruct()
 
     ValidateButton(BuyButton);
     ValidateButton(SellButton);
-    ValidateButton(Item1);
-    ValidateButton(Item2);
-    ValidateButton(Item3);
-    ValidateButton(Item4);
-    ValidateButton(Item5);
-    ValidateButton(Item6);
-    ValidateButton(Item7);
     ValidateButton(ItemInfoButton);
     ValidateButton(RandomizeButton);
     ValidateButton(SaveItemButton);
@@ -66,21 +59,12 @@ void UCoreMenu::NativeConstruct()
 
 	BuyButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBuyButtonClicked);
 	SellButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSellButtonClicked);
-	Item1->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectSwordButtonClicked);
-	Item2->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectAxeButtonClicked);
-	Item3->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectShieldButtonClicked);
-	Item4->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectHatchetButtonClicked);
-	Item5->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectIronBreastplateButtonClicked);
-	Item6->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectLeatherCuirassButtonClicked);
-	Item7->OnClicked.AddDynamic(this, &UCoreMenu::OnSelectScholarsRobeButtonClicked);
 	ItemInfoButton->OnClicked.AddDynamic(this, &UCoreMenu::OnItemInfoButtonClicked);
 	RandomizeButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeItemButtonClicked);
 	SaveItemButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSaveItemButtonClicked);
 	LoadItemButton->OnClicked.AddDynamic(this, &UCoreMenu::OnLoadItemButtonClicked);
 	ShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnShopButtonClicked);
 	RandomizeShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeShopButtonClicked);
-
-	TempShopButtons->SetVisibility(ESlateVisibility::Collapsed);
 
 	PlayerSwordCount = 1;
 	PlayerMoneyCount = 20;
@@ -89,96 +73,6 @@ void UCoreMenu::NativeConstruct()
 	UpdateSwordCount(PlayerSwordCount);
 	UpdatePlayerMoney(PlayerMoneyCount);
 
-	if (Item1_Icon)
-	{
-		UTexture2D* SwordTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/ItemAssets/WeaponShieldAssets/CutlassTexture2D.CutlassTexture2D"));
-		if (SwordTexture)
-		{
-			Item1_Icon->SetBrushFromTexture(SwordTexture);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Failed to load Sword texture for Image1."));
-		}
-	}
-
-	if (Item2_Icon)
-	{
-		UTexture2D* HatchetTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/ItemAssets/WeaponShieldAssets/BattleAxeTexture2D.BattleAxeTexture2D"));
-		if (HatchetTexture)
-		{
-			Item2_Icon->SetBrushFromTexture(HatchetTexture);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Failed to load Hatchet texture for Image2."));
-		}
-	}
-
-	if (Item3_Icon)
-	{
-		UTexture2D* ShieldTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/ItemAssets/WeaponShieldAssets/BucklerTexture2D.BucklerTexture2D"));
-		if (ShieldTexture)
-		{
-			Item3_Icon->SetBrushFromTexture(ShieldTexture);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Failed to load Shield texture for Image3."));
-		}
-	}
-
-	if (Item4_Icon)
-	{
-		UTexture2D* HatchetTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/ItemAssets/WeaponShieldAssets/Hatchet_Icon_test.Hatchet_Icon_test"));
-		if (HatchetTexture)
-		{
-			Item4_Icon->SetBrushFromTexture(HatchetTexture);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Failed to load Hatchet texture for Image4."));
-		}
-	}
-
-	if (Item5_Icon)
-	{
-		UTexture2D* IronBreastplateTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/ItemAssets/ArmorAssets/ArmorIcons/iron_breastplate_front.iron_breastplate_front"));
-		if (IronBreastplateTexture)
-		{
-			Item5_Icon->SetBrushFromTexture(IronBreastplateTexture);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Failed to load Iron Breastplate texture for Image5."));
-		}
-	}
-
-	if (Item6_Icon)
-	{
-		UTexture2D* LeatherCuirassTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/ItemAssets/ArmorAssets/ArmorIcons/leather_cuirass_front.leather_cuirass_front"));
-		if (LeatherCuirassTexture)
-		{
-			Item6_Icon->SetBrushFromTexture(LeatherCuirassTexture);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Failed to load Leather Cuirass texture for Image6."));
-		}
-	}
-
-	if (Item7_Icon)
-	{
-		UTexture2D* ScholarsRobeTexture = LoadObject<UTexture2D>(nullptr, TEXT("/Game/ItemAssets/ArmorAssets/ArmorIcons/scholar_robes_front.scholar_robes_front"));
-		if (ScholarsRobeTexture)
-		{
-			Item7_Icon->SetBrushFromTexture(ScholarsRobeTexture);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("Failed to load Scholars Robe texture for Image7."));
-		}
-	}
 }
 
 void UCoreMenu::OnSellButtonClicked()
@@ -201,41 +95,6 @@ void UCoreMenu::OnBuyButtonClicked()
 		return;
 	}
 	OnBuyButtonClickedEvent.Broadcast(SelectedItemId);
-}
-
-void UCoreMenu::OnSelectSwordButtonClicked()
-{
-	SelectItemData(FText::FromString(TEXT("sword_1h_001")));
-}
-
-void UCoreMenu::OnSelectAxeButtonClicked()
-{
-	SelectItemData(FText::FromString(TEXT("axe_2h_001")));
-}
-
-void UCoreMenu::OnSelectShieldButtonClicked()
-{
-	SelectItemData(FText::FromString(TEXT("shield_1h_001")));
-}
-
-void UCoreMenu::OnSelectHatchetButtonClicked()
-{
-	SelectItemData(FText::FromString(TEXT("axe_1h_001")));
-}
-
-void UCoreMenu::OnSelectIronBreastplateButtonClicked()
-{
-	SelectItemData(FText::FromString(TEXT("armor_chest_001")));
-}
-
-void UCoreMenu::OnSelectLeatherCuirassButtonClicked()
-{
-	SelectItemData(FText::FromString(TEXT("evade_chest_001")));
-}
-
-void UCoreMenu::OnSelectScholarsRobeButtonClicked()
-{
-	SelectItemData(FText::FromString(TEXT("overshield_chest_001")));
 }
 
 void UCoreMenu::SelectItemData(const FText& ItemIdText)
@@ -849,20 +708,10 @@ void UCoreMenu::RandomizeShopItems()
 
 void UCoreMenu::UpdateSwordCount(int32 PlayerSwords)
 {
-	if (SwordCountText)
-	{
-		FText SwordText = FText::Format(FText::FromString("Swords: {0}"), FText::AsNumber(PlayerSwords));
-		SwordCountText->SetText(SwordText);
-	}
 }
 
 void UCoreMenu::UpdatePlayerMoney(int32 PlayerMoney)
 {
-	if (PlayerMoneyTextBlock)
-	{
-		FText PlayerMoneyText = FText::Format(FText::FromString("Player Bank: {0}"), FText::AsNumber(PlayerMoney));
-		PlayerMoneyTextBlock->SetText(PlayerMoneyText);
-	}
 }
 
 void UCoreMenu::LogToScreen(const FString& NewMessage)

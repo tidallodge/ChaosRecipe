@@ -92,13 +92,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnSaveItemButtonClickedEvent OnSaveItemButtonClickedEvent;
 
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* SwordCountText;
 	UPROPERTY()
 	int32 PlayerSwordCount;
 
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* PlayerMoneyTextBlock;
 	UPROPERTY()
 	int32 PlayerMoneyCount;
 
@@ -140,41 +136,12 @@ protected:
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	UTextBlock* TestTextBlock;
 
-	UPROPERTY(meta = (BindWidget))
-	UImage* Item1_Icon;
-	UPROPERTY(meta = (BindWidget))
-	UImage* Item2_Icon;
-	UPROPERTY(meta = (BindWidget))
-	UImage* Item3_Icon;
-	UPROPERTY(meta = (BindWidget))
-	UImage* Item4_Icon;
-	UPROPERTY(meta = (BindWidget))
-	UImage* Item5_Icon;
-	UPROPERTY(meta = (BindWidget))
-	UImage* Item6_Icon;
-	UPROPERTY(meta = (BindWidget))
-	UImage* Item7_Icon;
-
 	// Bound from the widget blueprint (named 'SellButton')
 	UPROPERTY(meta = (BindWidget))
 	UButton* SellButton;
 	// Bound from the widget blueprint (named 'BuyButton')
 	UPROPERTY(meta = (BindWidget))
 	UButton* BuyButton;
-	UPROPERTY(meta = (BindWidget))
-	UButton* Item1;
-	UPROPERTY(meta = (BindWidget))
-	UButton* Item2;
-	UPROPERTY(meta = (BindWidget))
-	UButton* Item3;
-	UPROPERTY(meta = (BindWidget))
-	UButton* Item4;
-	UPROPERTY(meta = (BindWidget))
-	UButton* Item5;
-	UPROPERTY(meta = (BindWidget))
-	UButton* Item6;
-	UPROPERTY(meta = (BindWidget))
-	UButton* Item7;
 	UPROPERTY(meta = (BindWidget))
 	UButton* ItemInfoButton;
 	UPROPERTY(meta = (BindWidget))
@@ -198,8 +165,6 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UHorizontalBox* LoadItemHorizBox;
 	UPROPERTY(meta = (BindWidget))
-	UHorizontalBox* TempShopButtons;
-	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ActiveItemTextBox;
 
 	// Click handler for SellButton
@@ -208,27 +173,6 @@ protected:
 	// Click handler for SellButton
 	UFUNCTION()
 	void OnBuyButtonClicked();
-	// Click handler for the sword selection button
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void OnSelectSwordButtonClicked();
-	// Click handler for the axe selection button
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void OnSelectAxeButtonClicked();
-	// Click handler for the shield selection button
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void OnSelectShieldButtonClicked();
-	// Click handler for the 1H axe selection button
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void OnSelectHatchetButtonClicked();
-	// Click handler for the Iron Breastplate selection button
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void OnSelectIronBreastplateButtonClicked();
-	// Click handler for the Leather Cuirass selection button
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void OnSelectLeatherCuirassButtonClicked();
-	// Click handler for the Scholars Robe selection button
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void OnSelectScholarsRobeButtonClicked();
 	// Generic item lookup helper
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void SelectItemData(const FText& ItemIdText);
