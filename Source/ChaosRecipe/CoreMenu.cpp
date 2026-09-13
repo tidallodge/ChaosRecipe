@@ -57,6 +57,7 @@ void UCoreMenu::NativeConstruct()
     ValidateButton(LoadItemButton);
     ValidateButton(ShopButton);
     ValidateButton(RandomizeShopButton);
+    ValidateButton(PlayerStashButton);
 
 	BuyButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBuyButtonClicked);
 	SellButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSellButtonClicked);
@@ -66,6 +67,7 @@ void UCoreMenu::NativeConstruct()
 	LoadItemButton->OnClicked.AddDynamic(this, &UCoreMenu::OnLoadItemButtonClicked);
 	ShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnShopButtonClicked);
 	RandomizeShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeShopButtonClicked);
+	PlayerStashButton->OnClicked.AddDynamic(this, &UCoreMenu::OnPlayerStashButtonClicked);
 
 	PlayerSwordCount = 1;
 	PlayerMoneyCount = 20;
@@ -601,6 +603,19 @@ void UCoreMenu::OnShopItemButtonClicked(FString ItemId)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Shop item button clicked for ItemId: %s"), *ItemId);
 	SelectItemData(FText::FromString(ItemId));
+}
+
+void UCoreMenu::OnPlayerStashButtonClicked()
+{
+	UE_LOG(LogTemp, Warning, TEXT("PlayerStashButton Clicked."));
+
+	if (!PlayerStashHorizBox)
+	{
+		UE_LOG(LogTemp, Error, TEXT("PlayerStashHorizBox is null or not found!"));
+		return;
+	}
+
+	PlayerStashHorizBox->SetVisibility(ESlateVisibility::Visible);
 }
 
 void UCoreMenu::ValidateButton(UButton* InputButton)

@@ -162,6 +162,10 @@ protected:
 	UTextBlock* ActiveItemTextBox;
 	UPROPERTY(meta = (BindWidget))
 	UUniformGridPanel* PlayerStashUniGrid;
+	UPROPERTY(meta = (BindWidget))
+	UButton* PlayerStashButton;
+	UPROPERTY(meta = (BindWidget))
+	UHorizontalBox* PlayerStashHorizBox;
 
 	// Click handler for SellButton
 	UFUNCTION()
@@ -196,6 +200,9 @@ protected:
 	// Click handler for a dynamically created shop grid item button
 	UFUNCTION()
 	void OnShopItemButtonClicked(FString ItemId);
+	// Click handler for the Player Stash button; shows PlayerStashHorizBox
+	UFUNCTION()
+	void OnPlayerStashButtonClicked();
 	// Clears and repopulates ShopUniGrid with an item button + icon for every row in BaseItem_DT
 	void PopulateShopGrid();
 	// Clears and repopulates PlayerStashUniGrid with a WBP_SingleImageButton for every saved item (via ItemInstanceManager)
