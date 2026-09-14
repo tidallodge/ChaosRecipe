@@ -93,6 +93,9 @@ void UCoreMenu::NativeConstruct()
 	UpdatePlayerMoney(PlayerMoneyCount);
 
 	PopulatePlayerStash();
+
+	RandomizeShopItems();
+	PopulateShopGrid();
 }
 
 void UCoreMenu::OnSellButtonClicked()
