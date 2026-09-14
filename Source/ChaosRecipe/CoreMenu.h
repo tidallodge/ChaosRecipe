@@ -17,6 +17,7 @@ class UVerticalBox;
 class UHorizontalBox;
 class UUniformGridPanel;
 class UDataTable;
+class UPanelWidget;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBuyButtonClickedEvent, FString, ItemType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSellButtonClickedEvent, FString, ItemType);
@@ -154,6 +155,8 @@ protected:
 	UButton* ShopButton;
 	UPROPERTY(meta = (BindWidget))
 	UButton* RandomizeShopButton;
+	UPROPERTY(meta = (BindWidget))
+	UPanelWidget* ShopWindowBox;
 	UPROPERTY(meta = (BindWidget))
 	UUniformGridPanel* ShopUniGrid;
 	UPROPERTY(meta = (BindWidget))

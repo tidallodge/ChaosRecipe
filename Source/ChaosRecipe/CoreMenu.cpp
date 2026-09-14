@@ -10,6 +10,7 @@
 #include "Components/HorizontalBox.h"
 #include "Components/UniformGridPanel.h"
 #include "Components/UniformGridSlot.h"
+#include "Components/PanelWidget.h"
 #include "Components/SizeBox.h"
 #include "Components/ButtonSlot.h"
 #include "Blueprint/WidgetTree.h"
@@ -68,6 +69,21 @@ void UCoreMenu::NativeConstruct()
 	ShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnShopButtonClicked);
 	RandomizeShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeShopButtonClicked);
 	PlayerStashButton->OnClicked.AddDynamic(this, &UCoreMenu::OnPlayerStashButtonClicked);
+
+	if (ShopWindowBox)
+	{
+		for (int32 i = 0; i < ShopWindowBox->GetChildrenCount(); ++i)
+		{
+			if (UWidget* Child = ShopWindowBox->GetChildAt(i))
+			{
+				Child->SetVisibility(ESlateVisibility::Hidden);
+			}
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("ShopWindowBox is null or not found!"));
+	}
 
 	PlayerSwordCount = 1;
 	PlayerMoneyCount = 20;
@@ -470,28 +486,28 @@ void UCoreMenu::OnShopButtonClicked()
 {
 	UE_LOG(LogTemp, Warning, TEXT("ShopButton Clicked."));
 
-	if (!ShopUniGrid)
+	if (!ShopWindowBox)
 	{
-		UE_LOG(LogTemp, Error, TEXT("ShopUniGrid is null or not found!"));
+		UE_LOG(LogTemp, Error, TEXT("ShopWindowBox is null or not found!"));
 		return;
 	}
 
-	if (ShopUniGrid->GetVisibility() == ESlateVisibility::Visible)
+	const bool bShouldShow = ShopWindowBox->GetVisibility() != ESlateVisibility::Visible;
+	const ESlateVisibility NewVisibility = bShouldShow ? ESlateVisibility::Visible : ESlateVisibility::Hidden;
+
+	ShopWindowBox->SetVisibility(NewVisibility);
+	for (int32 i = 0; i < ShopWindowBox->GetChildrenCount(); ++i)
 	{
-		ShopUniGrid->SetVisibility(ESlateVisibility::Collapsed);
-		if (ShopWindowHeader)
+		if (UWidget* Child = ShopWindowBox->GetChildAt(i))
 		{
-			ShopWindowHeader->SetVisibility(ESlateVisibility::Collapsed);
+			Child->SetVisibility(NewVisibility);
 		}
-		return;
 	}
 
-	ShopUniGrid->SetVisibility(ESlateVisibility::Visible);
-	if (ShopWindowHeader)
+	if (bShouldShow)
 	{
-		ShopWindowHeader->SetVisibility(ESlateVisibility::Visible);
+		PopulateShopGrid();
 	}
-	PopulateShopGrid();
 }
 
 void UCoreMenu::OnRandomizeShopButtonClicked()
