@@ -52,7 +52,6 @@ void UCoreMenu::NativeConstruct()
 
     ValidateButton(BuyButton);
     ValidateButton(SellButton);
-    ValidateButton(ItemInfoButton);
     ValidateButton(RandomizeButton);
     ValidateButton(SaveItemButton);
     ValidateButton(LoadItemButton);
@@ -62,7 +61,6 @@ void UCoreMenu::NativeConstruct()
 
 	BuyButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBuyButtonClicked);
 	SellButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSellButtonClicked);
-	ItemInfoButton->OnClicked.AddDynamic(this, &UCoreMenu::OnItemInfoButtonClicked);
 	RandomizeButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeItemButtonClicked);
 	SaveItemButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSaveItemButtonClicked);
 	LoadItemButton->OnClicked.AddDynamic(this, &UCoreMenu::OnLoadItemButtonClicked);
@@ -166,29 +164,6 @@ void UCoreMenu::SelectItemData(const FText& ItemIdText)
 
 	bHasSelectedItemData = false;
 	UE_LOG(LogTemp, Warning, TEXT("No item found for ItemId: %s"), *SearchText);
-}
-
-void UCoreMenu::OnItemInfoButtonClicked()
-{
-	if (!bHasSelectedItemData)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No item data has been selected yet."));
-		return;
-	}
-
-	FString ItemClassName = UEnum::GetValueAsString(SelectedItemData.ItemClass);
-	FString ItemSlotName = UEnum::GetValueAsString(SelectedItemData.ItemSlot);
-	FString ItemInfo = FString::Printf(
-		TEXT("Item ID: %s\nName: %s\nClass: %s\nSlot: %s"),
-		*SelectedItemData.ItemId.ToString(),
-		*SelectedItemData.ItemName.ToString(),
-		*ItemClassName,
-		*ItemSlotName);
-
-	UE_LOG(LogTemp, Warning, TEXT("Item info: %s"), *ItemInfo);
-	FString ItemId = FString(SelectedItemData.ItemId.ToString());
-	LogToScreen(ItemInfo);
-	OnItemInfoButtonClickedEvent.Broadcast(ItemId);
 }
 
 void UCoreMenu::OnRandomizeItemButtonClicked()

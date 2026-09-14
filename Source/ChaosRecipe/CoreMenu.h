@@ -21,7 +21,6 @@ class UPanelWidget;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBuyButtonClickedEvent, FString, ItemType);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSellButtonClickedEvent, FString, ItemType);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemInfoButtonClickedEvent, FString, ItemId);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRandomizeItemEvent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSaveItemButtonClickedEvent, FString, ItemId);
 
@@ -85,9 +84,6 @@ public:
 	FOnSellButtonClickedEvent OnSellButtonClickedEvent;
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
-	FOnItemInfoButtonClickedEvent OnItemInfoButtonClickedEvent;
-
-	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnRandomizeItemEvent OnRandomizeItemEvent;
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
@@ -144,8 +140,6 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UButton* BuyButton;
 	UPROPERTY(meta = (BindWidget))
-	UButton* ItemInfoButton;
-	UPROPERTY(meta = (BindWidget))
 	UButton* RandomizeButton;
 	UPROPERTY(meta = (BindWidget))
 	UButton* SaveItemButton;
@@ -179,9 +173,6 @@ protected:
 	// Generic item lookup helper
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void SelectItemData(const FText& ItemIdText);
-	// Click handler for the item info button
-	UFUNCTION()
-	void OnItemInfoButtonClicked();
 	// Click handler for the randomize item button
 	UFUNCTION()
 	void OnRandomizeItemButtonClicked();
