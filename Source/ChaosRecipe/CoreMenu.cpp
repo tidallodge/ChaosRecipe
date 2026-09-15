@@ -70,13 +70,7 @@ void UCoreMenu::NativeConstruct()
 
 	if (ShopWindowBox)
 	{
-		for (int32 i = 0; i < ShopWindowBox->GetChildrenCount(); ++i)
-		{
-			if (UWidget* Child = ShopWindowBox->GetChildAt(i))
-			{
-				Child->SetVisibility(ESlateVisibility::Hidden);
-			}
-		}
+		SetPanelAndChildrenVisibility(ShopWindowBox, ESlateVisibility::Hidden);
 	}
 	else
 	{
@@ -473,13 +467,11 @@ void UCoreMenu::OnShopButtonClicked()
 	const bool bShouldShow = ShopWindowBox->GetVisibility() != ESlateVisibility::Visible;
 	const ESlateVisibility NewVisibility = bShouldShow ? ESlateVisibility::Visible : ESlateVisibility::Hidden;
 
-	ShopWindowBox->SetVisibility(NewVisibility);
-	for (int32 i = 0; i < ShopWindowBox->GetChildrenCount(); ++i)
+	SetPanelAndChildrenVisibility(ShopWindowBox, NewVisibility);
+
+	if (PlayerStashHorizBox)
 	{
-		if (UWidget* Child = ShopWindowBox->GetChildAt(i))
-		{
-			Child->SetVisibility(NewVisibility);
-		}
+		SetPanelAndChildrenVisibility(PlayerStashHorizBox, ESlateVisibility::Hidden);
 	}
 
 	if (bShouldShow)
@@ -609,7 +601,29 @@ void UCoreMenu::OnPlayerStashButtonClicked()
 		return;
 	}
 
-	PlayerStashHorizBox->SetVisibility(ESlateVisibility::Visible);
+	SetPanelAndChildrenVisibility(PlayerStashHorizBox, ESlateVisibility::Visible);
+
+	if (ShopWindowBox)
+	{
+		SetPanelAndChildrenVisibility(ShopWindowBox, ESlateVisibility::Hidden);
+	}
+}
+
+void UCoreMenu::SetPanelAndChildrenVisibility(UPanelWidget* Panel, ESlateVisibility NewVisibility)
+{
+	if (!Panel)
+	{
+		return;
+	}
+
+	Panel->SetVisibility(NewVisibility);
+	for (int32 i = 0; i < Panel->GetChildrenCount(); ++i)
+	{
+		if (UWidget* Child = Panel->GetChildAt(i))
+		{
+			Child->SetVisibility(NewVisibility);
+		}
+	}
 }
 
 void UCoreMenu::ValidateButton(UButton* InputButton)

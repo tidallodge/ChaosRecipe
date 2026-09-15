@@ -201,6 +201,8 @@ protected:
 	void PopulateShopGrid();
 	// Clears and repopulates PlayerStashUniGrid with a WBP_SingleImageButton for every saved item (via ItemInstanceManager)
 	void PopulatePlayerStash();
+	// Sets the visibility of a panel widget and all of its direct children
+	void SetPanelAndChildrenVisibility(UPanelWidget* Panel, ESlateVisibility NewVisibility);
 
 	UFUNCTION()
 	void ValidateButton(UButton* InputButton);
