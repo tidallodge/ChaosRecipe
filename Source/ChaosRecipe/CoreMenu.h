@@ -136,8 +136,8 @@ public:
 protected:
 	virtual void NativeConstruct() override;
 
-	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
-	UTextBlock* TestTextBlock;
+	// UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	// UTextBlock* TestTextBlock;
 
 	// Bound from the widget blueprint (named 'SellButton')
 	UPROPERTY(meta = (BindWidget))

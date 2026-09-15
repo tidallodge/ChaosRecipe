@@ -151,6 +151,7 @@ void UCoreMenu::SelectItemData(const FText& ItemIdText)
 				*ItemIconName,
 				*ItemStaticMeshName);
 			LogToScreen(ItemInfo);
+			SetActiveItemText(ItemInfo);
 			UE_LOG(LogTemp, Warning, TEXT("Selected item data: %s"), *ItemInfo);
 			return;
 		}
@@ -666,10 +667,7 @@ void UCoreMenu::UpdatePlayerMoney(int32 PlayerMoney)
 
 void UCoreMenu::LogToScreen(const FString& NewMessage)
 {
-	if (TestTextBlock)
-	{
-		TestTextBlock->SetText(FText::FromString(NewMessage));
-	}
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *NewMessage);
 }
 
 void UCoreMenu::SetActiveItemText(const FString& NewMessage)
