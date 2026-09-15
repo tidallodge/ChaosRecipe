@@ -246,20 +246,16 @@ void UCoreMenu::OnSingleLoadItemButtonClicked(FString ItemUUID)
 	FString ItemId;
 	ItemObject->TryGetStringField(TEXT("ItemId"), ItemId);
 
+	// Marks this stash item as the active item, so RandomizeButton/SaveItemButton act on it.
+	SelectItemData(FText::FromString(ItemId));
+
+	// Lets listeners (e.g. ItemHandler) load this existing saved item's stats into their
+	// working cache, keyed to its already-assigned UUID, so Randomize/Save edit it in place
+	// instead of a stale or nonexistent cached item.
+	OnStashItemSelectedEvent.Broadcast(ItemId, ItemUUID);
+
 	// Item display name comes from BaseItem_DT (the saved JSON only stores the ItemId).
-	FString ItemName = ItemId;
-	if (ItemDataTable)
-	{
-		for (const FName& RowName : ItemDataTable->GetRowNames())
-		{
-			const FBaseItemStruct* ItemRow = ItemDataTable->FindRow<FBaseItemStruct>(RowName, TEXT("CoreMenu::OnSingleLoadItemButtonClicked"));
-			if (ItemRow && ItemRow->ItemId.ToString().Equals(ItemId, ESearchCase::IgnoreCase))
-			{
-				ItemName = ItemRow->ItemName.ToString();
-				break;
-			}
-		}
-	}
+	const FString ItemName = bHasSelectedItemData ? SelectedItemData.ItemName.ToString() : ItemId;
 
 	double AttackRate = 0.0;
 	ItemObject->TryGetNumberField(TEXT("attackRate"), AttackRate);

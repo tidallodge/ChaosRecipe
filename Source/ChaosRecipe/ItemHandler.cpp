@@ -61,6 +61,37 @@ void UItemHandler::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
     CoreMenu->OnRandomizeItemEvent.AddDynamic(this, &UItemHandler::OnRandomizeItem);
     CoreMenu->OnSaveItemButtonClickedEvent.AddDynamic(this, &UItemHandler::OnSaveItemButtonClicked);
     CoreMenu->OnSellButtonClickedEvent.AddDynamic(this, &UItemHandler::OnSellButtonClicked);
+    CoreMenu->OnStashItemSelectedEvent.AddDynamic(this, &UItemHandler::OnStashItemSelected);
+}
+
+void UItemHandler::OnStashItemSelected(FString ItemId, FString ItemUUID)
+{
+    if (ItemId.IsEmpty() || ItemUUID.IsEmpty())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Received empty ItemId/UUID for stash selection."));
+        return;
+    }
+
+    FBaseItemStruct ItemData;
+    if (!LoadItemDataRow(ItemId, ItemData))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: No item found in BaseItem_DT for ItemId '%s'."), *ItemId);
+        return;
+    }
+
+    // Pre-seed the relevant cache with this item's existing UUID so the GetWeaponStatsForItem/
+    // GetArmorStatsForItem call inside OnItemInfoClicked preserves it instead of leaving it empty
+    // (which would make a later Save mint a brand new UUID rather than overwriting this item).
+    if (ItemData.ItemClass == EItemClass::Armor || ItemData.ItemClass == EItemClass::Shield)
+    {
+        CachedArmorStats.UUID = FText::FromString(ItemUUID);
+    }
+    else
+    {
+        CachedWeaponStats.UUID = FText::FromString(ItemUUID);
+    }
+
+    OnItemInfoClicked(ItemId);
 }
 
 void UItemHandler::OnItemInfoClicked(FString ItemId)

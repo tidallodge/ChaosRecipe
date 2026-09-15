@@ -107,6 +107,9 @@ public:
     void OnItemInfoClicked(FString ItemId);
 
     UFUNCTION()
+    void OnStashItemSelected(FString ItemId, FString ItemUUID);
+
+    UFUNCTION()
     void OnBuyButtonClicked(FString ItemId);
 
     UFUNCTION()
