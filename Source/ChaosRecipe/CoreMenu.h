@@ -105,18 +105,10 @@ public:
 	int32 PlayerSwordCount;
 
 	UPROPERTY()
-	int32 PlayerMoneyCount;
-
-	// UPROPERTY(meta = (BindWidget))
-	// URichTextBlock* LogOutput;
-	UPROPERTY()
 	FText LogOutputText;
 
 	UFUNCTION(BlueprintCallable, Category = "Player Inventory Display")
 	void UpdateSwordCount(int32 PlayerSwords);
-
-	UFUNCTION(BlueprintCallable, Category = "Player Inventory Display")
-	void UpdatePlayerMoney(int32 PlayerMoney);
 
 	UFUNCTION(BlueprintCallable, Category = "Menu Text")
 	void LogToScreen(const FString& NewMessage);

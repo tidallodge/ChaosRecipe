@@ -25,16 +25,8 @@ public:
 	void HandleStoreBuy(FString ItemType, int32 ItemValue);
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-	float ItemValueModifier = 1.25f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
-	int32 PlayerMoneyCount;
-
 	UPROPERTY()
 	bool ValidSale = 0;
-	UPROPERTY()
-	bool ValidBuy = 1;
 
 	TMap<FString, int32> ItemCountById;
 

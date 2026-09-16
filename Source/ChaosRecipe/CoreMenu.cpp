@@ -78,11 +78,9 @@ void UCoreMenu::NativeConstruct()
 	}
 
 	PlayerSwordCount = 1;
-	PlayerMoneyCount = 20;
 
 	UE_LOG(LogTemp, Warning, TEXT("CoreMenu initialized."));
 	UpdateSwordCount(PlayerSwordCount);
-	UpdatePlayerMoney(PlayerMoneyCount);
 
 	PopulatePlayerStash();
 
@@ -700,10 +698,6 @@ void UCoreMenu::RandomizeShopItems()
 }
 
 void UCoreMenu::UpdateSwordCount(int32 PlayerSwords)
-{
-}
-
-void UCoreMenu::UpdatePlayerMoney(int32 PlayerMoney)
 {
 }
 

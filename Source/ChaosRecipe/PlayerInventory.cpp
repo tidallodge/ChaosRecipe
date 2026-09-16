@@ -14,7 +14,6 @@ void UPlayerInventory::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
 		return;
 	}
 
-	PlayerMoneyCount = 20;
 	ItemCountById.Empty();
 	ItemCountById.Add(TEXT("Sword"), 1);
 
@@ -42,17 +41,15 @@ void UPlayerInventory::HandleStoreSale(FString ItemType, int32 ItemValue)
 	{
 		ValidSale = 1;
 		*ItemCount -= 1;
-		ItemValue = FMath::FloorToInt(ItemValue * ItemValueModifier);
-		PlayerMoneyCount += ItemValue;
 	}
 	else
 	{
 		ValidSale = 0;
 	}
-	
+
 	if (!ValidSale)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No item to sell, Bank Balance: %d"), PlayerMoneyCount);
+		UE_LOG(LogTemp, Warning, TEXT("No item to sell"));
 	}
 
 	if (CoreMenuRef)
@@ -60,33 +57,17 @@ void UPlayerInventory::HandleStoreSale(FString ItemType, int32 ItemValue)
 		int32* SwordCountPtr = ItemCountById.Find(TEXT("Sword"));
 		int32 SwordCount = SwordCountPtr ? *SwordCountPtr : 0;
 		CoreMenuRef->UpdateSwordCount(SwordCount);
-		CoreMenuRef->UpdatePlayerMoney(PlayerMoneyCount);
 	}
 }
 
 void UPlayerInventory::HandleStoreBuy(FString ItemType, int32 ItemValue)
 {
-	if (PlayerMoneyCount >= ItemValue)
-	{
-		ValidBuy = 1;
-		ItemCountById.FindOrAdd(ItemType) += 1;
-		PlayerMoneyCount -= ItemValue;
-	}
-	else
-	{
-		ValidBuy = 0;
-	}
-	
-	if (!ValidBuy)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No item to sell, Bank Balance: %d"), PlayerMoneyCount);
-	}
+	ItemCountById.FindOrAdd(ItemType) += 1;
 
 	if (CoreMenuRef)
 	{
 		int32* SwordCountPtr = ItemCountById.Find(TEXT("Sword"));
 		int32 SwordCount = SwordCountPtr ? *SwordCountPtr : 0;
 		CoreMenuRef->UpdateSwordCount(SwordCount);
-		CoreMenuRef->UpdatePlayerMoney(PlayerMoneyCount);
 	}
 }
