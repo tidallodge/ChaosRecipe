@@ -54,7 +54,6 @@ void UCoreMenu::NativeConstruct()
     ValidateButton(SellButton);
     ValidateButton(RandomizeButton);
     ValidateButton(SaveItemButton);
-    ValidateButton(LoadItemButton);
     ValidateButton(ShopButton);
     ValidateButton(RandomizeShopButton);
     ValidateButton(PlayerStashButton);
@@ -64,7 +63,6 @@ void UCoreMenu::NativeConstruct()
 	SellButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSellButtonClicked);
 	RandomizeButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeItemButtonClicked);
 	SaveItemButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSaveItemButtonClicked);
-	LoadItemButton->OnClicked.AddDynamic(this, &UCoreMenu::OnLoadItemButtonClicked);
 	ShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnShopButtonClicked);
 	RandomizeShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeShopButtonClicked);
 	PlayerStashButton->OnClicked.AddDynamic(this, &UCoreMenu::OnPlayerStashButtonClicked);
@@ -107,6 +105,7 @@ void UCoreMenu::OnBuyButtonClicked()
 {
 	UE_LOG(LogTemp, Warning, TEXT("BuyButton Clicked. Event Dispatched"));
 	UpdatePanelVisibility({ ShopWindowBox, PlayerStashHorizBox }, ESlateVisibility::Hidden);
+	ShowActiveItemImage();
 	if (!bHasSelectedItemData)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No selected item to buy."));
@@ -321,13 +320,6 @@ void UCoreMenu::OnSingleLoadItemButtonClicked(FString ItemUUID)
 	ActiveItemTextBox->SetText(FText::FromString(DisplayText));
 }
 
-void UCoreMenu::OnLoadItemButtonClicked()
-{
-	UE_LOG(LogTemp, Warning, TEXT("LoadItemButton Clicked."));
-
-	PopulatePlayerStash();
-}
-
 void UCoreMenu::PopulatePlayerStash()
 {
 	if (!PlayerStashUniGrid)
@@ -474,6 +466,8 @@ void UCoreMenu::OnShopButtonClicked()
 		SetPanelAndChildrenVisibility(PlayerStashHorizBox, ESlateVisibility::Hidden);
 	}
 
+	UpdatePanelVisibility({ ActiveItemImageHorizBox }, ESlateVisibility::Hidden);
+
 	if (bShouldShow)
 	{
 		PopulateShopGrid();
@@ -611,12 +605,15 @@ void UCoreMenu::OnPlayerStashButtonClicked()
 	{
 		SetPanelAndChildrenVisibility(ShopWindowBox, ESlateVisibility::Hidden);
 	}
+
+	UpdatePanelVisibility({ ActiveItemImageHorizBox }, ESlateVisibility::Hidden);
 }
 
 void UCoreMenu::OnStashSelectButtonClicked()
 {
 	UE_LOG(LogTemp, Warning, TEXT("StashSelectButton Clicked."));
 	UpdatePanelVisibility({ ShopWindowBox, PlayerStashHorizBox }, ESlateVisibility::Hidden);
+	ShowActiveItemImage();
 }
 
 void UCoreMenu::UpdatePanelVisibility(const TArray<UPanelWidget*>& Panels, ESlateVisibility NewVisibility)
@@ -624,6 +621,28 @@ void UCoreMenu::UpdatePanelVisibility(const TArray<UPanelWidget*>& Panels, ESlat
 	for (UPanelWidget* Panel : Panels)
 	{
 		SetPanelAndChildrenVisibility(Panel, NewVisibility);
+	}
+}
+
+void UCoreMenu::ShowActiveItemImage()
+{
+	if (ActiveItemImageHorizBox)
+	{
+		SetPanelAndChildrenVisibility(ActiveItemImageHorizBox, ESlateVisibility::Visible);
+	}
+
+	if (!ActiveItemImage)
+	{
+		return;
+	}
+
+	if (bHasSelectedItemData && SelectedItemData.ItemAssetData.ItemIcon)
+	{
+		ActiveItemImage->SetBrushFromTexture(SelectedItemData.ItemAssetData.ItemIcon);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No selected item icon available for ActiveItemImage."));
 	}
 }
 

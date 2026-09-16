@@ -156,8 +156,6 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UButton* SaveItemButton;
 	UPROPERTY(meta = (BindWidget))
-	UButton* LoadItemButton;
-	UPROPERTY(meta = (BindWidget))
 	UButton* ShopButton;
 	UPROPERTY(meta = (BindWidget))
 	UButton* RandomizeShopButton;
@@ -169,6 +167,10 @@ protected:
 	UHorizontalBox* ShopWindowHeader;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ActiveItemTextBox;
+	UPROPERTY(meta = (BindWidget))
+	UHorizontalBox* ActiveItemImageHorizBox;
+	UPROPERTY(meta = (BindWidget))
+	UImage* ActiveItemImage;
 	UPROPERTY(meta = (BindWidget))
 	UUniformGridPanel* PlayerStashUniGrid;
 	UPROPERTY(meta = (BindWidget))
@@ -193,9 +195,6 @@ protected:
 	// Click handler for the save item button
 	UFUNCTION()
 	void OnSaveItemButtonClicked();
-	// Click handler for the load item button
-	UFUNCTION()
-	void OnLoadItemButtonClicked();
 	// Click handler for a dynamically created saved-item button
 	UFUNCTION()
 	void OnSingleLoadItemButtonClicked(FString ItemUUID);
@@ -222,6 +221,8 @@ protected:
 	void SetPanelAndChildrenVisibility(UPanelWidget* Panel, ESlateVisibility NewVisibility);
 	// Sets the visibility of each given panel (and its children)
 	void UpdatePanelVisibility(const TArray<UPanelWidget*>& Panels, ESlateVisibility NewVisibility);
+	// Shows ActiveItemImageHorizBox (and its children) and sets ActiveItemImage to the selected item's icon
+	void ShowActiveItemImage();
 
 	UFUNCTION()
 	void ValidateButton(UButton* InputButton);
