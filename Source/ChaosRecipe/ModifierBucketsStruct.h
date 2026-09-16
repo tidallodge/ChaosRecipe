@@ -26,7 +26,7 @@ struct FWeaponModifierBuckets
     bool LocalFlatElectricDamage;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-    bool LocalFlatPoisonDamage;
+    bool LocalFlatAbyssalDamage;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
     bool LocalAttackRate;
@@ -89,7 +89,7 @@ struct FGlobalModifierBuckets
     bool ElectricResist;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-    bool PoisonResist;
+    bool AbyssalResist;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
     bool GlobalAllSkills;

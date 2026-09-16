@@ -10,5 +10,5 @@ enum class EDamageType : uint8
     Fire UMETA(DisplayName = "Fire"),
     Ice UMETA(DisplayName = "Ice"),
     Electric UMETA(DisplayName = "Electric"),
-    Poison UMETA(DisplayName = "Poison"),
+    Abyssal UMETA(DisplayName = "Abyssal"),
 };

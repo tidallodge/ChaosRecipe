@@ -159,7 +159,7 @@ void UItemHandler::OnItemSelected(const FString& ItemId, const FString& ItemUUID
                 { TEXT("Fire"),     LocalEntry.Value.LocalFireDamage },
                 { TEXT("Ice"),      LocalEntry.Value.LocalIceDamage },
                 { TEXT("Electric"), LocalEntry.Value.LocalElectricDamage },
-                { TEXT("Poison"),   LocalEntry.Value.LocalPoisonDamage },
+                { TEXT("Abyssal"),   LocalEntry.Value.LocalAbyssalDamage },
             };
 
             for (const FLocalDamageLine& LocalLine : LocalLines)
@@ -527,7 +527,7 @@ void UItemHandler::RandomizeWeaponItem()
             { TEXT("Fire"),     LocalEntry.Value.LocalFireDamage },
             { TEXT("Ice"),      LocalEntry.Value.LocalIceDamage },
             { TEXT("Electric"), LocalEntry.Value.LocalElectricDamage },
-            { TEXT("Poison"),   LocalEntry.Value.LocalPoisonDamage },
+            { TEXT("Abyssal"),   LocalEntry.Value.LocalAbyssalDamage },
         };
 
         for (const FLocalDamageLine& LocalLine : LocalLines)
@@ -758,7 +758,7 @@ void UItemHandler::RecalculateWeaponLocalDamage()
         { &FWeaponBaseDamage::BaseFireDamage,     &FWeaponLocalDamage::LocalFireDamage,     &FItemModifierDamageStruct::FireDamage },
         { &FWeaponBaseDamage::BaseIceDamage,      &FWeaponLocalDamage::LocalIceDamage,      &FItemModifierDamageStruct::IceDamage },
         { &FWeaponBaseDamage::BaseElectricDamage, &FWeaponLocalDamage::LocalElectricDamage, &FItemModifierDamageStruct::ElectricDamage },
-        { &FWeaponBaseDamage::BasePoisonDamage,   &FWeaponLocalDamage::LocalPoisonDamage,   &FItemModifierDamageStruct::PoisonDamage },
+        { &FWeaponBaseDamage::BaseAbyssalDamage,   &FWeaponLocalDamage::LocalAbyssalDamage,   &FItemModifierDamageStruct::AbyssalDamage },
     };
 
     FWeaponLocalDamage LocalDamage;

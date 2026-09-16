@@ -27,7 +27,7 @@
 				"X": 0,
 				"Y": 0
 			},
-			"BasePoisonDamage":
+			"BaseAbyssalDamage":
 			{
 				"X": 0,
 				"Y": 0
@@ -55,7 +55,7 @@
 				"X": 0,
 				"Y": 0
 			},
-			"LocalPoisonDamage":
+			"LocalAbyssalDamage":
 			{
 				"X": 0,
 				"Y": 0
@@ -93,7 +93,7 @@
 				"X": 0,
 				"Y": 0
 			},
-			"BasePoisonDamage":
+			"BaseAbyssalDamage":
 			{
 				"X": 0,
 				"Y": 0
@@ -121,7 +121,7 @@
 				"X": 0,
 				"Y": 0
 			},
-			"LocalPoisonDamage":
+			"LocalAbyssalDamage":
 			{
 				"X": 0,
 				"Y": 0
@@ -159,7 +159,7 @@
 				"X": 0,
 				"Y": 0
 			},
-			"BasePoisonDamage":
+			"BaseAbyssalDamage":
 			{
 				"X": 0,
 				"Y": 0
@@ -187,7 +187,7 @@
 				"X": 0,
 				"Y": 0
 			},
-			"LocalPoisonDamage":
+			"LocalAbyssalDamage":
 			{
 				"X": 0,
 				"Y": 0
@@ -225,7 +225,7 @@
 				"X": 0,
 				"Y": 0
 			},
-			"BasePoisonDamage":
+			"BaseAbyssalDamage":
 			{
 				"X": 0,
 				"Y": 0
@@ -253,7 +253,7 @@
 				"X": 0,
 				"Y": 0
 			},
-			"LocalPoisonDamage":
+			"LocalAbyssalDamage":
 			{
 				"X": 0,
 				"Y": 0

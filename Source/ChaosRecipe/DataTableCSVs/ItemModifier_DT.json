@@ -13,7 +13,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": false,
 			"Defense": false,
@@ -44,7 +44,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -58,7 +58,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -110,7 +110,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -135,7 +135,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -155,7 +155,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": true,
 			"Attack": true,
 			"Defense": false,
@@ -186,7 +186,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -200,7 +200,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -252,7 +252,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -277,7 +277,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -297,7 +297,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": true,
 			"Attack": true,
 			"Defense": false,
@@ -328,7 +328,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -342,7 +342,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Multiplication",
@@ -394,7 +394,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -419,7 +419,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -439,7 +439,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": true,
 			"Attack": true,
 			"Defense": false,
@@ -470,7 +470,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -484,7 +484,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Multiplication",
@@ -536,7 +536,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -561,7 +561,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -581,7 +581,7 @@
 			"Fire": true,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": true,
 			"Attack": true,
 			"Defense": false,
@@ -612,7 +612,7 @@
 				"FireDamage": 1,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -626,7 +626,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -678,7 +678,7 @@
 				"LocalFlatFireDamage": true,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -703,7 +703,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -723,7 +723,7 @@
 			"Fire": true,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": true,
 			"Attack": true,
 			"Defense": false,
@@ -754,7 +754,7 @@
 				"FireDamage": 1,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -768,7 +768,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -820,7 +820,7 @@
 				"LocalFlatFireDamage": true,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -845,7 +845,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -865,7 +865,7 @@
 			"Fire": false,
 			"Ice": true,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": true,
 			"Attack": true,
 			"Defense": false,
@@ -896,7 +896,7 @@
 				"FireDamage": 0,
 				"IceDamage": 1,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -910,7 +910,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -960,9 +960,9 @@
 				"LocalFlatPhysDamage": false,
 				"LocalPercentPhysDamage": false,
 				"LocalFlatFireDamage": false,
-				"LocalFlatIceDamage": true,
+				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -987,7 +987,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -1007,7 +1007,7 @@
 			"Fire": false,
 			"Ice": true,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": true,
 			"Attack": true,
 			"Defense": false,
@@ -1038,7 +1038,7 @@
 				"FireDamage": 0,
 				"IceDamage": 1,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -1052,7 +1052,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -1102,9 +1102,9 @@
 				"LocalFlatPhysDamage": false,
 				"LocalPercentPhysDamage": false,
 				"LocalFlatFireDamage": false,
-				"LocalFlatIceDamage": true,
+				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -1129,7 +1129,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -1149,7 +1149,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": true,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": true,
 			"Attack": true,
 			"Defense": false,
@@ -1180,7 +1180,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 1,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -1194,7 +1194,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -1246,7 +1246,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": true,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -1271,7 +1271,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -1291,7 +1291,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": true,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": true,
 			"Attack": true,
 			"Defense": false,
@@ -1322,7 +1322,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 1,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -1336,7 +1336,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -1388,7 +1388,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": true,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -1413,16 +1413,16 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
 		}
 	},
 	{
-		"Name": "poison_dmg_flat_01",
-		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"A39A0DC74DA95C91ABE0818CFCAF501B\", \"poison_dmg_flat_01\")",
-		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"E96F523C4EFD77B8A5C97B91F3626AAE\", \"poison + 1\")",
+		"Name": "abyssal_dmg_flat_01",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"A39A0DC74DA95C91ABE0818CFCAF501B\", \"abyssal_dmg_flat_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"E96F523C4EFD77B8A5C97B91F3626AAE\", \"abyssal + 1\")",
 		"ItemTags":
 		{
 			"Etched": false
@@ -1433,7 +1433,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Poison": true,
+			"Abyssal": true,
 			"Damage": true,
 			"Attack": true,
 			"Defense": false,
@@ -1464,7 +1464,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 1
+				"AbyssalDamage": 1
 			},
 			"MigitationModifier":
 			{
@@ -1478,7 +1478,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -1530,7 +1530,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": true,
+				"LocalFlatAbyssalDamage": true,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -1555,16 +1555,16 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
 		}
 	},
 	{
-		"Name": "poison_dmg_flat_02",
-		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"1565B15446C3DC04BB20F2859F442127\", \"poison_dmg_flat_02\")",
-		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"904F44B24092D00CD99C9EBF47626860\", \"poison + 2\")",
+		"Name": "abyssal_dmg_flat_02",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"1565B15446C3DC04BB20F2859F442127\", \"abyssal_dmg_flat_02\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"904F44B24092D00CD99C9EBF47626860\", \"abyssal + 2\")",
 		"ItemTags":
 		{
 			"Etched": false
@@ -1575,7 +1575,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Poison": true,
+			"Abyssal": true,
 			"Damage": true,
 			"Attack": true,
 			"Defense": false,
@@ -1606,7 +1606,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 1
+				"AbyssalDamage": 1
 			},
 			"MigitationModifier":
 			{
@@ -1620,7 +1620,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -1672,7 +1672,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": true,
+				"LocalFlatAbyssalDamage": true,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -1697,7 +1697,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -1717,7 +1717,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": true,
 			"Defense": false,
@@ -1748,7 +1748,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -1762,7 +1762,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Multiplication",
@@ -1814,7 +1814,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": true,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -1839,7 +1839,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -1859,7 +1859,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": true,
 			"Defense": false,
@@ -1890,7 +1890,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -1904,7 +1904,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Multiplication",
@@ -1956,7 +1956,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": true,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -1981,7 +1981,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -2001,7 +2001,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": true,
 			"Defense": false,
@@ -2032,7 +2032,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -2046,7 +2046,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Multiplication",
@@ -2098,7 +2098,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": true,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -2123,7 +2123,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -2143,7 +2143,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": true,
 			"Attack": true,
 			"Defense": false,
@@ -2174,7 +2174,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -2188,7 +2188,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Multiplication",
@@ -2240,7 +2240,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": true,
 				"LocalCritDamage": false
@@ -2265,7 +2265,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -2285,7 +2285,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": true,
 			"Attack": true,
 			"Defense": false,
@@ -2316,7 +2316,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -2330,7 +2330,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Multiplication",
@@ -2382,7 +2382,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": true,
 				"LocalCritDamage": false
@@ -2407,7 +2407,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -2427,7 +2427,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": true,
 			"Attack": true,
 			"Defense": false,
@@ -2458,7 +2458,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -2472,7 +2472,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Multiplication",
@@ -2524,7 +2524,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": true,
 				"LocalCritDamage": false
@@ -2549,7 +2549,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -2569,7 +2569,7 @@
 			"Fire": true,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": false,
 			"Defense": false,
@@ -2600,7 +2600,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -2614,7 +2614,7 @@
 				"FireResistance": 1,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "GlobalMod",
@@ -2666,7 +2666,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -2691,7 +2691,7 @@
 				"FireResist": true,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -2711,7 +2711,7 @@
 			"Fire": true,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": false,
 			"Defense": false,
@@ -2742,7 +2742,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -2756,7 +2756,7 @@
 				"FireResistance": 1,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "GlobalMod",
@@ -2808,7 +2808,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -2833,7 +2833,7 @@
 				"FireResist": true,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -2853,7 +2853,7 @@
 			"Fire": true,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": false,
 			"Defense": false,
@@ -2884,7 +2884,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -2898,7 +2898,7 @@
 				"FireResistance": 0,
 				"IceResistance": 1,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "GlobalMod",
@@ -2950,7 +2950,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -2973,9 +2973,9 @@
 			"GlobalModifierBuckets":
 			{
 				"FireResist": false,
-				"IceResist": true,
+				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -2995,7 +2995,7 @@
 			"Fire": true,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": false,
 			"Defense": false,
@@ -3026,7 +3026,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -3040,7 +3040,7 @@
 				"FireResistance": 0,
 				"IceResistance": 1,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "GlobalMod",
@@ -3092,7 +3092,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -3115,9 +3115,9 @@
 			"GlobalModifierBuckets":
 			{
 				"FireResist": false,
-				"IceResist": true,
+				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -3137,7 +3137,7 @@
 			"Fire": true,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": false,
 			"Defense": false,
@@ -3168,7 +3168,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -3182,7 +3182,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 1,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "GlobalMod",
@@ -3234,7 +3234,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -3259,7 +3259,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": true,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -3279,7 +3279,7 @@
 			"Fire": true,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": false,
 			"Defense": false,
@@ -3310,7 +3310,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -3324,7 +3324,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 1,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "GlobalMod",
@@ -3376,7 +3376,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -3401,16 +3401,16 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": true,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
 		}
 	},
 	{
-		"Name": "poison_res_01",
-		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"E1BAAC8940460FADB915C7A0C6432FC4\", \"poison_res_01\")",
-		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"EDA2C9C04BC925706912EEAC56A42D9C\", \"poison resist 1\")",
+		"Name": "abyssal_res_01",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"E1BAAC8940460FADB915C7A0C6432FC4\", \"abyssal_res_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"EDA2C9C04BC925706912EEAC56A42D9C\", \"abyssal resist 1\")",
 		"ItemTags":
 		{
 			"Etched": false
@@ -3421,7 +3421,7 @@
 			"Fire": true,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": false,
 			"Defense": false,
@@ -3452,7 +3452,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -3466,7 +3466,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 1
+				"AbyssalResistance": 1
 			}
 		},
 		"ModifierOperator": "GlobalMod",
@@ -3518,7 +3518,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -3543,16 +3543,16 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": true,
+				"AbyssalResist": true,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
 		}
 	},
 	{
-		"Name": "poison_res_02",
-		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"2A064D31425BA10563D96C9CAB0BFBA5\", \"poison_res_02\")",
-		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"E968298047208E74473F47A908FA7B89\", \"poison resist 2\")",
+		"Name": "abyssal_res_02",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"2A064D31425BA10563D96C9CAB0BFBA5\", \"abyssal_res_02\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"E968298047208E74473F47A908FA7B89\", \"abyssal resist 2\")",
 		"ItemTags":
 		{
 			"Etched": false
@@ -3563,7 +3563,7 @@
 			"Fire": true,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": false,
 			"Defense": false,
@@ -3594,7 +3594,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -3608,7 +3608,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 1
+				"AbyssalResistance": 1
 			}
 		},
 		"ModifierOperator": "GlobalMod",
@@ -3660,7 +3660,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -3685,7 +3685,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": true,
+				"AbyssalResist": true,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -3705,7 +3705,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": false,
 			"Defense": false,
@@ -3735,7 +3735,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -3749,7 +3749,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "GlobalMod",
@@ -3801,7 +3801,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -3826,7 +3826,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": true,
 				"UniqueSkill": false
 			}
@@ -3846,7 +3846,7 @@
 			"Fire": true,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": false,
 			"Defense": false,
@@ -3876,7 +3876,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -3890,7 +3890,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "UniqueModifier",
@@ -3942,7 +3942,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -3967,7 +3967,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": true
 			}
@@ -3987,7 +3987,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": false,
 			"Defense": false,
@@ -4018,7 +4018,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -4032,7 +4032,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -4084,7 +4084,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -4109,7 +4109,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -4129,7 +4129,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": false,
 			"Defense": false,
@@ -4160,7 +4160,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -4174,7 +4174,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -4226,7 +4226,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -4251,7 +4251,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -4271,7 +4271,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": false,
 			"Defense": false,
@@ -4302,7 +4302,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -4316,7 +4316,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -4368,7 +4368,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -4393,7 +4393,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -4413,7 +4413,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": false,
 			"Defense": false,
@@ -4444,7 +4444,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -4458,7 +4458,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -4510,7 +4510,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -4535,7 +4535,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -4555,7 +4555,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": false,
 			"Defense": true,
@@ -4586,7 +4586,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -4600,7 +4600,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -4652,7 +4652,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -4677,7 +4677,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -4697,7 +4697,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": false,
 			"Defense": true,
@@ -4728,7 +4728,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -4742,7 +4742,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -4794,7 +4794,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -4819,7 +4819,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -4839,7 +4839,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": false,
 			"Defense": true,
@@ -4870,7 +4870,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -4884,7 +4884,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -4936,7 +4936,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -4961,7 +4961,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -4981,7 +4981,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": false,
 			"Defense": true,
@@ -5012,7 +5012,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -5026,7 +5026,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -5078,7 +5078,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -5103,7 +5103,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -5123,7 +5123,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": false,
 			"Defense": true,
@@ -5154,7 +5154,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -5168,7 +5168,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -5220,7 +5220,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -5245,7 +5245,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -5265,7 +5265,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Poison": false,
+			"Abyssal": false,
 			"Damage": false,
 			"Attack": false,
 			"Defense": true,
@@ -5296,7 +5296,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"PoisonDamage": 0
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -5310,7 +5310,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"PoisonResistance": 0
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -5362,7 +5362,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -5387,7 +5387,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}

@@ -175,6 +175,8 @@ protected:
 	UButton* PlayerStashButton;
 	UPROPERTY(meta = (BindWidget))
 	UHorizontalBox* PlayerStashHorizBox;
+	UPROPERTY(meta = (BindWidget))
+	UButton* StashSelectButton;
 
 	// Click handler for SellButton
 	UFUNCTION()
@@ -209,12 +211,17 @@ protected:
 	// Click handler for the Player Stash button; shows PlayerStashHorizBox
 	UFUNCTION()
 	void OnPlayerStashButtonClicked();
+	// Click handler for the Stash Select button; hides both the shop and stash panels
+	UFUNCTION()
+	void OnStashSelectButtonClicked();
 	// Clears and repopulates ShopUniGrid with an item button + icon for every row in BaseItem_DT
 	void PopulateShopGrid();
 	// Clears and repopulates PlayerStashUniGrid with a WBP_SingleImageButton for every saved item (via ItemInstanceManager)
 	void PopulatePlayerStash();
 	// Sets the visibility of a panel widget and all of its direct children
 	void SetPanelAndChildrenVisibility(UPanelWidget* Panel, ESlateVisibility NewVisibility);
+	// Sets the visibility of each given panel (and its children)
+	void UpdatePanelVisibility(const TArray<UPanelWidget*>& Panels, ESlateVisibility NewVisibility);
 
 	UFUNCTION()
 	void ValidateButton(UButton* InputButton);

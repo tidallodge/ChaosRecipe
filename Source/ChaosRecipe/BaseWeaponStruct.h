@@ -38,7 +38,7 @@ struct FWeaponBaseDamage
     FIntPoint BaseElectricDamage;
 
     UPROPERTY(EditAnywhere)
-    FIntPoint BasePoisonDamage;
+    FIntPoint BaseAbyssalDamage;
 };
 
 USTRUCT(BlueprintType)
@@ -59,7 +59,7 @@ struct FWeaponLocalDamage
     FIntPoint LocalElectricDamage;
 
     UPROPERTY(EditAnywhere)
-    FIntPoint LocalPoisonDamage;
+    FIntPoint LocalAbyssalDamage;
 };
 
 USTRUCT(BlueprintType)

@@ -33,7 +33,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -58,7 +58,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -98,7 +98,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -123,7 +123,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -163,7 +163,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -188,7 +188,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -228,7 +228,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -253,7 +253,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
@@ -293,7 +293,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatPoisonDamage": false,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -318,7 +318,7 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"PoisonResist": false,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}

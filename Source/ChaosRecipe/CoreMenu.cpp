@@ -58,6 +58,7 @@ void UCoreMenu::NativeConstruct()
     ValidateButton(ShopButton);
     ValidateButton(RandomizeShopButton);
     ValidateButton(PlayerStashButton);
+    ValidateButton(StashSelectButton);
 
 	BuyButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBuyButtonClicked);
 	SellButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSellButtonClicked);
@@ -67,6 +68,7 @@ void UCoreMenu::NativeConstruct()
 	ShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnShopButtonClicked);
 	RandomizeShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeShopButtonClicked);
 	PlayerStashButton->OnClicked.AddDynamic(this, &UCoreMenu::OnPlayerStashButtonClicked);
+	StashSelectButton->OnClicked.AddDynamic(this, &UCoreMenu::OnStashSelectButtonClicked);
 
 	if (ShopWindowBox)
 	{
@@ -104,6 +106,7 @@ void UCoreMenu::OnSellButtonClicked()
 void UCoreMenu::OnBuyButtonClicked()
 {
 	UE_LOG(LogTemp, Warning, TEXT("BuyButton Clicked. Event Dispatched"));
+	UpdatePanelVisibility({ ShopWindowBox, PlayerStashHorizBox }, ESlateVisibility::Hidden);
 	if (!bHasSelectedItemData)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No selected item to buy."));
@@ -607,6 +610,20 @@ void UCoreMenu::OnPlayerStashButtonClicked()
 	if (ShopWindowBox)
 	{
 		SetPanelAndChildrenVisibility(ShopWindowBox, ESlateVisibility::Hidden);
+	}
+}
+
+void UCoreMenu::OnStashSelectButtonClicked()
+{
+	UE_LOG(LogTemp, Warning, TEXT("StashSelectButton Clicked."));
+	UpdatePanelVisibility({ ShopWindowBox, PlayerStashHorizBox }, ESlateVisibility::Hidden);
+}
+
+void UCoreMenu::UpdatePanelVisibility(const TArray<UPanelWidget*>& Panels, ESlateVisibility NewVisibility)
+{
+	for (UPanelWidget* Panel : Panels)
+	{
+		SetPanelAndChildrenVisibility(Panel, NewVisibility);
 	}
 }
 

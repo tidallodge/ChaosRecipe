@@ -47,7 +47,7 @@ enum class EModifierOperator : uint8
 //     bool LocalFlatElectricDamage;
 
 //     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool LocalFlatPoisonDamage;
+//     bool LocalFlatAbyssalDamage;
 
 //     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
 //     bool LocalAttackRate;
@@ -110,7 +110,7 @@ enum class EModifierOperator : uint8
 //     bool ElectricResist;
 
 //     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool PoisonResist;
+//     bool AbyssalResist;
 
 //     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
 //     bool GlobalAllSkills;
@@ -273,7 +273,7 @@ struct FModifierTags
     bool Electric;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-    bool Poison;
+    bool Abyssal;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
     bool Damage;
@@ -326,7 +326,7 @@ struct FItemModifierDamageStruct
     float ElectricDamage = 0.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Damage Modifier")
-    float PoisonDamage = 0.f;
+    float AbyssalDamage = 0.f;
 };
 
 USTRUCT(BlueprintType)
@@ -364,7 +364,7 @@ struct FItemModifierReistanceStruct
     float ElectricResistance = 0.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Resistance Modifier")
-    float PoisonResistance = 0.f;
+    float AbyssalResistance = 0.f;
 };
 
 USTRUCT(BlueprintType)
