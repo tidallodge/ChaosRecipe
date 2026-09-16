@@ -607,6 +607,8 @@ void UCoreMenu::OnPlayerStashButtonClicked()
 	}
 
 	UpdatePanelVisibility({ ActiveItemImageHorizBox }, ESlateVisibility::Hidden);
+
+	PopulatePlayerStash();
 }
 
 void UCoreMenu::OnStashSelectButtonClicked()
