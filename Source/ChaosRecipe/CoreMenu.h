@@ -26,6 +26,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSaveItemButtonClickedEvent, FStri
 // Fired when a saved item is loaded from the PlayerStashUniGrid, so listeners (e.g. ItemHandler) can
 // prep that existing item - identified by ItemId and its already-assigned ItemUUID - as the active item.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStashItemSelectedEvent, FString, ItemId, FString, ItemUUID);
+// Fired when an item is clicked in the ShopUniGrid, so listeners (e.g. ItemHandler) can cache its
+// base stats and display them as the active item, the same way a stash selection or randomize does.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShopItemSelectedEvent, FString, ItemId);
 
 class UCoreMenu;
 
@@ -94,6 +97,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnStashItemSelectedEvent OnStashItemSelectedEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnShopItemSelectedEvent OnShopItemSelectedEvent;
 
 	UPROPERTY()
 	int32 PlayerSwordCount;

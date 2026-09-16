@@ -350,8 +350,8 @@ void UCoreMenu::PopulatePlayerStash()
 		return;
 	}
 
-	constexpr int32 NumColumns = 3;
-	constexpr float StashItemSlotSize = 64.f;
+	constexpr int32 NumColumns = 4;
+	constexpr float StashItemSlotSize = 256.f;
 	int32 Index = 0;
 
 	ItemInstanceManager StashManager;
@@ -586,6 +586,10 @@ void UCoreMenu::OnShopItemButtonClicked(FString ItemId)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Shop item button clicked for ItemId: %s"), *ItemId);
 	SelectItemData(FText::FromString(ItemId));
+
+	// Lets listeners (e.g. ItemHandler) cache this item's base stats and display them as the
+	// active item, matching the stat breakdown shown for a stash selection or randomize.
+	OnShopItemSelectedEvent.Broadcast(ItemId);
 }
 
 void UCoreMenu::OnPlayerStashButtonClicked()

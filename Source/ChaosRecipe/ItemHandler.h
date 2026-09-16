@@ -104,10 +104,10 @@ public:
     void SetUUID();
 
     UFUNCTION()
-    void OnItemInfoClicked(FString ItemId);
+    void OnStashItemSelected(FString ItemId, FString ItemUUID);
 
     UFUNCTION()
-    void OnStashItemSelected(FString ItemId, FString ItemUUID);
+    void OnShopItemSelected(FString ItemId);
 
     UFUNCTION()
     void OnBuyButtonClicked(FString ItemId);
@@ -150,6 +150,11 @@ protected:
 
     // Rebuilds CachedArmorStats.BaseDefense from the item's base defense plus the rolled defense modifiers.
     void RecalculateArmorDefense();
+
+    // Shared by OnStashItemSelected/OnShopItemSelected/OnBuyButtonClicked: caches this item's stats
+    // (preserving ItemUUID if given, e.g. for a saved stash item) and displays them as the active
+    // item, in the same weapon/armor stat breakdown format Randomize uses.
+    void OnItemSelected(const FString& ItemId, const FString& ItemUUID);
 
     bool LoadItemDataRow(const FString& ItemId, FBaseItemStruct& OutItemData) const;
     bool LoadWeaponDataRow(const FString& ItemId, FBaseWeaponStruct& OutWeaponData) const;

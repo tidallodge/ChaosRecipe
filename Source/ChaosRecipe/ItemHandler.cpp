@@ -62,6 +62,7 @@ void UItemHandler::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
     CoreMenu->OnSaveItemButtonClickedEvent.AddDynamic(this, &UItemHandler::OnSaveItemButtonClicked);
     CoreMenu->OnSellButtonClickedEvent.AddDynamic(this, &UItemHandler::OnSellButtonClicked);
     CoreMenu->OnStashItemSelectedEvent.AddDynamic(this, &UItemHandler::OnStashItemSelected);
+    CoreMenu->OnShopItemSelectedEvent.AddDynamic(this, &UItemHandler::OnShopItemSelected);
 }
 
 void UItemHandler::OnStashItemSelected(FString ItemId, FString ItemUUID)
@@ -72,33 +73,20 @@ void UItemHandler::OnStashItemSelected(FString ItemId, FString ItemUUID)
         return;
     }
 
-    FBaseItemStruct ItemData;
-    if (!LoadItemDataRow(ItemId, ItemData))
-    {
-        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: No item found in BaseItem_DT for ItemId '%s'."), *ItemId);
-        return;
-    }
-
-    // Pre-seed the relevant cache with this item's existing UUID so the GetWeaponStatsForItem/
-    // GetArmorStatsForItem call inside OnItemInfoClicked preserves it instead of leaving it empty
-    // (which would make a later Save mint a brand new UUID rather than overwriting this item).
-    if (ItemData.ItemClass == EItemClass::Armor || ItemData.ItemClass == EItemClass::Shield)
-    {
-        CachedArmorStats.UUID = FText::FromString(ItemUUID);
-    }
-    else
-    {
-        CachedWeaponStats.UUID = FText::FromString(ItemUUID);
-    }
-
-    OnItemInfoClicked(ItemId);
+    OnItemSelected(ItemId, ItemUUID);
 }
 
-void UItemHandler::OnItemInfoClicked(FString ItemId)
+void UItemHandler::OnShopItemSelected(FString ItemId)
+{
+    // A freshly clicked shop item has no saved UUID yet - Buy is what mints one.
+    OnItemSelected(ItemId, FString());
+}
+
+void UItemHandler::OnItemSelected(const FString& ItemId, const FString& ItemUUID)
 {
     if (ItemId.IsEmpty())
     {
-        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Received empty ItemId."));
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Received empty ItemId for item selection."));
         return;
     }
 
@@ -111,9 +99,30 @@ void UItemHandler::OnItemInfoClicked(FString ItemId)
 
     LogItemData(ItemData);
 
-    if (ItemData.ItemClass == EItemClass::Weapon)
+    const bool bIsArmor = ItemData.ItemClass == EItemClass::Armor || ItemData.ItemClass == EItemClass::Shield;
+    LastSelectedItemClass = bIsArmor ? EItemClass::Armor : EItemClass::Weapon;
+
+    // Pre-seed the relevant cache with an existing UUID (e.g. a saved stash item) so the
+    // GetWeaponStatsForItem/GetArmorStatsForItem call below preserves it instead of leaving it
+    // empty (which would make a later Save mint a brand new UUID rather than overwriting this item).
+    if (!ItemUUID.IsEmpty())
     {
-        LastSelectedItemClass = EItemClass::Weapon;
+        if (bIsArmor)
+        {
+            CachedArmorStats.UUID = FText::FromString(ItemUUID);
+        }
+        else
+        {
+            CachedWeaponStats.UUID = FText::FromString(ItemUUID);
+        }
+    }
+
+    const FString ItemName = ItemData.ItemName.ToString();
+    FString Message;
+    FString ActiveItemText;
+
+    if (!bIsArmor)
+    {
         CachedWeaponStats = GetWeaponStatsForItem(ItemId);
         if (CachedWeaponStats.ItemId.IsEmpty())
         {
@@ -121,20 +130,83 @@ void UItemHandler::OnItemInfoClicked(FString ItemId)
             return;
         }
 
-        UE_LOG(LogTemp, Warning,
-            TEXT("ItemHandler cached weapon stats: ItemId=%s, UUID=%s, ItemLevel=%d, AttackRate=%.2f"),
-            *CachedWeaponStats.ItemId.ToString(),
-            *CachedWeaponStats.UUID.ToString(),
-            CachedWeaponStats.ItemLevel,
-            CachedWeaponStats.AttackRate);
-
         FBaseWeaponStruct WeaponData;
         if (LoadWeaponDataRow(ItemId, WeaponData))
         {
             LogWeaponData(WeaponData);
         }
+
+        FString DamageSummary;
+        for (const TPair<FString, FWeaponBaseDamage>& DamageEntry : CachedWeaponStats.WeaponDamage)
+        {
+            if (!DamageSummary.IsEmpty())
+            {
+                DamageSummary += TEXT(" | ");
+            }
+
+            DamageSummary += FString::Printf(TEXT("%s: %d-%d"),
+                *DamageEntry.Key,
+                DamageEntry.Value.BasePhysicalDamage.X,
+                DamageEntry.Value.BasePhysicalDamage.Y);
+        }
+
+        FString LocalDamageSummary;
+        for (const TPair<FString, FWeaponLocalDamage>& LocalEntry : CachedWeaponStats.WeaponLocalDamage)
+        {
+            struct FLocalDamageLine { const TCHAR* Label; FIntPoint Range; };
+            const FLocalDamageLine LocalLines[] = {
+                { TEXT("Physical"), LocalEntry.Value.LocalPhysicalDamage },
+                { TEXT("Fire"),     LocalEntry.Value.LocalFireDamage },
+                { TEXT("Ice"),      LocalEntry.Value.LocalIceDamage },
+                { TEXT("Electric"), LocalEntry.Value.LocalElectricDamage },
+                { TEXT("Poison"),   LocalEntry.Value.LocalPoisonDamage },
+            };
+
+            for (const FLocalDamageLine& LocalLine : LocalLines)
+            {
+                if (LocalLine.Range.X == 0 && LocalLine.Range.Y == 0)
+                {
+                    continue;
+                }
+
+                if (!LocalDamageSummary.IsEmpty())
+                {
+                    LocalDamageSummary += TEXT(" | ");
+                }
+
+                LocalDamageSummary += FString::Printf(TEXT("%s:%d-%d"),
+                    LocalLine.Label, LocalLine.Range.X, LocalLine.Range.Y);
+            }
+        }
+
+        if (LocalDamageSummary.IsEmpty())
+        {
+            LocalDamageSummary = TEXT("none");
+        }
+
+        FString ModifiersText = BuildAffixOrderedModifiersText(ItemModifierAssigner.GetModifierPool(),
+            CachedWeaponStats.ImplicitModifiers, CachedWeaponStats.PrefixModifiers, CachedWeaponStats.SuffixModifiers);
+        if (ModifiersText.IsEmpty())
+        {
+            ModifiersText = TEXT("  none\n");
+        }
+
+        Message = FString::Printf(
+            TEXT("ItemHandler selected weapon stats:\nUUID:%s\nAttackRate=%.2f\nBase:%s\nLocal:%s"),
+            *CachedWeaponStats.UUID.ToString(),
+            CachedWeaponStats.AttackRate,
+            *DamageSummary,
+            *LocalDamageSummary);
+
+        ActiveItemText = FString::Printf(
+            TEXT("%s\n%s\nLocal Damage:\n\t%s\nAttack Rate: %.2f\nModifiers:\n%s"),
+            *ItemName,
+            *DamageSummary,
+            *LocalDamageSummary,
+            CachedWeaponStats.AttackRate,
+            *ModifiersText);
     }
-    else if (ItemData.ItemClass == EItemClass::Armor || ItemData.ItemClass == EItemClass::Shield)
+    else
     {
         FBaseArmorStruct ArmorData;
         if (LoadArmorDataRow(ItemId, ArmorData))
@@ -142,7 +214,6 @@ void UItemHandler::OnItemInfoClicked(FString ItemId)
             LogArmorData(ArmorData);
         }
 
-        LastSelectedItemClass = EItemClass::Armor;
         CachedArmorStats = GetArmorStatsForItem(ItemId);
         if (CachedArmorStats.ItemId.IsEmpty())
         {
@@ -150,12 +221,41 @@ void UItemHandler::OnItemInfoClicked(FString ItemId)
             return;
         }
 
-        UE_LOG(LogTemp, Warning,
-            TEXT("ItemHandler cached armor stats: ItemId=%s, UUID=%s, ItemLevel=%d"),
-            *CachedArmorStats.ItemId.ToString(),
+        const FString DefenseSummary = FString::Printf(
+            TEXT("PhysicalMitigation:%d-%d | Evade:%d-%d | Overshield:%d-%d"),
+            CachedArmorStats.BaseDefense.BasePhysicalMitigation.X,
+            CachedArmorStats.BaseDefense.BasePhysicalMitigation.Y,
+            CachedArmorStats.BaseDefense.BaseEvade.X,
+            CachedArmorStats.BaseDefense.BaseEvade.Y,
+            CachedArmorStats.BaseDefense.BaseOvershield.X,
+            CachedArmorStats.BaseDefense.BaseOvershield.Y);
+
+        FString ModifiersText = BuildAffixOrderedModifiersText(ItemModifierAssigner.GetModifierPool(),
+            CachedArmorStats.ImplicitModifiers, CachedArmorStats.PrefixModifiers, CachedArmorStats.SuffixModifiers);
+        if (ModifiersText.IsEmpty())
+        {
+            ModifiersText = TEXT("  none\n");
+        }
+
+        Message = FString::Printf(
+            TEXT("ItemHandler selected armor stats:\nUUID:%s\nDefense:%s"),
             *CachedArmorStats.UUID.ToString(),
-            CachedArmorStats.ItemLevel);
+            *DefenseSummary);
+
+        ActiveItemText = FString::Printf(
+            TEXT("%s\nDefense:\n\t%s\nModifiers:\n%s"),
+            *ItemName,
+            *DefenseSummary,
+            *ModifiersText);
     }
+
+    if (BoundCoreMenu)
+    {
+        BoundCoreMenu->LogToScreen(Message);
+        BoundCoreMenu->SetActiveItemText(ActiveItemText);
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
 }
 
 bool UItemHandler::BuildWeaponStatsForItem(const FString& ItemId, FItemWeaponStatsStruct& OutWeaponStats) const
@@ -281,9 +381,8 @@ void UItemHandler::SetUUID()
 void UItemHandler::OnBuyButtonClicked(FString ItemId)
 {
     UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Buy button clicked for ItemId '%s'."), *ItemId);
-    CachedWeaponStats = GetWeaponStatsForItem(ItemId);
     SetUUID();
-    OnItemInfoClicked(ItemId);
+    OnItemSelected(ItemId, FString());
 }
 
 void UItemHandler::OnRandomizeItem()
