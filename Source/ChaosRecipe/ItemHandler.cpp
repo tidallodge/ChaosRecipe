@@ -46,6 +46,14 @@ namespace
 
 		return Text;
 	}
+
+	// ItemGoldValue is populated as soon as base stats are built (it starts equal to ItemBaseGoldValue),
+	// so the ItemBaseGoldValue fallback only matters for stats structs that predate this field.
+	template <typename TItemStats>
+	float GetDisplayGoldValue(const TItemStats& ItemStats)
+	{
+		return ItemStats.ItemGoldValue > 0.f ? ItemStats.ItemGoldValue : static_cast<float>(ItemStats.ItemBaseGoldValue);
+	}
 }
 
 void UItemHandler::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
@@ -76,10 +84,10 @@ void UItemHandler::OnStashItemSelected(FString ItemId, FString ItemUUID)
     OnItemSelected(ItemId, ItemUUID);
 }
 
-void UItemHandler::OnShopItemSelected(FString ItemId)
+void UItemHandler::OnShopItemSelected(FString ItemId, FString ItemUUID)
 {
-    // A freshly clicked shop item has no saved UUID yet - Buy is what mints one.
-    OnItemSelected(ItemId, FString());
+    // ItemUUID was already minted for this listing back in CoreMenu::PopulateShopGrid.
+    OnItemSelected(ItemId, ItemUUID);
 }
 
 void UItemHandler::OnItemSelected(const FString& ItemId, const FString& ItemUUID)
@@ -199,11 +207,12 @@ void UItemHandler::OnItemSelected(const FString& ItemId, const FString& ItemUUID
             *LocalDamageSummary);
 
         ActiveItemText = FString::Printf(
-            TEXT("%s\n%s\nLocal Damage:\n\t%s\nAttack Rate: %.2f\nModifiers:\n%s"),
+            TEXT("%s\n%s\nLocal Damage:\n\t%s\nAttack Rate: %.2f\nGold Value: %.0f\nModifiers:\n%s"),
             *ItemName,
             *DamageSummary,
             *LocalDamageSummary,
             CachedWeaponStats.AttackRate,
+            GetDisplayGoldValue(CachedWeaponStats),
             *ModifiersText);
     }
     else
@@ -243,9 +252,10 @@ void UItemHandler::OnItemSelected(const FString& ItemId, const FString& ItemUUID
             *DefenseSummary);
 
         ActiveItemText = FString::Printf(
-            TEXT("%s\nDefense:\n\t%s\nModifiers:\n%s"),
+            TEXT("%s\nDefense:\n\t%s\nGold Value: %.0f\nModifiers:\n%s"),
             *ItemName,
             *DefenseSummary,
+            GetDisplayGoldValue(CachedArmorStats),
             *ModifiersText);
     }
 
@@ -274,6 +284,8 @@ bool UItemHandler::BuildWeaponStatsForItem(const FString& ItemId, FItemWeaponSta
     OutWeaponStats.ItemLevel = 1;
     OutWeaponStats.Tags = FTagsStruct();
     OutWeaponStats.AttackRate = WeaponData.WeaponBaseAttackRate;
+    OutWeaponStats.ItemBaseGoldValue = WeaponData.ItemBaseGoldValue;
+    OutWeaponStats.ItemGoldValue = WeaponData.ItemBaseGoldValue;
     OutWeaponStats.WeaponDamage.Empty();
     OutWeaponStats.WeaponDamage.Add(TEXT("BaseDamage"), WeaponData.WeaponBaseDamage);
     OutWeaponStats.WeaponLocalDamage.Empty();
@@ -320,6 +332,8 @@ bool UItemHandler::BuildArmorStatsForItem(const FString& ItemId, FItemArmorStats
     OutArmorStats.ItemLevel = 1;
     OutArmorStats.Tags = FTagsStruct();
     OutArmorStats.BaseDefense = ArmorData.BaseDefense;
+    OutArmorStats.ItemBaseGoldValue = ArmorData.ItemBaseGoldValue;
+    OutArmorStats.ItemGoldValue = ArmorData.ItemBaseGoldValue;
     OutArmorStats.ImplicitModifiers.Empty();
     OutArmorStats.PrefixModifiers.Empty();
     OutArmorStats.SuffixModifiers.Empty();
@@ -378,11 +392,12 @@ void UItemHandler::SetUUID()
     }
 }
 
-void UItemHandler::OnBuyButtonClicked(FString ItemId)
+void UItemHandler::OnBuyButtonClicked(FString ItemId, FString ItemUUID)
 {
     UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Buy button clicked for ItemId '%s'."), *ItemId);
-    SetUUID();
-    OnItemSelected(ItemId, FString());
+    // UUID was already minted for this listing in PopulateShopGrid and cached on selection
+    // (OnItemSelected's ExistingUUID preservation below), so Buy no longer mints one itself.
+    OnItemSelected(ItemId, ItemUUID);
 }
 
 void UItemHandler::OnRandomizeItem()
@@ -451,6 +466,7 @@ void UItemHandler::RandomizeWeaponItem()
         CachedWeaponStats.PrefixModifiers.Empty();
         CachedWeaponStats.SuffixModifiers.Empty();
 
+        float GoldValueMultiplier = 1.f;
         for (const FString& ModifierId : AssignedModifierIds)
         {
             const FItemModifierStruct* ModifierRow = ItemModifierAssigner.GetModifierPool().FindByPredicate(
@@ -488,9 +504,17 @@ void UItemHandler::RandomizeWeaponItem()
                 CachedWeaponStats.AttackRate *= 1.f + (RolledValue / 100.f);
             }
 
+            if (ModifierRow)
+            {
+                GoldValueMultiplier *= ModifierRow->GoldValueModifier;
+            }
+
             UE_LOG(LogTemp, Warning, TEXT("ItemHandler: assigned modifier %s (%s) value=%d"),
                 *ModifierId, *UEnum::GetValueAsString(AffixType), RolledValue);
         }
+
+        // ItemGoldValue is the item's base gold value scaled by every rolled modifier's GoldValueModifier.
+        CachedWeaponStats.ItemGoldValue = CachedWeaponStats.ItemBaseGoldValue * GoldValueMultiplier;
 
         // List prefixes before suffixes in the summary text, regardless of roll order.
         ModifiersText = BuildAffixOrderedModifiersText(ItemModifierAssigner.GetModifierPool(),
@@ -565,11 +589,12 @@ void UItemHandler::RandomizeWeaponItem()
     }
 
     const FString ActiveItemText = FString::Printf(
-        TEXT("%s\n%s\nLocal Damage:\n\t%s\nAttack Rate: %.2f\nModifiers:\n%s"),
+        TEXT("%s\n%s\nLocal Damage:\n\t%s\nAttack Rate: %.2f\nGold Value: %.0f\nModifiers:\n%s"),
         *RandomizeItemName,
         *DamageSummary,
         *LocalDamageSummary,
         CachedWeaponStats.AttackRate,
+        GetDisplayGoldValue(CachedWeaponStats),
         *ModifiersText);
 
     if (BoundCoreMenu)
@@ -629,6 +654,7 @@ void UItemHandler::RandomizeArmorItem()
         CachedArmorStats.PrefixModifiers.Empty();
         CachedArmorStats.SuffixModifiers.Empty();
 
+        float GoldValueMultiplier = 1.f;
         for (const FString& ModifierId : AssignedModifierIds)
         {
             const FItemModifierStruct* ModifierRow = ItemModifierAssigner.GetModifierPool().FindByPredicate(
@@ -660,9 +686,17 @@ void UItemHandler::RandomizeArmorItem()
             default:                   CachedArmorStats.PrefixModifiers.Add(ModifierId, RolledValue);   break;
             }
 
+            if (ModifierRow)
+            {
+                GoldValueMultiplier *= ModifierRow->GoldValueModifier;
+            }
+
             UE_LOG(LogTemp, Warning, TEXT("ItemHandler: assigned modifier %s (%s) value=%d"),
                 *ModifierId, *UEnum::GetValueAsString(AffixType), RolledValue);
         }
+
+        // ItemGoldValue is the item's base gold value scaled by every rolled modifier's GoldValueModifier.
+        CachedArmorStats.ItemGoldValue = CachedArmorStats.ItemBaseGoldValue * GoldValueMultiplier;
 
         // List prefixes before suffixes in the summary text, regardless of roll order.
         ModifiersText = BuildAffixOrderedModifiersText(ItemModifierAssigner.GetModifierPool(),
@@ -696,9 +730,10 @@ void UItemHandler::RandomizeArmorItem()
     }
 
     const FString ActiveItemText = FString::Printf(
-        TEXT("%s\nDefense:\n\t%s\nModifiers:\n%s"),
+        TEXT("%s\nDefense:\n\t%s\nGold Value: %.0f\nModifiers:\n%s"),
         *RandomizeItemName,
         *DefenseSummary,
+        GetDisplayGoldValue(CachedArmorStats),
         *ModifiersText);
 
     if (BoundCoreMenu)
@@ -992,27 +1027,51 @@ void UItemHandler::OnSaveItemButtonClicked(FString ItemId)
     UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
 }
 
-void UItemHandler::OnSellButtonClicked(FString ItemId)
+void UItemHandler::OnSellButtonClicked(FString ItemId, FString ItemUUID)
 {
-    if (!BoundCoreMenu)
+    if (ItemUUID.IsEmpty())
     {
-        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: No bound CoreMenu to read selected UUID for sell."));
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: No saved-item UUID to remove for sell of ItemId '%s'."), *ItemId);
         return;
     }
 
-    const FString UUID = BoundCoreMenu->GetSelectedItemUUID();
-    if (UUID.IsEmpty())
+    // Resolve the gold value and let listeners (e.g. PlayerInventory adding it to PlayerGoldCount)
+    // handle the sale before the item is removed below. Broadcast() calls bound listeners
+    // synchronously, so every listener has returned by the time RemoveSavedItem runs.
+    const float SoldGoldValue = GetItemGoldValue(ItemUUID);
+    OnItemSoldEvent.Broadcast(ItemId, ItemUUID, SoldGoldValue);
+
+    SavedItemsManager.RemoveSavedItem(ItemUUID);
+
+    if (BoundCoreMenu)
     {
-        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: No loaded saved-item UUID to remove for sell of ItemId '%s'."), *ItemId);
-        return;
+        BoundCoreMenu->ClearSelectedItemUUID();
     }
 
-    SavedItemsManager.RemoveSavedItem(UUID);
-    BoundCoreMenu->ClearSelectedItemUUID();
+    const FString Message = FString::Printf(TEXT("Removed sold item %s (UUID: %s) from SavedItems.json"), *ItemId, *ItemUUID);
+    if (BoundCoreMenu)
+    {
+        BoundCoreMenu->LogToScreen(Message);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
+    }
+}
 
-    const FString Message = FString::Printf(TEXT("Removed sold item %s (UUID: %s) from SavedItems.json"), *ItemId, *UUID);
-    BoundCoreMenu->LogToScreen(Message);
-    UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
+float UItemHandler::GetItemGoldValue(const FString& ItemUUID) const
+{
+    const TSharedPtr<FJsonObject> FoundItem = SavedItemsManager.GetSavedItemJson(ItemUUID);
+    if (!FoundItem.IsValid())
+    {
+        return 0.f;
+    }
+
+    double ItemGoldValue = 0.0;
+    double ItemBaseGoldValue = 0.0;
+    FoundItem->TryGetNumberField(TEXT("itemGoldValue"), ItemGoldValue);
+    FoundItem->TryGetNumberField(TEXT("itemBaseGoldValue"), ItemBaseGoldValue);
+    return static_cast<float>(ItemGoldValue > 0.0 ? ItemGoldValue : ItemBaseGoldValue);
 }
 
 bool UItemHandler::LoadItemDataRow(const FString& ItemId, FBaseItemStruct& OutItemData) const

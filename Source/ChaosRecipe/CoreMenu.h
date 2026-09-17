@@ -19,8 +19,8 @@ class UUniformGridPanel;
 class UDataTable;
 class UPanelWidget;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnBuyButtonClickedEvent, FString, ItemType);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSellButtonClickedEvent, FString, ItemType);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBuyButtonClickedEvent, FString, ItemId, FString, ItemUUID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSellButtonClickedEvent, FString, ItemId, FString, ItemUUID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRandomizeItemEvent);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSaveItemButtonClickedEvent, FString, ItemId);
 // Fired when a saved item is loaded from the PlayerStashUniGrid, so listeners (e.g. ItemHandler) can
@@ -28,7 +28,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSaveItemButtonClickedEvent, FStri
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStashItemSelectedEvent, FString, ItemId, FString, ItemUUID);
 // Fired when an item is clicked in the ShopUniGrid, so listeners (e.g. ItemHandler) can cache its
 // base stats and display them as the active item, the same way a stash selection or randomize does.
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnShopItemSelectedEvent, FString, ItemId);
+// ItemUUID is the UUID minted for this shop listing back in PopulateShopGrid.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnShopItemSelectedEvent, FString, ItemId, FString, ItemUUID);
 
 class UCoreMenu;
 
@@ -50,8 +51,9 @@ public:
 	void HandleClicked();
 };
 
-// Carries an item's ItemId for a dynamically created shop grid item button, since
-// UButton::OnClicked takes no parameters and can't otherwise identify its sender.
+// Carries an item's ItemId and its pre-minted ItemUUID (assigned in PopulateShopGrid) for a
+// dynamically created shop grid item button, since UButton::OnClicked takes no parameters and
+// can't otherwise identify its sender.
 UCLASS()
 class UShopItemButtonProxy : public UObject
 {
@@ -60,6 +62,9 @@ class UShopItemButtonProxy : public UObject
 public:
 	UPROPERTY()
 	FString ItemId;
+
+	UPROPERTY()
+	FString ItemUUID;
 
 	UPROPERTY()
 	TObjectPtr<UCoreMenu> OwningMenu;
@@ -117,6 +122,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Menu Text")
 	void SetActiveItemText(const FString& NewMessage);
 
+	// Sets the text shown in GoldHorizBox's PlayerGoldTextBox to the given gold count.
+	UFUNCTION(BlueprintCallable, Category = "Menu Text")
+	void SetPlayerGoldText(int32 NewGoldCount);
+
 	// UUID of the saved item currently loaded via the Load Item box (empty if none).
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	FString GetSelectedItemUUID() const { return SelectedItemUUID; }
@@ -171,6 +180,8 @@ protected:
 	UHorizontalBox* PlayerStashHorizBox;
 	UPROPERTY(meta = (BindWidget))
 	UButton* StashSelectButton;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* PlayerGoldTextBox;
 
 	// Click handler for SellButton
 	UFUNCTION()
@@ -198,7 +209,7 @@ protected:
 	void OnRandomizeShopButtonClicked();
 	// Click handler for a dynamically created shop grid item button
 	UFUNCTION()
-	void OnShopItemButtonClicked(FString ItemId);
+	void OnShopItemButtonClicked(FString ItemId, FString ItemUUID);
 	// Click handler for the Player Stash button; shows PlayerStashHorizBox
 	UFUNCTION()
 	void OnPlayerStashButtonClicked();

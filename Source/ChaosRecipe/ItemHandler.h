@@ -15,6 +15,11 @@
 
 class UCoreMenu;
 
+// Broadcast by OnSellButtonClicked once it has resolved the sold item's gold value and before it
+// removes the item from SavedItems.json, so listeners (e.g. PlayerInventory) always get the correct
+// gold value and are guaranteed to finish handling the sale before the item is gone.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnItemSoldEvent, FString, ItemId, FString, ItemUUID, float, GoldValue);
+
 USTRUCT(BlueprintType)
 struct FItemWeaponStatsStruct : public FTableRowBase
 {
@@ -40,6 +45,12 @@ struct FItemWeaponStatsStruct : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
     float AttackRate;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
+    int32 ItemBaseGoldValue = 0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
+    float ItemGoldValue = 0.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon Stats")
     TMap<FString, int32> ImplicitModifiers; // FString for ModifierId, int32 for modifier range roll (0 through max range for each mod)
@@ -71,6 +82,12 @@ struct FItemArmorStatsStruct : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor Stats")
     FBaseDefense BaseDefense;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor Stats")
+    int32 ItemBaseGoldValue = 0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor Stats")
+    float ItemGoldValue = 0.f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Armor Stats")
     TMap<FString, int32> ImplicitModifiers;
@@ -107,10 +124,10 @@ public:
     void OnStashItemSelected(FString ItemId, FString ItemUUID);
 
     UFUNCTION()
-    void OnShopItemSelected(FString ItemId);
+    void OnShopItemSelected(FString ItemId, FString ItemUUID);
 
     UFUNCTION()
-    void OnBuyButtonClicked(FString ItemId);
+    void OnBuyButtonClicked(FString ItemId, FString ItemUUID);
 
     UFUNCTION()
     void OnRandomizeItem();
@@ -125,7 +142,16 @@ public:
     void OnSaveItemButtonClicked(FString ItemId);
 
     UFUNCTION()
-    void OnSellButtonClicked(FString ItemId);
+    void OnSellButtonClicked(FString ItemId, FString ItemUUID);
+
+    // Reads a saved item's gold value straight from its saved JSON: itemGoldValue when present,
+    // falling back to itemBaseGoldValue for saves from before itemGoldValue existed. Returns 0 if
+    // ItemUUID has no saved item.
+    UFUNCTION()
+    float GetItemGoldValue(const FString& ItemUUID) const;
+
+    UPROPERTY(BlueprintAssignable, Category = "Events")
+    FOnItemSoldEvent OnItemSoldEvent;
 
 protected:
     UPROPERTY()
@@ -137,7 +163,7 @@ protected:
     UPROPERTY()
     EItemClass LastSelectedItemClass = EItemClass::Weapon;
 
-    ItemInstanceManager SavedItemsManager;
+    UItemInstanceManager SavedItemsManager;
 
     // Receives the full pool of possible modifiers whenever an item is randomized.
     ModifierAssigner ItemModifierAssigner;

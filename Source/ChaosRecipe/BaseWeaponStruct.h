@@ -93,4 +93,7 @@ struct FBaseWeaponStruct : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
     float WeaponBaseCritMulti;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    int32 ItemBaseGoldValue;
 };

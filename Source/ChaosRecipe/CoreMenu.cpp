@@ -96,7 +96,7 @@ void UCoreMenu::OnSellButtonClicked()
 		UE_LOG(LogTemp, Warning, TEXT("No selected item to sell."));
 		return;
 	}
-	OnSellButtonClickedEvent.Broadcast(SelectedItemId);
+	OnSellButtonClickedEvent.Broadcast(SelectedItemId, SelectedItemUUID);
 }
 
 void UCoreMenu::OnBuyButtonClicked()
@@ -109,7 +109,7 @@ void UCoreMenu::OnBuyButtonClicked()
 		UE_LOG(LogTemp, Warning, TEXT("No selected item to buy."));
 		return;
 	}
-	OnBuyButtonClickedEvent.Broadcast(SelectedItemId);
+	OnBuyButtonClickedEvent.Broadcast(SelectedItemId, SelectedItemUUID);
 }
 
 void UCoreMenu::SelectItemData(const FText& ItemIdText)
@@ -261,6 +261,15 @@ void UCoreMenu::OnSingleLoadItemButtonClicked(FString ItemUUID)
 	double AttackRate = 0.0;
 	ItemObject->TryGetNumberField(TEXT("attackRate"), AttackRate);
 
+	// itemGoldValue is populated as soon as an item's stats are built (it starts equal to
+	// itemBaseGoldValue), so the itemBaseGoldValue fallback only matters for saves from before
+	// this field existed.
+	double ItemGoldValue = 0.0;
+	double ItemBaseGoldValue = 0.0;
+	ItemObject->TryGetNumberField(TEXT("itemGoldValue"), ItemGoldValue);
+	ItemObject->TryGetNumberField(TEXT("itemBaseGoldValue"), ItemBaseGoldValue);
+	const double DisplayGoldValue = ItemGoldValue > 0.0 ? ItemGoldValue : ItemBaseGoldValue;
+
 	FString WeaponDamageText;
 	const TSharedPtr<FJsonObject>* WeaponDamageObject;
 	if (ItemObject->TryGetObjectField(TEXT("weaponDamage"), WeaponDamageObject))
@@ -309,10 +318,11 @@ void UCoreMenu::OnSingleLoadItemButtonClicked(FString ItemUUID)
 	}
 
 	const FString DisplayText = FString::Printf(
-		TEXT("%s\nBase Damage:\n%sAttack Rate: %.2f\n%s"),
+		TEXT("%s\nBase Damage:\n%sAttack Rate: %.2f\nGold Value: %.0f\n%s"),
 		*ItemName,
 		*WeaponDamageText,
 		AttackRate,
+		DisplayGoldValue,
 		*ModifiersText);
 
 	ActiveItemTextBox->SetText(FText::FromString(DisplayText));
@@ -347,7 +357,7 @@ void UCoreMenu::PopulatePlayerStash()
 	constexpr float StashItemSlotSize = 256.f;
 	int32 Index = 0;
 
-	ItemInstanceManager StashManager;
+	UItemInstanceManager StashManager;
 
 	for (const TPair<FString, TSharedPtr<FJsonObject>>& SavedItem : StashManager.GetSavedItems())
 	{
@@ -440,7 +450,7 @@ void UShopItemButtonProxy::HandleClicked()
 {
 	if (OwningMenu)
 	{
-		OwningMenu->OnShopItemButtonClicked(ItemId);
+		OwningMenu->OnShopItemButtonClicked(ItemId, ItemUUID);
 	}
 }
 
@@ -567,6 +577,9 @@ void UCoreMenu::PopulateShopGrid()
 
 		UShopItemButtonProxy* Proxy = NewObject<UShopItemButtonProxy>(this);
 		Proxy->ItemId = ItemRow->ItemId.ToString();
+		// Mint this shop listing's UUID now, rather than waiting for Buy to be clicked, so every
+		// item shown in the grid already has one assigned the moment it's populated.
+		Proxy->ItemUUID = FGuid::NewGuid().ToString();
 		Proxy->OwningMenu = this;
 		ShopItemButtonProxies.Add(Proxy);
 		InnerButton->OnClicked.AddDynamic(Proxy, &UShopItemButtonProxy::HandleClicked);
@@ -577,14 +590,15 @@ void UCoreMenu::PopulateShopGrid()
 	}
 }
 
-void UCoreMenu::OnShopItemButtonClicked(FString ItemId)
+void UCoreMenu::OnShopItemButtonClicked(FString ItemId, FString ItemUUID)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Shop item button clicked for ItemId: %s"), *ItemId);
+	UE_LOG(LogTemp, Warning, TEXT("Shop item button clicked for ItemId: %s (UUID: %s)"), *ItemId, *ItemUUID);
 	SelectItemData(FText::FromString(ItemId));
+	SelectedItemUUID = ItemUUID;
 
 	// Lets listeners (e.g. ItemHandler) cache this item's base stats and display them as the
 	// active item, matching the stat breakdown shown for a stash selection or randomize.
-	OnShopItemSelectedEvent.Broadcast(ItemId);
+	OnShopItemSelectedEvent.Broadcast(ItemId, ItemUUID);
 }
 
 void UCoreMenu::OnPlayerStashButtonClicked()
@@ -715,6 +729,18 @@ void UCoreMenu::SetActiveItemText(const FString& NewMessage)
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("ActiveItemTextBox is null or not found!"));
+	}
+}
+
+void UCoreMenu::SetPlayerGoldText(int32 NewGoldCount)
+{
+	if (PlayerGoldTextBox)
+	{
+		PlayerGoldTextBox->SetText(FText::AsNumber(NewGoldCount));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("PlayerGoldTextBox is null or not found!"));
 	}
 }
 

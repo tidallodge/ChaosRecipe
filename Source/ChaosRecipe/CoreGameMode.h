@@ -10,6 +10,7 @@
 class UCoreMenu;
 class UStoreManager;
 class UItemHandler;
+class UPlayerInventory;
 
 /**
  * 
@@ -30,4 +31,9 @@ public:
 
 	UPROPERTY()
 	UItemHandler* ItemHandler;
+
+	// Rooted here so it isn't garbage-collected while only referenced via delegate bindings; keeps
+	// ItemHandler's sell flow and this the same PlayerInventory instance for the whole session.
+	UPROPERTY()
+	UPlayerInventory* PlayerInventory;
 };

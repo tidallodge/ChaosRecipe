@@ -45,16 +45,16 @@ namespace
     }
 }
 
-ItemInstanceManager::ItemInstanceManager()
+UItemInstanceManager::UItemInstanceManager()
 {
     LoadSavedItemsFromDisk();
 }
 
-ItemInstanceManager::~ItemInstanceManager()
+UItemInstanceManager::~UItemInstanceManager()
 {
 }
 
-void ItemInstanceManager::SaveItem(const FString& ItemUUID, const FItemWeaponStatsStruct& ItemData)
+void UItemInstanceManager::SaveItem(const FString& ItemUUID, const FItemWeaponStatsStruct& ItemData)
 {
     if (ItemUUID.IsEmpty())
     {
@@ -65,7 +65,7 @@ void ItemInstanceManager::SaveItem(const FString& ItemUUID, const FItemWeaponSta
     WriteSavedItemsToDisk();
 }
 
-void ItemInstanceManager::SaveItem(const FString& ItemUUID, const FItemArmorStatsStruct& ItemData)
+void UItemInstanceManager::SaveItem(const FString& ItemUUID, const FItemArmorStatsStruct& ItemData)
 {
     if (ItemUUID.IsEmpty())
     {
@@ -76,7 +76,7 @@ void ItemInstanceManager::SaveItem(const FString& ItemUUID, const FItemArmorStat
     WriteSavedItemsToDisk();
 }
 
-void ItemInstanceManager::LoadSavedItemsFromDisk()
+void UItemInstanceManager::LoadSavedItemsFromDisk()
 {
     const FString SaveFilePath = FPaths::ProjectSavedDir() / SavedItemsFileName;
 
@@ -117,7 +117,7 @@ void ItemInstanceManager::LoadSavedItemsFromDisk()
     }
 }
 
-void ItemInstanceManager::WriteSavedItemsToDisk() const
+void UItemInstanceManager::WriteSavedItemsToDisk() const
 {
     TSharedRef<FJsonObject> RootObject = MakeShared<FJsonObject>();
 
@@ -136,18 +136,18 @@ void ItemInstanceManager::WriteSavedItemsToDisk() const
     FFileHelper::SaveStringToFile(OutputString, *SaveFilePath);
 }
 
-TSharedPtr<FJsonObject> ItemInstanceManager::GetSavedItemJson(const FString& ItemUUID) const
+TSharedPtr<FJsonObject> UItemInstanceManager::GetSavedItemJson(const FString& ItemUUID) const
 {
     const TSharedPtr<FJsonObject>* FoundItem = SavedItemsByUUID.Find(ItemUUID);
     return FoundItem ? *FoundItem : nullptr;
 }
 
-bool ItemInstanceManager::HasSavedItem(const FString& ItemUUID) const
+bool UItemInstanceManager::HasSavedItem(const FString& ItemUUID) const
 {
     return SavedItemsByUUID.Contains(ItemUUID);
 }
 
-void ItemInstanceManager::RemoveSavedItem(const FString& ItemUUID)
+void UItemInstanceManager::RemoveSavedItem(const FString& ItemUUID)
 {
     // Only the entry for ItemUUID is dropped from the map; WriteSavedItemsToDisk()
     // then re-serializes every remaining entry, so all other saved items are preserved.
@@ -157,7 +157,7 @@ void ItemInstanceManager::RemoveSavedItem(const FString& ItemUUID)
     }
 }
 
-void ItemInstanceManager::AssignItemToEntity(const FString& ItemUUID, EAssignedEntity AssignedEntity)
+void UItemInstanceManager::AssignItemToEntity(const FString& ItemUUID, EAssignedEntity AssignedEntity)
 {
     if (ItemUUID.IsEmpty())
     {
@@ -167,18 +167,18 @@ void ItemInstanceManager::AssignItemToEntity(const FString& ItemUUID, EAssignedE
     ItemUUIDToAssignedEntity.FindOrAdd(ItemUUID) = AssignedEntity;
 }
 
-EAssignedEntity ItemInstanceManager::GetAssignedEntityForItem(const FString& ItemUUID) const
+EAssignedEntity UItemInstanceManager::GetAssignedEntityForItem(const FString& ItemUUID) const
 {
     const EAssignedEntity* FoundEntity = ItemUUIDToAssignedEntity.Find(ItemUUID);
     return FoundEntity ? *FoundEntity : EAssignedEntity::None;
 }
 
-bool ItemInstanceManager::HasItemAssignment(const FString& ItemUUID) const
+bool UItemInstanceManager::HasItemAssignment(const FString& ItemUUID) const
 {
     return ItemUUIDToAssignedEntity.Contains(ItemUUID);
 }
 
-void ItemInstanceManager::RemoveItemAssignment(const FString& ItemUUID)
+void UItemInstanceManager::RemoveItemAssignment(const FString& ItemUUID)
 {
     ItemUUIDToAssignedEntity.Remove(ItemUUID);
 }

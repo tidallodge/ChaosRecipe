@@ -13,18 +13,11 @@ void UStoreManager::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
 		return;
 	}
 
-    CoreMenu->OnSellButtonClickedEvent.AddDynamic(this, &UStoreManager::OnStoreSaleEvent);
     CoreMenu->OnBuyButtonClickedEvent.AddDynamic(this, &UStoreManager::OnStoreBuyEvent);
 }
 
-void UStoreManager::OnStoreSaleEvent(FString ItemType)
+void UStoreManager::OnStoreBuyEvent(FString ItemType, FString ItemUUID)
 {
     UE_LOG(LogTemp, Warning, TEXT("Broadcasting sale from StoreManager."));
-    OnStoreSale.Broadcast(ItemType, ItemValue);
-}
-
-void UStoreManager::OnStoreBuyEvent(FString ItemType)
-{
-    UE_LOG(LogTemp, Warning, TEXT("Broadcasting sale from StoreManager."));
-    OnStoreBuy.Broadcast(ItemType, ItemValue);
+    OnStoreBuy.Broadcast(ItemType, ItemUUID);
 }

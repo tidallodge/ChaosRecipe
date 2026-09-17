@@ -27,13 +27,14 @@ void ACoreGameMode::BeginPlay()
 		{
 			CoreMenuWidget->AddToViewport();
 
-			UPlayerInventory* PlayerInventory = NewObject<UPlayerInventory>(this);
+			PlayerInventory = NewObject<UPlayerInventory>(this);
 			PlayerInventory->BindToCoreMenuEvents(CoreMenuWidget);
 
 			ItemHandler = NewObject<UItemHandler>(this);
 			if (ItemHandler)
 			{
 				ItemHandler->BindToCoreMenuEvents(CoreMenuWidget);
+				PlayerInventory->BindToItemHandlerEvents(ItemHandler);
 			}
 
 			UStoreManager* StoreManager = NewObject<UStoreManager>(this);

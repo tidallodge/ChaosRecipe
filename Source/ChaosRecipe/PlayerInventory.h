@@ -7,6 +7,8 @@
 
 class UCoreMenu;
 class UStoreManager;
+class UItemHandler;
+class UCurrencyManager;
 
 UCLASS()
 class CHAOSRECIPE_API UPlayerInventory : public UObject
@@ -14,21 +16,38 @@ class CHAOSRECIPE_API UPlayerInventory : public UObject
 	GENERATED_BODY()
 
 public:
+	UPlayerInventory();
+	// Required alongside the destructor below whenever a UCLASS holds a TUniquePtr to a
+	// forward-declared type (UCurrencyManager here): UHT's generated vtable-helper constructor
+	// would otherwise need to destroy that member against an incomplete type. Both this and the
+	// destructor are defined in the .cpp, where CurrencyManager.h is fully included.
+	UPlayerInventory(FVTableHelper& Helper);
+	virtual ~UPlayerInventory() override;
+
 	UFUNCTION()
 	void BindToCoreMenuEvents(UCoreMenu* CoreMenu);
 	UFUNCTION()
 	void BindToStoreManagerEvents(UStoreManager* StoreManager);
+	UFUNCTION()
+	void BindToItemHandlerEvents(UItemHandler* ItemHandler);
 
 	UFUNCTION()
-	void HandleStoreSale(FString ItemType, int32 ItemValue);
+	void HandleStoreBuy(FString ItemType, FString ItemUUID);
+
+	// Bound to ItemHandler's OnItemSoldEvent: that single shared ItemHandler instance (see
+	// CoreGameMode::BeginPlay) resolves the sold item's gold value and broadcasts it here before it
+	// removes the item from SavedItems.json, so PlayerGoldCount is always updated first.
 	UFUNCTION()
-	void HandleStoreBuy(FString ItemType, int32 ItemValue);
+	void HandleItemSold(FString ItemId, FString ItemUUID, float GoldValue);
 
 protected:
+	// Pushes PlayerGoldCount to the bound CoreMenu's PlayerGoldTextBox, if a CoreMenu has been bound.
+	void UpdatePlayerGoldDisplay() const;
+
+	int32 PlayerGoldCount = 0;
+
+	TUniquePtr<UCurrencyManager> CurrencyManager;
+
 	UPROPERTY()
-	bool ValidSale = 0;
-
-	TMap<FString, int32> ItemCountById;
-
-	UCoreMenu* CoreMenuRef;
+	TObjectPtr<UCoreMenu> BoundCoreMenu = nullptr;
 };

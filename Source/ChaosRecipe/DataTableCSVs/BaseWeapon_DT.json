@@ -63,7 +63,8 @@
 		},
 		"WeaponBaseAttackRate": 1.3,
 		"WeaponBaseCritChance": 6,
-		"WeaponBaseCritMulti": 1.5
+		"WeaponBaseCritMulti": 1.5,
+		"ItemBaseGoldValue": 100
 	},
 	{
 		"Name": "sword_2h_001",
@@ -129,7 +130,8 @@
 		},
 		"WeaponBaseAttackRate": 1,
 		"WeaponBaseCritChance": 6,
-		"WeaponBaseCritMulti": 1.5
+		"WeaponBaseCritMulti": 1.5,
+		"ItemBaseGoldValue": 100
 	},
 	{
 		"Name": "axe_1h_001",
@@ -195,7 +197,8 @@
 		},
 		"WeaponBaseAttackRate": 1.2,
 		"WeaponBaseCritChance": 3,
-		"WeaponBaseCritMulti": 2
+		"WeaponBaseCritMulti": 2,
+		"ItemBaseGoldValue": 100
 	},
 	{
 		"Name": "axe_2h_001",
@@ -261,6 +264,7 @@
 		},
 		"WeaponBaseAttackRate": 0.95,
 		"WeaponBaseCritChance": 3,
-		"WeaponBaseCritMulti": 2
+		"WeaponBaseCritMulti": 2,
+		"ItemBaseGoldValue": 100
 	}
 ]

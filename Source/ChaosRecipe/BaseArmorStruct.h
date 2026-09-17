@@ -66,4 +66,7 @@ struct FBaseArmorStruct : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
     FModifierBuckets ModifierBuckets;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    int32 ItemBaseGoldValue;
 };

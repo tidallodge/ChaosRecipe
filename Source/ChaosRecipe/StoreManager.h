@@ -8,9 +8,7 @@
 class UCoreMenu;
 class FString;
 
-// DECLARE_DYNAMIC_MULTICAST_DELEGATE_OParam(FStoreSale, int32, ItemValue);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FStoreSale, FString, ItemType, int32, ItemValue);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FStoreBuy, FString, ItemType, int32, ItemValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FStoreBuy, FString, ItemType, FString, ItemUUID);
 
 /**
  * 
@@ -26,19 +24,12 @@ public:
 	void BindToCoreMenuEvents(UCoreMenu* CoreMenu);
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
-	FStoreSale OnStoreSale;
-	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FStoreBuy OnStoreBuy;
 
 protected:
 
-	UPROPERTY(BlueprintReadOnly, Category = "StoreData")
-	int32 ItemValue = 5;
-
 	UFUNCTION()
-	void OnStoreSaleEvent(FString ItemType);
-	UFUNCTION()
-	void OnStoreBuyEvent(FString ItemType);
+	void OnStoreBuyEvent(FString ItemType, FString ItemUUID);
 
 /** NEEDED FUNCTIONS
 	Startup function called from another widget to connect delegates and prompt any other logic needed on startup (maybe DB connection)

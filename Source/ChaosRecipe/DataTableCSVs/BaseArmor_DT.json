@@ -62,7 +62,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"ItemBaseGoldValue": 100
 	},
 	{
 		"Name": "shield_1h_002",
@@ -127,7 +128,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"ItemBaseGoldValue": 100
 	},
 	{
 		"Name": "armor_chest_001",
@@ -192,7 +194,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"ItemBaseGoldValue": 200
 	},
 	{
 		"Name": "evade_chest_001",
@@ -257,7 +260,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"ItemBaseGoldValue": 200
 	},
 	{
 		"Name": "overshield_chest_001",
@@ -322,6 +326,7 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"ItemBaseGoldValue": 200
 	}
 ]

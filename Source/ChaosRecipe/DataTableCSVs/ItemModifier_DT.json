@@ -2,7 +2,7 @@
 	{
 		"Name": "phys_dmg_flat_01",
 		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"B5F10D094E054BFD96EB43A8D68F8AD6\", \"phys_dmg_flat_01\")",
-		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"E835C82C47ADAE6E150AE4BA1600F669\", \"Hardened\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"E835C82C47ADAE6E150AE4BA1600F669\", \"phys + 1\")",
 		"ItemTags":
 		{
 			"Etched": false
@@ -139,7 +139,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.125
 	},
 	{
 		"Name": "phys_dmg_flat_02",
@@ -281,7 +282,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.25
 	},
 	{
 		"Name": "phys_dmg_percent_01",
@@ -423,7 +425,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.125
 	},
 	{
 		"Name": "phys_dmg_percent_02",
@@ -565,7 +568,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.25
 	},
 	{
 		"Name": "fire_dmg_flat_01",
@@ -707,7 +711,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.125
 	},
 	{
 		"Name": "fire_dmg_flat_02",
@@ -849,7 +854,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.25
 	},
 	{
 		"Name": "ice_dmg_flat_01",
@@ -991,7 +997,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.125
 	},
 	{
 		"Name": "ice_dmg_flat_02",
@@ -1133,7 +1140,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.25
 	},
 	{
 		"Name": "elec_dmg_flat_01",
@@ -1275,7 +1283,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.125
 	},
 	{
 		"Name": "elec_dmg_flat_02",
@@ -1417,12 +1426,13 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.25
 	},
 	{
-		"Name": "abyssal_dmg_flat_01",
-		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"A39A0DC74DA95C91ABE0818CFCAF501B\", \"abyssal_dmg_flat_01\")",
-		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"E96F523C4EFD77B8A5C97B91F3626AAE\", \"abyssal + 1\")",
+		"Name": "poison_dmg_flat_01",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"A39A0DC74DA95C91ABE0818CFCAF501B\", \"poison_dmg_flat_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"E96F523C4EFD77B8A5C97B91F3626AAE\", \"poison + 1\")",
 		"ItemTags":
 		{
 			"Etched": false
@@ -1433,7 +1443,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Abyssal": true,
+			"Abyssal": false,
 			"Damage": true,
 			"Attack": true,
 			"Defense": false,
@@ -1464,7 +1474,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"AbyssalDamage": 1
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -1530,7 +1540,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatAbyssalDamage": true,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -1559,12 +1569,13 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.125
 	},
 	{
-		"Name": "abyssal_dmg_flat_02",
-		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"1565B15446C3DC04BB20F2859F442127\", \"abyssal_dmg_flat_02\")",
-		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"904F44B24092D00CD99C9EBF47626860\", \"abyssal + 2\")",
+		"Name": "poison_dmg_flat_02",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"1565B15446C3DC04BB20F2859F442127\", \"poison_dmg_flat_02\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"904F44B24092D00CD99C9EBF47626860\", \"poison + 2\")",
 		"ItemTags":
 		{
 			"Etched": false
@@ -1575,7 +1586,7 @@
 			"Fire": false,
 			"Ice": false,
 			"Electric": false,
-			"Abyssal": true,
+			"Abyssal": false,
 			"Damage": true,
 			"Attack": true,
 			"Defense": false,
@@ -1606,7 +1617,7 @@
 				"FireDamage": 0,
 				"IceDamage": 0,
 				"ElectricDamage": 0,
-				"AbyssalDamage": 1
+				"AbyssalDamage": 0
 			},
 			"MigitationModifier":
 			{
@@ -1672,7 +1683,7 @@
 				"LocalFlatFireDamage": false,
 				"LocalFlatIceDamage": false,
 				"LocalFlatElectricDamage": false,
-				"LocalFlatAbyssalDamage": true,
+				"LocalFlatAbyssalDamage": false,
 				"LocalAttackRate": false,
 				"LocalCritChance": false,
 				"LocalCritDamage": false
@@ -1701,7 +1712,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.25
 	},
 	{
 		"Name": "atk_spd_01",
@@ -1843,7 +1855,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.125
 	},
 	{
 		"Name": "atk_spd_02",
@@ -1985,7 +1998,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.25
 	},
 	{
 		"Name": "atk_spd_03",
@@ -2127,7 +2141,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.375
 	},
 	{
 		"Name": "crit_chance_01",
@@ -2269,7 +2284,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.125
 	},
 	{
 		"Name": "crit_chance_02",
@@ -2411,7 +2427,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.25
 	},
 	{
 		"Name": "crit_chance_03",
@@ -2553,7 +2570,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.375
 	},
 	{
 		"Name": "fire_res_01",
@@ -2695,7 +2713,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.125
 	},
 	{
 		"Name": "fire_res_02",
@@ -2837,7 +2856,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.25
 	},
 	{
 		"Name": "ice_res_01",
@@ -2979,7 +2999,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.125
 	},
 	{
 		"Name": "ice_res_02",
@@ -3121,7 +3142,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.25
 	},
 	{
 		"Name": "elec_res_01",
@@ -3263,7 +3285,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.125
 	},
 	{
 		"Name": "elec_res_02",
@@ -3405,12 +3428,13 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.25
 	},
 	{
-		"Name": "abyssal_res_01",
-		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"E1BAAC8940460FADB915C7A0C6432FC4\", \"abyssal_res_01\")",
-		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"EDA2C9C04BC925706912EEAC56A42D9C\", \"abyssal resist 1\")",
+		"Name": "poison_res_01",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"E1BAAC8940460FADB915C7A0C6432FC4\", \"poison_res_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"EDA2C9C04BC925706912EEAC56A42D9C\", \"poison resist 1\")",
 		"ItemTags":
 		{
 			"Etched": false
@@ -3466,7 +3490,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"AbyssalResistance": 1
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "GlobalMod",
@@ -3543,16 +3567,17 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"AbyssalResist": true,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.125
 	},
 	{
-		"Name": "abyssal_res_02",
-		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"2A064D31425BA10563D96C9CAB0BFBA5\", \"abyssal_res_02\")",
-		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"E968298047208E74473F47A908FA7B89\", \"abyssal resist 2\")",
+		"Name": "poison_res_02",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"2A064D31425BA10563D96C9CAB0BFBA5\", \"poison_res_02\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"E968298047208E74473F47A908FA7B89\", \"poison resist 2\")",
 		"ItemTags":
 		{
 			"Etched": false
@@ -3608,7 +3633,7 @@
 				"FireResistance": 0,
 				"IceResistance": 0,
 				"ElectricResistance": 0,
-				"AbyssalResistance": 1
+				"AbyssalResistance": 0
 			}
 		},
 		"ModifierOperator": "GlobalMod",
@@ -3685,11 +3710,12 @@
 				"FireResist": false,
 				"IceResist": false,
 				"ElectricResist": false,
-				"AbyssalResist": true,
+				"AbyssalResist": false,
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.25
 	},
 	{
 		"Name": "skills_plus_01",
@@ -3830,7 +3856,8 @@
 				"GlobalAllSkills": true,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 3
 	},
 	{
 		"Name": "uskill_firestorm_01",
@@ -3971,7 +3998,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": true
 			}
-		}
+		},
+		"GoldValueModifier": 4
 	},
 	{
 		"Name": "generic_life_001",
@@ -4113,7 +4141,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.125
 	},
 	{
 		"Name": "chest_life_001",
@@ -4255,7 +4284,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.125
 	},
 	{
 		"Name": "chest_life_002",
@@ -4397,7 +4427,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.25
 	},
 	{
 		"Name": "chest_life_003",
@@ -4539,7 +4570,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.375
 	},
 	{
 		"Name": "chest_armor_flat_001",
@@ -4681,7 +4713,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.125
 	},
 	{
 		"Name": "chest_armor_flat_002",
@@ -4823,7 +4856,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.25
 	},
 	{
 		"Name": "chest_evade_flat_001",
@@ -4965,7 +4999,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.125
 	},
 	{
 		"Name": "chest_evade_flat_002",
@@ -5107,7 +5142,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.25
 	},
 	{
 		"Name": "chest_overshield_flat_001",
@@ -5249,7 +5285,8 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.125
 	},
 	{
 		"Name": "chest_overshield_flat_002",
@@ -5391,6 +5428,7 @@
 				"GlobalAllSkills": false,
 				"UniqueSkill": false
 			}
-		}
+		},
+		"GoldValueModifier": 1.25
 	}
 ]

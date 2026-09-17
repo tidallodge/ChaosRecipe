@@ -443,5 +443,8 @@ struct FItemModifierStruct : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Modifiers")
     FModifierBuckets ModifierBuckets;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    float GoldValueModifier;
 
 };

@@ -18,11 +18,11 @@ enum class EAssignedEntity : uint8
     World UMETA(DisplayName = "World")
 };
 
-class CHAOSRECIPE_API ItemInstanceManager
+class CHAOSRECIPE_API UItemInstanceManager
 {
 public:
-    ItemInstanceManager();
-    ~ItemInstanceManager();
+    UItemInstanceManager();
+    ~UItemInstanceManager();
 
     void SaveItem(const FString& ItemUUID, const FItemWeaponStatsStruct& ItemData);
     void SaveItem(const FString& ItemUUID, const FItemArmorStatsStruct& ItemData);

@@ -4,7 +4,21 @@
 #include "PlayerInventory.h"
 #include "CoreMenu.h"
 #include "StoreManager.h"
+#include "ItemHandler.h"
+#include "CurrencyManager.h"
 #include "Kismet/KismetSystemLibrary.h"
+
+UPlayerInventory::UPlayerInventory()
+{
+	CurrencyManager = MakeUnique<UCurrencyManager>();
+	CurrencyManager->LoadPlayerGoldCount(PlayerGoldCount);
+}
+
+UPlayerInventory::UPlayerInventory(FVTableHelper& Helper) : Super(Helper)
+{
+}
+
+UPlayerInventory::~UPlayerInventory() = default;
 
 void UPlayerInventory::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
 {
@@ -14,10 +28,22 @@ void UPlayerInventory::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
 		return;
 	}
 
-	ItemCountById.Empty();
-	ItemCountById.Add(TEXT("Sword"), 1);
+	BoundCoreMenu = CoreMenu;
 
-	CoreMenuRef = CoreMenu;
+	// Reflects the gold count loaded from SavedCurrency.json (in the constructor) now that a
+	// CoreMenu is available to display it.
+	UpdatePlayerGoldDisplay();
+}
+
+void UPlayerInventory::BindToItemHandlerEvents(UItemHandler* ItemHandler)
+{
+	if (!ItemHandler)
+	{
+		UE_LOG(LogTemp, Error, TEXT("no ItemHandler for PlayerInventory"));
+		return;
+	}
+
+	ItemHandler->OnItemSoldEvent.AddDynamic(this, &UPlayerInventory::HandleItemSold);
 }
 
 void UPlayerInventory::BindToStoreManagerEvents(UStoreManager* StoreManager)
@@ -28,46 +54,30 @@ void UPlayerInventory::BindToStoreManagerEvents(UStoreManager* StoreManager)
 		return;
 	}
 
-	StoreManager->OnStoreSale.AddDynamic(this, &UPlayerInventory::HandleStoreSale);
 	StoreManager->OnStoreBuy.AddDynamic(this, &UPlayerInventory::HandleStoreBuy);
 }
 
-
-
-void UPlayerInventory::HandleStoreSale(FString ItemType, int32 ItemValue)
+void UPlayerInventory::HandleStoreBuy(FString ItemType, FString ItemUUID)
 {
-	int32* ItemCount = ItemCountById.Find(ItemType);
-	if (ItemCount && *ItemCount > 0)
-	{
-		ValidSale = 1;
-		*ItemCount -= 1;
-	}
-	else
-	{
-		ValidSale = 0;
-	}
-
-	if (!ValidSale)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No item to sell"));
-	}
-
-	if (CoreMenuRef)
-	{
-		int32* SwordCountPtr = ItemCountById.Find(TEXT("Sword"));
-		int32 SwordCount = SwordCountPtr ? *SwordCountPtr : 0;
-		CoreMenuRef->UpdateSwordCount(SwordCount);
-	}
+	UE_LOG(LogTemp, Warning, TEXT("HandleStoreBuy: ItemId=%s, UUID=%s"), *ItemType, *ItemUUID);
 }
 
-void UPlayerInventory::HandleStoreBuy(FString ItemType, int32 ItemValue)
+void UPlayerInventory::HandleItemSold(FString ItemId, FString ItemUUID, float GoldValue)
 {
-	ItemCountById.FindOrAdd(ItemType) += 1;
+	const int32 RoundedGoldValue = FMath::RoundToInt(GoldValue);
+	PlayerGoldCount += RoundedGoldValue;
 
-	if (CoreMenuRef)
+	CurrencyManager->SaveCurrency(PlayerGoldCount);
+	UpdatePlayerGoldDisplay();
+
+	UE_LOG(LogTemp, Warning, TEXT("PlayerInventory: Sold %s (UUID: %s) for %d gold (PlayerGoldCount=%d)"),
+		*ItemId, *ItemUUID, RoundedGoldValue, PlayerGoldCount);
+}
+
+void UPlayerInventory::UpdatePlayerGoldDisplay() const
+{
+	if (BoundCoreMenu)
 	{
-		int32* SwordCountPtr = ItemCountById.Find(TEXT("Sword"));
-		int32 SwordCount = SwordCountPtr ? *SwordCountPtr : 0;
-		CoreMenuRef->UpdateSwordCount(SwordCount);
+		BoundCoreMenu->SetPlayerGoldText(PlayerGoldCount);
 	}
 }
