@@ -44,6 +44,7 @@ void UPlayerInventory::BindToItemHandlerEvents(UItemHandler* ItemHandler)
 	}
 
 	ItemHandler->OnItemSoldEvent.AddDynamic(this, &UPlayerInventory::HandleItemSold);
+	ItemHandler->OnItemBoughtEvent.AddDynamic(this, &UPlayerInventory::HandleItemBought);
 }
 
 void UPlayerInventory::BindToStoreManagerEvents(UStoreManager* StoreManager)
@@ -71,6 +72,18 @@ void UPlayerInventory::HandleItemSold(FString ItemId, FString ItemUUID, float Go
 	UpdatePlayerGoldDisplay();
 
 	UE_LOG(LogTemp, Warning, TEXT("PlayerInventory: Sold %s (UUID: %s) for %d gold (PlayerGoldCount=%d)"),
+		*ItemId, *ItemUUID, RoundedGoldValue, PlayerGoldCount);
+}
+
+void UPlayerInventory::HandleItemBought(FString ItemId, FString ItemUUID, float GoldValue)
+{
+	const int32 RoundedGoldValue = FMath::RoundToInt(GoldValue);
+	PlayerGoldCount -= RoundedGoldValue;
+
+	CurrencyManager->SaveCurrency(PlayerGoldCount);
+	UpdatePlayerGoldDisplay();
+
+	UE_LOG(LogTemp, Warning, TEXT("PlayerInventory: Bought %s (UUID: %s) for %d gold (PlayerGoldCount=%d)"),
 		*ItemId, *ItemUUID, RoundedGoldValue, PlayerGoldCount);
 }
 

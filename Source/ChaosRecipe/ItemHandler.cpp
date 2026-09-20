@@ -398,6 +398,25 @@ void UItemHandler::OnBuyButtonClicked(FString ItemId, FString ItemUUID)
     // UUID was already minted for this listing in PopulateShopGrid and cached on selection
     // (OnItemSelected's ExistingUUID preservation below), so Buy no longer mints one itself.
     OnItemSelected(ItemId, ItemUUID);
+
+    // OnItemSelected just refreshed whichever cache matches LastSelectedItemClass, so read the
+    // purchased item's gold value (post-modifier, same value shown in ActiveItemText) from there.
+    const float BoughtGoldValue = LastSelectedItemClass == EItemClass::Armor
+        ? GetDisplayGoldValue(CachedArmorStats)
+        : GetDisplayGoldValue(CachedWeaponStats);
+
+    // Add the purchased item to the player's stash the same way Save does, so it shows up in
+    // PlayerStashUniGrid (backed by SavedItems.json) without requiring a separate Save click.
+    if (LastSelectedItemClass == EItemClass::Armor)
+    {
+        SavedItemsManager.SaveItem(ItemUUID, CachedArmorStats);
+    }
+    else
+    {
+        SavedItemsManager.SaveItem(ItemUUID, CachedWeaponStats);
+    }
+
+    OnItemBoughtEvent.Broadcast(ItemId, ItemUUID, BoughtGoldValue);
 }
 
 void UItemHandler::OnRandomizeItem()

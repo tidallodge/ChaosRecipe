@@ -20,6 +20,10 @@ class UCoreMenu;
 // gold value and are guaranteed to finish handling the sale before the item is gone.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnItemSoldEvent, FString, ItemId, FString, ItemUUID, float, GoldValue);
 
+// Broadcast by OnBuyButtonClicked once OnItemSelected has (re)cached the purchased item's stats, so
+// listeners (e.g. PlayerInventory) can charge the player the item's current (post-modifier) gold value.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnItemBoughtEvent, FString, ItemId, FString, ItemUUID, float, GoldValue);
+
 USTRUCT(BlueprintType)
 struct FItemWeaponStatsStruct : public FTableRowBase
 {
@@ -152,6 +156,9 @@ public:
 
     UPROPERTY(BlueprintAssignable, Category = "Events")
     FOnItemSoldEvent OnItemSoldEvent;
+
+    UPROPERTY(BlueprintAssignable, Category = "Events")
+    FOnItemBoughtEvent OnItemBoughtEvent;
 
 protected:
     UPROPERTY()

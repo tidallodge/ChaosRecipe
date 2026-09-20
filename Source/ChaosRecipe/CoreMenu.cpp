@@ -102,14 +102,33 @@ void UCoreMenu::OnSellButtonClicked()
 void UCoreMenu::OnBuyButtonClicked()
 {
 	UE_LOG(LogTemp, Warning, TEXT("BuyButton Clicked. Event Dispatched"));
-	UpdatePanelVisibility({ ShopWindowBox, PlayerStashHorizBox }, ESlateVisibility::Hidden);
-	ShowActiveItemImage();
+	// Unlike Sell, Buy keeps ShopWindowBox open so the player can keep shopping, and leaves
+	// ActiveItemImageHorizBox alone rather than showing the purchased item there.
+	UpdatePanelVisibility({ PlayerStashHorizBox }, ESlateVisibility::Hidden);
 	if (!bHasSelectedItemData)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No selected item to buy."));
 		return;
 	}
 	OnBuyButtonClickedEvent.Broadcast(SelectedItemId, SelectedItemUUID);
+
+	// Remove the purchased listing from the shop's current item list so it's no longer offered,
+	// then rebuild the grid from the reduced list. Matches on ItemId rather than array index so a
+	// duplicate listing elsewhere in the shop isn't accidentally removed instead.
+	if (ItemDataTable)
+	{
+		for (int32 Index = 0; Index < CurrentShopItems.Num(); ++Index)
+		{
+			const FBaseItemStruct* ItemRow = ItemDataTable->FindRow<FBaseItemStruct>(CurrentShopItems[Index], TEXT("CoreMenu::OnBuyButtonClicked"));
+			if (ItemRow && ItemRow->ItemId.ToString().Equals(SelectedItemId, ESearchCase::IgnoreCase))
+			{
+				CurrentShopItems.RemoveAt(Index);
+				break;
+			}
+		}
+	}
+
+	RefreshShopGrid();
 }
 
 void UCoreMenu::SelectItemData(const FText& ItemIdText)
@@ -588,6 +607,11 @@ void UCoreMenu::PopulateShopGrid()
 
 		++Index;
 	}
+}
+
+void UCoreMenu::RefreshShopGrid()
+{
+	PopulateShopGrid();
 }
 
 void UCoreMenu::OnShopItemButtonClicked(FString ItemId, FString ItemUUID)

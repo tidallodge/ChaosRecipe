@@ -40,6 +40,11 @@ public:
 	UFUNCTION()
 	void HandleItemSold(FString ItemId, FString ItemUUID, float GoldValue);
 
+	// Bound to ItemHandler's OnItemBoughtEvent: fired once the purchased item's (post-modifier)
+	// gold value has been resolved, so it can be charged to PlayerGoldCount.
+	UFUNCTION()
+	void HandleItemBought(FString ItemId, FString ItemUUID, float GoldValue);
+
 protected:
 	// Pushes PlayerGoldCount to the bound CoreMenu's PlayerGoldTextBox, if a CoreMenu has been bound.
 	void UpdatePlayerGoldDisplay() const;

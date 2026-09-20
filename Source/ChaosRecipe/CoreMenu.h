@@ -134,6 +134,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void ClearSelectedItemUUID() { SelectedItemUUID.Empty(); }
 
+	// Rebuilds ShopUniGrid from CurrentShopItems without changing which items are listed
+	// (unlike RandomizeShopItems, which rolls a new set first). Useful for refreshing the
+	// shop's buttons/icons after external state changes (e.g. gold updates).
+	UFUNCTION(BlueprintCallable, Category = "Shop")
+	void RefreshShopGrid();
+
 	UPROPERTY()
 	TArray<FName> ItemDataTableRowNames;
 
