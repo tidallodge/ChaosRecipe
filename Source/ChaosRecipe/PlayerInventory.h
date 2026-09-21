@@ -45,6 +45,17 @@ public:
 	UFUNCTION()
 	void HandleItemBought(FString ItemId, FString ItemUUID, float GoldValue);
 
+	// Bound to ItemHandler's OnItemRandomizedEvent: fired each time an item is successfully
+	// rerolled, so the roll's gold cost can be charged to PlayerGoldCount.
+	UFUNCTION()
+	void HandleItemRandomized(int32 GoldCost);
+
+	// Single entry point for changing PlayerGoldCount (positive to add, negative to charge), so
+	// every source of a gold change (sell, buy, randomize, future shop actions, ...) persists to
+	// SavedCurrency.json and refreshes the display the same way instead of duplicating that logic.
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void AdjustPlayerGoldCount(int32 GoldDelta);
+
 protected:
 	// Pushes PlayerGoldCount to the bound CoreMenu's PlayerGoldTextBox, if a CoreMenu has been bound.
 	void UpdatePlayerGoldDisplay() const;

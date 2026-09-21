@@ -18,15 +18,22 @@
 
 namespace
 {
-	// Builds the modifiers summary text grouped by affix type (Implicit, then Prefix, then Suffix)
-	// rather than roll order, so the ActiveItemText box lists prefixes before suffixes. Looks each
+	// Builds the modifiers text for ActiveItemTextBox, matching the layout CoreMenu uses when a
+	// stash item is selected (OnSingleLoadItemButtonClicked): one "<AffixType>:" header per non-empty
+	// group (Implicit, then Prefixes, then Suffixes), each followed by indented "  Name (value)"
+	// lines, and falling back to "Modifiers: none\n" when there are no modifiers at all. Looks each
 	// ModifierId up in ModifierPool to display its ModifierName instead of the raw id.
-	FString BuildAffixOrderedModifiersText(const TArray<FItemModifierStruct>& ModifierPool, const TMap<FString, int32>& ImplicitModifiers, const TMap<FString, int32>& PrefixModifiers, const TMap<FString, int32>& SuffixModifiers)
+	FString BuildGroupedModifiersText(const TArray<FItemModifierStruct>& ModifierPool, const TMap<FString, int32>& ImplicitModifiers, const TMap<FString, int32>& PrefixModifiers, const TMap<FString, int32>& SuffixModifiers)
 	{
 		FString Text;
-		auto AppendGroup = [&Text, &ModifierPool](const TMap<FString, int32>& Modifiers, EAffixType AffixType)
+		auto AppendGroup = [&Text, &ModifierPool](const TMap<FString, int32>& Modifiers, const TCHAR* GroupLabel)
 		{
-			const FString AffixName = UEnum::GetValueAsString(AffixType).RightChop(FString(TEXT("EAffixType::")).Len());
+			if (Modifiers.Num() == 0)
+			{
+				return;
+			}
+
+			Text += FString::Printf(TEXT("%s:\n"), GroupLabel);
 			for (const TPair<FString, int32>& Entry : Modifiers)
 			{
 				const FItemModifierStruct* ModifierRow = ModifierPool.FindByPredicate(
@@ -36,15 +43,57 @@ namespace
 					});
 				const FString DisplayName = ModifierRow ? ModifierRow->ModifierName.ToString() : Entry.Key;
 
-				Text += FString::Printf(TEXT("  %s: %s (%d)\n"), *AffixName, *DisplayName, Entry.Value);
+				Text += FString::Printf(TEXT("  %s (%d)\n"), *DisplayName, Entry.Value);
 			}
 		};
 
-		AppendGroup(ImplicitModifiers, EAffixType::Implicit);
-		AppendGroup(PrefixModifiers, EAffixType::Prefix);
-		AppendGroup(SuffixModifiers, EAffixType::Suffix);
+		AppendGroup(ImplicitModifiers, TEXT("Implicit"));
+		AppendGroup(PrefixModifiers, TEXT("Prefixes"));
+		AppendGroup(SuffixModifiers, TEXT("Suffixes"));
+
+		if (Text.IsEmpty())
+		{
+			Text = TEXT("Modifiers: none\n");
+		}
 
 		return Text;
+	}
+
+	// Formats each non-zero local damage channel as an indented "  Label: min-max\n" line, for the
+	// "Base Damage:" section of ActiveItemText (matches the stash-item display's layout).
+	FString BuildWeaponDamageLines(const FWeaponLocalDamage& LocalDamage)
+	{
+		struct FLocalDamageLine { const TCHAR* Label; FIntPoint Range; };
+		const FLocalDamageLine LocalLines[] = {
+			{ TEXT("Physical"), LocalDamage.LocalPhysicalDamage },
+			{ TEXT("Fire"),     LocalDamage.LocalFireDamage },
+			{ TEXT("Ice"),      LocalDamage.LocalIceDamage },
+			{ TEXT("Electric"), LocalDamage.LocalElectricDamage },
+			{ TEXT("Abyssal"),  LocalDamage.LocalAbyssalDamage },
+		};
+
+		FString Text;
+		for (const FLocalDamageLine& Line : LocalLines)
+		{
+			if (Line.Range.X == 0 && Line.Range.Y == 0)
+			{
+				continue;
+			}
+
+			Text += FString::Printf(TEXT("  %s: %d-%d\n"), Line.Label, Line.Range.X, Line.Range.Y);
+		}
+		return Text;
+	}
+
+	// Formats defense as indented "  Label: min-max\n" lines, for the "Base Defense:" section of
+	// ActiveItemText (armor's equivalent of BuildWeaponDamageLines).
+	FString BuildArmorDefenseLines(const FBaseDefense& Defense)
+	{
+		return FString::Printf(
+			TEXT("  Physical Mitigation: %d-%d\n  Evade: %d-%d\n  Overshield: %d-%d\n"),
+			Defense.BasePhysicalMitigation.X, Defense.BasePhysicalMitigation.Y,
+			Defense.BaseEvade.X, Defense.BaseEvade.Y,
+			Defense.BaseOvershield.X, Defense.BaseOvershield.Y);
 	}
 
 	// ItemGoldValue is populated as soon as base stats are built (it starts equal to ItemBaseGoldValue),
@@ -192,12 +241,8 @@ void UItemHandler::OnItemSelected(const FString& ItemId, const FString& ItemUUID
             LocalDamageSummary = TEXT("none");
         }
 
-        FString ModifiersText = BuildAffixOrderedModifiersText(ItemModifierAssigner.GetModifierPool(),
+        const FString ModifiersText = BuildGroupedModifiersText(ItemModifierAssigner.GetModifierPool(),
             CachedWeaponStats.ImplicitModifiers, CachedWeaponStats.PrefixModifiers, CachedWeaponStats.SuffixModifiers);
-        if (ModifiersText.IsEmpty())
-        {
-            ModifiersText = TEXT("  none\n");
-        }
 
         Message = FString::Printf(
             TEXT("ItemHandler selected weapon stats:\nUUID:%s\nAttackRate=%.2f\nBase:%s\nLocal:%s"),
@@ -206,11 +251,18 @@ void UItemHandler::OnItemSelected(const FString& ItemId, const FString& ItemUUID
             *DamageSummary,
             *LocalDamageSummary);
 
+        // Matches the layout CoreMenu uses for a selected stash item: name, then a "Base Damage:"
+        // block, Attack Rate, Gold Value, then the modifiers block.
+        FString WeaponDamageText;
+        if (const FWeaponLocalDamage* ActiveLocalDamage = CachedWeaponStats.WeaponLocalDamage.Find(TEXT("LocalDamage")))
+        {
+            WeaponDamageText = BuildWeaponDamageLines(*ActiveLocalDamage);
+        }
+
         ActiveItemText = FString::Printf(
-            TEXT("%s\n%s\nLocal Damage:\n\t%s\nAttack Rate: %.2f\nGold Value: %.0f\nModifiers:\n%s"),
+            TEXT("%s\nBase Damage:\n%sAttack Rate: %.2f\nGold Value: %.0f\n%s"),
             *ItemName,
-            *DamageSummary,
-            *LocalDamageSummary,
+            *WeaponDamageText,
             CachedWeaponStats.AttackRate,
             GetDisplayGoldValue(CachedWeaponStats),
             *ModifiersText);
@@ -239,22 +291,20 @@ void UItemHandler::OnItemSelected(const FString& ItemId, const FString& ItemUUID
             CachedArmorStats.BaseDefense.BaseOvershield.X,
             CachedArmorStats.BaseDefense.BaseOvershield.Y);
 
-        FString ModifiersText = BuildAffixOrderedModifiersText(ItemModifierAssigner.GetModifierPool(),
+        const FString ModifiersText = BuildGroupedModifiersText(ItemModifierAssigner.GetModifierPool(),
             CachedArmorStats.ImplicitModifiers, CachedArmorStats.PrefixModifiers, CachedArmorStats.SuffixModifiers);
-        if (ModifiersText.IsEmpty())
-        {
-            ModifiersText = TEXT("  none\n");
-        }
 
         Message = FString::Printf(
             TEXT("ItemHandler selected armor stats:\nUUID:%s\nDefense:%s"),
             *CachedArmorStats.UUID.ToString(),
             *DefenseSummary);
 
+        // Matches the layout CoreMenu uses for a selected stash item: name, then a "Base Defense:"
+        // block, Gold Value, then the modifiers block.
         ActiveItemText = FString::Printf(
-            TEXT("%s\nDefense:\n\t%s\nGold Value: %.0f\nModifiers:\n%s"),
+            TEXT("%s\nBase Defense:\n%sGold Value: %.0f\n%s"),
             *ItemName,
-            *DefenseSummary,
+            *BuildArmorDefenseLines(CachedArmorStats.BaseDefense),
             GetDisplayGoldValue(CachedArmorStats),
             *ModifiersText);
     }
@@ -288,8 +338,18 @@ bool UItemHandler::BuildWeaponStatsForItem(const FString& ItemId, FItemWeaponSta
     OutWeaponStats.ItemGoldValue = WeaponData.ItemBaseGoldValue;
     OutWeaponStats.WeaponDamage.Empty();
     OutWeaponStats.WeaponDamage.Add(TEXT("BaseDamage"), WeaponData.WeaponBaseDamage);
+
+    // Seed local damage from the item's base damage (i.e. no modifiers rolled yet) rather than
+    // WeaponData.WeaponLocalDamage, which is a separate, normally-unset data table field -
+    // RandomizeWeaponItem is what actually derives local damage from rolled modifiers afterward.
+    FWeaponLocalDamage InitialLocalDamage;
+    InitialLocalDamage.LocalPhysicalDamage = WeaponData.WeaponBaseDamage.BasePhysicalDamage;
+    InitialLocalDamage.LocalFireDamage = WeaponData.WeaponBaseDamage.BaseFireDamage;
+    InitialLocalDamage.LocalIceDamage = WeaponData.WeaponBaseDamage.BaseIceDamage;
+    InitialLocalDamage.LocalElectricDamage = WeaponData.WeaponBaseDamage.BaseElectricDamage;
+    InitialLocalDamage.LocalAbyssalDamage = WeaponData.WeaponBaseDamage.BaseAbyssalDamage;
     OutWeaponStats.WeaponLocalDamage.Empty();
-    OutWeaponStats.WeaponLocalDamage.Add(TEXT("LocalDamage"), WeaponData.WeaponLocalDamage);
+    OutWeaponStats.WeaponLocalDamage.Add(TEXT("LocalDamage"), InitialLocalDamage);
     OutWeaponStats.ImplicitModifiers.Empty();
     OutWeaponStats.PrefixModifiers.Empty();
     OutWeaponStats.SuffixModifiers.Empty();
@@ -421,13 +481,14 @@ void UItemHandler::OnBuyButtonClicked(FString ItemId, FString ItemUUID)
 
 void UItemHandler::OnRandomizeItem()
 {
+    bool bDidRandomize = false;
     if (LastSelectedItemClass == EItemClass::Weapon)
     {
-        RandomizeWeaponItem();
+        bDidRandomize = RandomizeWeaponItem();
     }
     else if (LastSelectedItemClass == EItemClass::Armor)
     {
-        RandomizeArmorItem();
+        bDidRandomize = RandomizeArmorItem();
     }
     else
     {
@@ -435,14 +496,19 @@ void UItemHandler::OnRandomizeItem()
             TEXT("ItemHandler: Randomizing item class '%s' is not supported yet."),
             *UEnum::GetValueAsString(LastSelectedItemClass));
     }
+
+    if (bDidRandomize)
+    {
+        OnItemRandomizedEvent.Broadcast(RandomizeItemGoldCost);
+    }
 }
 
-void UItemHandler::RandomizeWeaponItem()
+bool UItemHandler::RandomizeWeaponItem()
 {
     if (CachedWeaponStats.ItemId.IsEmpty())
     {
         UE_LOG(LogTemp, Warning, TEXT("ItemHandler: No cached weapon stats available to randomize."));
-        return;
+        return false;
     }
 
     // Load every possible item modifier and hand the full pool to the ModifierAssigner.
@@ -536,7 +602,7 @@ void UItemHandler::RandomizeWeaponItem()
         CachedWeaponStats.ItemGoldValue = CachedWeaponStats.ItemBaseGoldValue * GoldValueMultiplier;
 
         // List prefixes before suffixes in the summary text, regardless of roll order.
-        ModifiersText = BuildAffixOrderedModifiersText(ItemModifierAssigner.GetModifierPool(),
+        ModifiersText = BuildGroupedModifiersText(ItemModifierAssigner.GetModifierPool(),
             CachedWeaponStats.ImplicitModifiers, CachedWeaponStats.PrefixModifiers, CachedWeaponStats.SuffixModifiers);
 
         // Fold the rolled damage modifiers into the item's local damage values.
@@ -604,14 +670,21 @@ void UItemHandler::RandomizeWeaponItem()
 
     if (ModifiersText.IsEmpty())
     {
-        ModifiersText = TEXT("  none\n");
+        ModifiersText = TEXT("Modifiers: none\n");
+    }
+
+    // Matches the layout CoreMenu uses for a selected stash item: name, then a "Base Damage:"
+    // block, Attack Rate, Gold Value, then the modifiers block.
+    FString WeaponDamageText;
+    if (const FWeaponLocalDamage* ActiveLocalDamage = CachedWeaponStats.WeaponLocalDamage.Find(TEXT("LocalDamage")))
+    {
+        WeaponDamageText = BuildWeaponDamageLines(*ActiveLocalDamage);
     }
 
     const FString ActiveItemText = FString::Printf(
-        TEXT("%s\n%s\nLocal Damage:\n\t%s\nAttack Rate: %.2f\nGold Value: %.0f\nModifiers:\n%s"),
+        TEXT("%s\nBase Damage:\n%sAttack Rate: %.2f\nGold Value: %.0f\n%s"),
         *RandomizeItemName,
-        *DamageSummary,
-        *LocalDamageSummary,
+        *WeaponDamageText,
         CachedWeaponStats.AttackRate,
         GetDisplayGoldValue(CachedWeaponStats),
         *ModifiersText);
@@ -623,14 +696,16 @@ void UItemHandler::RandomizeWeaponItem()
     }
 
     UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
+
+    return true;
 }
 
-void UItemHandler::RandomizeArmorItem()
+bool UItemHandler::RandomizeArmorItem()
 {
     if (CachedArmorStats.ItemId.IsEmpty())
     {
         UE_LOG(LogTemp, Warning, TEXT("ItemHandler: No cached armor stats available to randomize."));
-        return;
+        return false;
     }
 
     // Load every possible item modifier and hand the full pool to the ModifierAssigner.
@@ -718,7 +793,7 @@ void UItemHandler::RandomizeArmorItem()
         CachedArmorStats.ItemGoldValue = CachedArmorStats.ItemBaseGoldValue * GoldValueMultiplier;
 
         // List prefixes before suffixes in the summary text, regardless of roll order.
-        ModifiersText = BuildAffixOrderedModifiersText(ItemModifierAssigner.GetModifierPool(),
+        ModifiersText = BuildGroupedModifiersText(ItemModifierAssigner.GetModifierPool(),
             CachedArmorStats.ImplicitModifiers, CachedArmorStats.PrefixModifiers, CachedArmorStats.SuffixModifiers);
 
         // Fold the rolled defense modifiers into the item's defense values.
@@ -745,13 +820,15 @@ void UItemHandler::RandomizeArmorItem()
 
     if (ModifiersText.IsEmpty())
     {
-        ModifiersText = TEXT("  none\n");
+        ModifiersText = TEXT("Modifiers: none\n");
     }
 
+    // Matches the layout CoreMenu uses for a selected stash item: name, then a "Base Defense:"
+    // block, Gold Value, then the modifiers block.
     const FString ActiveItemText = FString::Printf(
-        TEXT("%s\nDefense:\n\t%s\nGold Value: %.0f\nModifiers:\n%s"),
+        TEXT("%s\nBase Defense:\n%sGold Value: %.0f\n%s"),
         *RandomizeItemName,
-        *DefenseSummary,
+        *BuildArmorDefenseLines(CachedArmorStats.BaseDefense),
         GetDisplayGoldValue(CachedArmorStats),
         *ModifiersText);
 
@@ -762,6 +839,8 @@ void UItemHandler::RandomizeArmorItem()
     }
 
     UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
+
+    return true;
 }
 
 void UItemHandler::RecalculateWeaponLocalDamage()

@@ -45,6 +45,7 @@ void UPlayerInventory::BindToItemHandlerEvents(UItemHandler* ItemHandler)
 
 	ItemHandler->OnItemSoldEvent.AddDynamic(this, &UPlayerInventory::HandleItemSold);
 	ItemHandler->OnItemBoughtEvent.AddDynamic(this, &UPlayerInventory::HandleItemBought);
+	ItemHandler->OnItemRandomizedEvent.AddDynamic(this, &UPlayerInventory::HandleItemRandomized);
 }
 
 void UPlayerInventory::BindToStoreManagerEvents(UStoreManager* StoreManager)
@@ -66,10 +67,7 @@ void UPlayerInventory::HandleStoreBuy(FString ItemType, FString ItemUUID)
 void UPlayerInventory::HandleItemSold(FString ItemId, FString ItemUUID, float GoldValue)
 {
 	const int32 RoundedGoldValue = FMath::RoundToInt(GoldValue);
-	PlayerGoldCount += RoundedGoldValue;
-
-	CurrencyManager->SaveCurrency(PlayerGoldCount);
-	UpdatePlayerGoldDisplay();
+	AdjustPlayerGoldCount(RoundedGoldValue);
 
 	UE_LOG(LogTemp, Warning, TEXT("PlayerInventory: Sold %s (UUID: %s) for %d gold (PlayerGoldCount=%d)"),
 		*ItemId, *ItemUUID, RoundedGoldValue, PlayerGoldCount);
@@ -78,13 +76,26 @@ void UPlayerInventory::HandleItemSold(FString ItemId, FString ItemUUID, float Go
 void UPlayerInventory::HandleItemBought(FString ItemId, FString ItemUUID, float GoldValue)
 {
 	const int32 RoundedGoldValue = FMath::RoundToInt(GoldValue);
-	PlayerGoldCount -= RoundedGoldValue;
-
-	CurrencyManager->SaveCurrency(PlayerGoldCount);
-	UpdatePlayerGoldDisplay();
+	AdjustPlayerGoldCount(-RoundedGoldValue);
 
 	UE_LOG(LogTemp, Warning, TEXT("PlayerInventory: Bought %s (UUID: %s) for %d gold (PlayerGoldCount=%d)"),
 		*ItemId, *ItemUUID, RoundedGoldValue, PlayerGoldCount);
+}
+
+void UPlayerInventory::HandleItemRandomized(int32 GoldCost)
+{
+	AdjustPlayerGoldCount(-GoldCost);
+
+	UE_LOG(LogTemp, Warning, TEXT("PlayerInventory: Randomized item for %d gold (PlayerGoldCount=%d)"),
+		GoldCost, PlayerGoldCount);
+}
+
+void UPlayerInventory::AdjustPlayerGoldCount(int32 GoldDelta)
+{
+	PlayerGoldCount += GoldDelta;
+
+	CurrencyManager->SaveCurrency(PlayerGoldCount);
+	UpdatePlayerGoldDisplay();
 }
 
 void UPlayerInventory::UpdatePlayerGoldDisplay() const

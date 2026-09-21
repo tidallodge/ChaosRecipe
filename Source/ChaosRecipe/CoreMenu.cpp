@@ -97,6 +97,24 @@ void UCoreMenu::OnSellButtonClicked()
 		return;
 	}
 	OnSellButtonClickedEvent.Broadcast(SelectedItemId, SelectedItemUUID);
+
+	// Unload the cached item data now that it's been sold, and clear the Load Item box's text.
+	SelectedItemData = FBaseItemStruct();
+	SelectedItemId.Empty();
+	SelectedItemUUID.Empty();
+	bHasSelectedItemData = false;
+	SetActiveItemText(TEXT(""));
+
+	UpdatePanelVisibility({ ActiveItemImageHorizBox }, ESlateVisibility::Hidden);
+
+	if (PlayerStashHorizBox)
+	{
+		SetPanelAndChildrenVisibility(PlayerStashHorizBox, ESlateVisibility::Visible);
+	}
+
+	// The broadcast above already removed the sold item from SavedItems.json (synchronously, via
+	// ItemHandler::OnSellButtonClicked), so repopulate now the stash grid no longer shows it.
+	PopulatePlayerStash();
 }
 
 void UCoreMenu::OnBuyButtonClicked()
@@ -715,6 +733,12 @@ void UCoreMenu::ValidateButton(UButton* InputButton)
 void UCoreMenu::RandomizeShopItems()
 {
 	CurrentShopItems.Empty();
+
+	if (ItemDataTableRowCount <= 0 || ItemDataTableRowNames.Num() <= 0)
+	{
+		UE_LOG(LogTemp, Error, TEXT("RandomizeShopItems: BaseItem_DT has no rows loaded; skipping."));
+		return;
+	}
 
 	ShopItemCount = FMath::RandRange(6,12);
 

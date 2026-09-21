@@ -24,6 +24,10 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnItemSoldEvent, FString, ItemId
 // listeners (e.g. PlayerInventory) can charge the player the item's current (post-modifier) gold value.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnItemBoughtEvent, FString, ItemId, FString, ItemUUID, float, GoldValue);
 
+// Broadcast by OnRandomizeItem once a reroll has actually happened (i.e. there was an active item to
+// reroll), so listeners (e.g. PlayerInventory) can charge the player RandomizeItemGoldCost.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemRandomizedEvent, int32, GoldCost);
+
 USTRUCT(BlueprintType)
 struct FItemWeaponStatsStruct : public FTableRowBase
 {
@@ -136,11 +140,17 @@ public:
     UFUNCTION()
     void OnRandomizeItem();
 
-    UFUNCTION()
-    void RandomizeWeaponItem();
+    // Flat gold cost charged for each randomize/reroll, via OnItemRandomizedEvent.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Economy")
+    int32 RandomizeItemGoldCost = 25;
 
+    // Returns true if an active item was actually rerolled (i.e. there was one cached to reroll).
     UFUNCTION()
-    void RandomizeArmorItem();
+    bool RandomizeWeaponItem();
+
+    // Returns true if an active item was actually rerolled (i.e. there was one cached to reroll).
+    UFUNCTION()
+    bool RandomizeArmorItem();
 
     UFUNCTION()
     void OnSaveItemButtonClicked(FString ItemId);
@@ -159,6 +169,9 @@ public:
 
     UPROPERTY(BlueprintAssignable, Category = "Events")
     FOnItemBoughtEvent OnItemBoughtEvent;
+
+    UPROPERTY(BlueprintAssignable, Category = "Events")
+    FOnItemRandomizedEvent OnItemRandomizedEvent;
 
 protected:
     UPROPERTY()
