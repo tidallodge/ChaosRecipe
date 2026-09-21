@@ -7,6 +7,7 @@
 #include "BaseArmorStruct.h"
 #include "TagsStruct.h"
 #include "ModifierBucketsStruct.h"
+#include "ModifierTagsStruct.h"
 #include "ItemModifierStruct.generated.h"
 
 UENUM(BlueprintType)
@@ -25,120 +26,6 @@ enum class EModifierOperator : uint8
     GlobalMod UMETA(DisplayName = "GlobalMod"),
     UniqueModifier UMETA(DisplayName = "UniqueModifier"),
 };
-
-// USTRUCT(BlueprintType)
-// struct FWeaponModifierBuckets
-// {
-//     GENERATED_BODY()
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool LocalFlatPhysDamage;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool LocalPercentPhysDamage;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool LocalFlatFireDamage;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool LocalFlatIceDamage;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool LocalFlatElectricDamage;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool LocalFlatAbyssalDamage;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool LocalAttackRate;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool LocalCritChance;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool LocalCritDamage;
-// };
-
-// USTRUCT(BlueprintType)
-// struct FArmorModifierBuckets
-// {
-//     GENERATED_BODY()
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool PhysicalMitigation;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool Evade;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool OverShield;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool life;
-// };
-
-// USTRUCT(BlueprintType)
-// struct FJewelryModifierBuckets
-// {
-//     GENERATED_BODY()
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool FireResist;
-// };
-
-// USTRUCT(BlueprintType)
-// struct FMiscModifierBuckets
-// {
-//     GENERATED_BODY()
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool Life;
-// };
-
-// USTRUCT(BlueprintType)
-// struct FGlobalModifierBuckets
-// {
-//     GENERATED_BODY()
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool FireResist;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool IceResist;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool ElectricResist;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool AbyssalResist;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool GlobalAllSkills;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     bool UniqueSkill;
-// };
-
-// USTRUCT(BlueprintType)
-// struct FModifierBuckets
-// {
-//     GENERATED_BODY()
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     FWeaponModifierBuckets WeaponModifierBuckets;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     FArmorModifierBuckets ArmorModifierBuckets;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     FJewelryModifierBuckets JewelryModifierBuckets;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     FMiscModifierBuckets MiscModifierBuckets;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Buckets")
-//     FGlobalModifierBuckets GlobalModifierBuckets;
-// };
 
 USTRUCT(BlueprintType)
 struct FValidItemClasses
@@ -255,57 +142,57 @@ struct FValidItemTypesOverride
 
 };
 
-USTRUCT(BlueprintType)
-struct FModifierTags
-{
-    GENERATED_BODY()
+// USTRUCT(BlueprintType)
+// struct FModifierTags
+// {
+//     GENERATED_BODY()
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-    bool Physical;
+//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
+//     bool Physical;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-    bool Fire;
+//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
+//     bool Fire;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-    bool Ice;
+//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
+//     bool Ice;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-    bool Electric;
+//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
+//     bool Electric;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-    bool Abyssal;
+//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
+//     bool Abyssal;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-    bool Damage;
+//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
+//     bool Damage;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-    bool Attack;
+//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
+//     bool Attack;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-    bool Defense;
+//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
+//     bool Defense;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-    bool Resistance;
+//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
+//     bool Resistance;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-    bool Speed;
+//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
+//     bool Speed;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-    bool Critical;
+//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
+//     bool Critical;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-    bool Life;
+//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
+//     bool Life;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-    bool Armor;
+//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
+//     bool Armor;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-    bool Evade;
+//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
+//     bool Evade;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-    bool Overshield;
+//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
+//     bool Overshield;
 
-};
+// };
 
 USTRUCT(BlueprintType)
 struct FItemModifierDamageStruct
