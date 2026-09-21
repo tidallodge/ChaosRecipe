@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/Button.h"
 #include "Components/RichTextBlock.h"
+#include "TimerManager.h"
 #include "BaseItemStruct.h"
 #include "CoreMenu.generated.h"
 
@@ -128,6 +129,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Menu Text")
 	void SetPlayerGoldText(int32 NewGoldCount);
 
+	// Sets the text shown in WarningsHorizBox's WarningsTextBox.
+	UFUNCTION(BlueprintCallable, Category = "Menu Text")
+	void SetWarningText(const FString& NewMessage);
+
 	// UUID of the saved item currently loaded via the Load Item box (empty if none).
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	FString GetSelectedItemUUID() const { return SelectedItemUUID; }
@@ -195,6 +200,10 @@ protected:
 	UTextBlock* PlayerGoldTextBox;
 	UPROPERTY(meta = (BindWidget))
 	UButton* ResetGameButton;
+	UPROPERTY(meta = (BindWidget))
+	UHorizontalBox* WarningsHorizBox;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* WarningsTextBox;
 
 	// Click handler for SellButton
 	UFUNCTION()
@@ -234,7 +243,7 @@ protected:
 	void PopulateShopGrid();
 	// Clears and repopulates PlayerStashUniGrid with a WBP_SingleImageButton for every saved item (via ItemInstanceManager)
 	void PopulatePlayerStash();
-	// Sets the visibility of a panel widget and all of its direct children
+	// Sets the visibility of a panel widget and all of its children, recursively
 	void SetPanelAndChildrenVisibility(UPanelWidget* Panel, ESlateVisibility NewVisibility);
 	// Sets the visibility of each given panel (and its children)
 	void UpdatePanelVisibility(const TArray<UPanelWidget*>& Panels, ESlateVisibility NewVisibility);
@@ -283,5 +292,12 @@ protected:
 	// Keeps the per-button proxies alive (and their click bindings valid) between player stash repopulations.
 	UPROPERTY()
 	TArray<TObjectPtr<ULoadItemButtonProxy>> PlayerStashButtonProxies;
+
+	// Clears WarningsTextBox; bound to WarningTextTimerHandle by SetWarningText, never called directly
+	// so that clearing the text never re-arms the timer.
+	UFUNCTION()
+	void ClearWarningText();
+
+	FTimerHandle WarningTextTimerHandle;
 
 };

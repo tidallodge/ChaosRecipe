@@ -3,6 +3,7 @@
 
 #include "CoreMenu.h"
 #include "GameFramework/PlayerController.h"
+#include "TimerManager.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
@@ -186,6 +187,10 @@ void UCoreMenu::SelectItemData(const FText& ItemIdText)
 void UCoreMenu::OnRandomizeItemButtonClicked()
 {
 	UE_LOG(LogTemp, Warning, TEXT("RandomizeItemButton Clicked."));
+
+	UpdatePanelVisibility({ ShopWindowBox, PlayerStashHorizBox }, ESlateVisibility::Hidden);
+	ShowActiveItemImage();
+
 	OnRandomizeItemEvent.Broadcast();
 }
 
@@ -454,6 +459,11 @@ void UCoreMenu::PopulatePlayerStash()
 		PlayerStashUniGrid->AddChildToUniformGrid(ItemSlotBox, Index / NumColumns, Index % NumColumns);
 
 		++Index;
+	}
+
+	if (StashSelectButton)
+	{
+		StashSelectButton->SetVisibility(Index > 0 ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	}
 }
 
@@ -733,6 +743,14 @@ void UCoreMenu::SetPanelAndChildrenVisibility(UPanelWidget* Panel, ESlateVisibil
 		if (UWidget* Child = Panel->GetChildAt(i))
 		{
 			Child->SetVisibility(NewVisibility);
+
+			// Recurse into nested panels (e.g. BuyBox inside ShopWindowBox) - an ancestor left at its
+			// design-time visibility would otherwise block rendering/hit-testing for everything below
+			// it even though this panel and its immediate children report Visible.
+			if (UPanelWidget* ChildPanel = Cast<UPanelWidget>(Child))
+			{
+				SetPanelAndChildrenVisibility(ChildPanel, NewVisibility);
+			}
 		}
 	}
 }
@@ -807,6 +825,31 @@ void UCoreMenu::SetPlayerGoldText(int32 NewGoldCount)
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("PlayerGoldTextBox is null or not found!"));
+	}
+}
+
+void UCoreMenu::SetWarningText(const FString& NewMessage)
+{
+	if (!WarningsTextBox)
+	{
+		UE_LOG(LogTemp, Error, TEXT("WarningsTextBox is null or not found!"));
+		return;
+	}
+
+	WarningsTextBox->SetText(FText::FromString(NewMessage));
+
+	GetWorld()->GetTimerManager().ClearTimer(WarningTextTimerHandle);
+	if (!NewMessage.IsEmpty())
+	{
+		GetWorld()->GetTimerManager().SetTimer(WarningTextTimerHandle, this, &UCoreMenu::ClearWarningText, 3.f, false);
+	}
+}
+
+void UCoreMenu::ClearWarningText()
+{
+	if (WarningsTextBox)
+	{
+		WarningsTextBox->SetText(FText::GetEmpty());
 	}
 }
 

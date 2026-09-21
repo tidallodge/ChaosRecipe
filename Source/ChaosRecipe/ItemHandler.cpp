@@ -481,6 +481,10 @@ void UItemHandler::OnBuyButtonClicked(FString ItemId, FString ItemUUID)
     if (BoundPlayerInventory && !BoundPlayerInventory->CanAffordGoldCost(RoundedGoldCost))
     {
         UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Player does not have enough gold to buy item '%s' (cost=%d)."), *ItemId, RoundedGoldCost);
+        if (BoundCoreMenu)
+        {
+            BoundCoreMenu->SetWarningText(TEXT("Not enough gold to complete action!"));
+        }
         return;
     }
 
@@ -506,6 +510,16 @@ void UItemHandler::OnBuyButtonClicked(FString ItemId, FString ItemUUID)
 
 void UItemHandler::OnRandomizeItem()
 {
+    if (BoundPlayerInventory && !BoundPlayerInventory->CanAffordGoldCost(RandomizeItemGoldCost))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Player does not have enough gold to randomize (cost=%d)."), RandomizeItemGoldCost);
+        if (BoundCoreMenu)
+        {
+            BoundCoreMenu->SetWarningText(TEXT("Not enough gold to complete action!"));
+        }
+        return;
+    }
+
     bool bDidRandomize = false;
     if (LastSelectedItemClass == EItemClass::Weapon)
     {
