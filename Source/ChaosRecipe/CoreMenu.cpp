@@ -53,20 +53,20 @@ void UCoreMenu::NativeConstruct()
     ValidateButton(BuyButton);
     ValidateButton(SellButton);
     ValidateButton(RandomizeButton);
-    ValidateButton(SaveItemButton);
     ValidateButton(ShopButton);
     ValidateButton(RandomizeShopButton);
     ValidateButton(PlayerStashButton);
     ValidateButton(StashSelectButton);
+    ValidateButton(ResetGameButton);
 
 	BuyButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBuyButtonClicked);
 	SellButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSellButtonClicked);
 	RandomizeButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeItemButtonClicked);
-	SaveItemButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSaveItemButtonClicked);
 	ShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnShopButtonClicked);
 	RandomizeShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeShopButtonClicked);
 	PlayerStashButton->OnClicked.AddDynamic(this, &UCoreMenu::OnPlayerStashButtonClicked);
 	StashSelectButton->OnClicked.AddDynamic(this, &UCoreMenu::OnStashSelectButtonClicked);
+	ResetGameButton->OnClicked.AddDynamic(this, &UCoreMenu::OnResetGameButtonClicked);
 
 	if (ShopWindowBox)
 	{
@@ -128,25 +128,10 @@ void UCoreMenu::OnBuyButtonClicked()
 		UE_LOG(LogTemp, Warning, TEXT("No selected item to buy."));
 		return;
 	}
+	// ItemHandler::OnBuyButtonClicked runs synchronously here and rejects the purchase (no stash
+	// save, no shop removal) if the player can't afford it, so CoreMenu doesn't remove the listing
+	// itself - it only knows the purchase succeeded once ItemHandler calls RemoveItemFromShop back.
 	OnBuyButtonClickedEvent.Broadcast(SelectedItemId, SelectedItemUUID);
-
-	// Remove the purchased listing from the shop's current item list so it's no longer offered,
-	// then rebuild the grid from the reduced list. Matches on ItemId rather than array index so a
-	// duplicate listing elsewhere in the shop isn't accidentally removed instead.
-	if (ItemDataTable)
-	{
-		for (int32 Index = 0; Index < CurrentShopItems.Num(); ++Index)
-		{
-			const FBaseItemStruct* ItemRow = ItemDataTable->FindRow<FBaseItemStruct>(CurrentShopItems[Index], TEXT("CoreMenu::OnBuyButtonClicked"));
-			if (ItemRow && ItemRow->ItemId.ToString().Equals(SelectedItemId, ESearchCase::IgnoreCase))
-			{
-				CurrentShopItems.RemoveAt(Index);
-				break;
-			}
-		}
-	}
-
-	RefreshShopGrid();
 }
 
 void UCoreMenu::SelectItemData(const FText& ItemIdText)
@@ -202,17 +187,6 @@ void UCoreMenu::OnRandomizeItemButtonClicked()
 {
 	UE_LOG(LogTemp, Warning, TEXT("RandomizeItemButton Clicked."));
 	OnRandomizeItemEvent.Broadcast();
-}
-
-void UCoreMenu::OnSaveItemButtonClicked()
-{
-	UE_LOG(LogTemp, Warning, TEXT("SaveItemButton Clicked."));
-	if (!bHasSelectedItemData)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No selected item to save."));
-		return;
-	}
-	OnSaveItemButtonClickedEvent.Broadcast(SelectedItemId);
 }
 
 static bool GetSavedItemJsonByUUID(const FString& UUID, TSharedPtr<FJsonObject>& OutItemObject)
@@ -284,7 +258,7 @@ void UCoreMenu::OnSingleLoadItemButtonClicked(FString ItemUUID)
 	FString ItemId;
 	ItemObject->TryGetStringField(TEXT("ItemId"), ItemId);
 
-	// Marks this stash item as the active item, so RandomizeButton/SaveItemButton act on it.
+	// Marks this stash item as the active item, so RandomizeButton acts on it.
 	SelectItemData(FText::FromString(ItemId));
 
 	// Lets listeners (e.g. ItemHandler) load this existing saved item's stats into their
@@ -632,6 +606,30 @@ void UCoreMenu::RefreshShopGrid()
 	PopulateShopGrid();
 }
 
+void UCoreMenu::RemoveItemFromShop(const FString& ItemId)
+{
+	// Called by ItemHandler once a purchase has actually succeeded, so a rejected (unaffordable)
+	// buy leaves the listing in CurrentShopItems instead of removing it for nothing.
+	if (!ItemDataTable)
+	{
+		return;
+	}
+
+	// Matches on ItemId rather than array index so a duplicate listing elsewhere in the shop isn't
+	// accidentally removed instead.
+	for (int32 Index = 0; Index < CurrentShopItems.Num(); ++Index)
+	{
+		const FBaseItemStruct* ItemRow = ItemDataTable->FindRow<FBaseItemStruct>(CurrentShopItems[Index], TEXT("CoreMenu::RemoveItemFromShop"));
+		if (ItemRow && ItemRow->ItemId.ToString().Equals(ItemId, ESearchCase::IgnoreCase))
+		{
+			CurrentShopItems.RemoveAt(Index);
+			break;
+		}
+	}
+
+	RefreshShopGrid();
+}
+
 void UCoreMenu::OnShopItemButtonClicked(FString ItemId, FString ItemUUID)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Shop item button clicked for ItemId: %s (UUID: %s)"), *ItemId, *ItemUUID);
@@ -670,6 +668,26 @@ void UCoreMenu::OnStashSelectButtonClicked()
 	UE_LOG(LogTemp, Warning, TEXT("StashSelectButton Clicked."));
 	UpdatePanelVisibility({ ShopWindowBox, PlayerStashHorizBox }, ESlateVisibility::Hidden);
 	ShowActiveItemImage();
+}
+
+void UCoreMenu::OnResetGameButtonClicked()
+{
+	UE_LOG(LogTemp, Warning, TEXT("ResetGameButton Clicked."));
+
+	// Listeners (ItemHandler, PlayerInventory) delete/clear their own save files
+	// (SavedItems.json, SavedCurrency.json) synchronously in response to this broadcast.
+	OnResetGameButtonClickedEvent.Broadcast();
+
+	// The previously active/selected item may no longer exist after the reset.
+	SelectedItemData = FBaseItemStruct();
+	SelectedItemId.Empty();
+	SelectedItemUUID.Empty();
+	bHasSelectedItemData = false;
+	SetActiveItemText(TEXT(""));
+	UpdatePanelVisibility({ ActiveItemImageHorizBox }, ESlateVisibility::Hidden);
+
+	PopulatePlayerStash();
+	RandomizeShopItems();
 }
 
 void UCoreMenu::UpdatePanelVisibility(const TArray<UPanelWidget*>& Panels, ESlateVisibility NewVisibility)

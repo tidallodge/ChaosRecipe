@@ -8,6 +8,7 @@
 
 #include "ItemHandler.h"
 #include "CoreMenu.h"
+#include "PlayerInventory.h"
 #include "Engine/DataTable.h"
 #include "TagsStruct.h"
 #include "BaseItemStruct.h"
@@ -116,10 +117,21 @@ void UItemHandler::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
     BoundCoreMenu = CoreMenu;
     CoreMenu->OnBuyButtonClickedEvent.AddDynamic(this, &UItemHandler::OnBuyButtonClicked);
     CoreMenu->OnRandomizeItemEvent.AddDynamic(this, &UItemHandler::OnRandomizeItem);
-    CoreMenu->OnSaveItemButtonClickedEvent.AddDynamic(this, &UItemHandler::OnSaveItemButtonClicked);
     CoreMenu->OnSellButtonClickedEvent.AddDynamic(this, &UItemHandler::OnSellButtonClicked);
     CoreMenu->OnStashItemSelectedEvent.AddDynamic(this, &UItemHandler::OnStashItemSelected);
     CoreMenu->OnShopItemSelectedEvent.AddDynamic(this, &UItemHandler::OnShopItemSelected);
+    CoreMenu->OnResetGameButtonClickedEvent.AddDynamic(this, &UItemHandler::OnResetGame);
+}
+
+void UItemHandler::BindToPlayerInventory(UPlayerInventory* PlayerInventory)
+{
+    if (!PlayerInventory)
+    {
+        UE_LOG(LogTemp, Error, TEXT("ItemHandler: PlayerInventory reference is null."));
+        return;
+    }
+
+    BoundPlayerInventory = PlayerInventory;
 }
 
 void UItemHandler::OnStashItemSelected(FString ItemId, FString ItemUUID)
@@ -465,6 +477,13 @@ void UItemHandler::OnBuyButtonClicked(FString ItemId, FString ItemUUID)
         ? GetDisplayGoldValue(CachedArmorStats)
         : GetDisplayGoldValue(CachedWeaponStats);
 
+    const int32 RoundedGoldCost = FMath::RoundToInt(BoughtGoldValue);
+    if (BoundPlayerInventory && !BoundPlayerInventory->CanAffordGoldCost(RoundedGoldCost))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Player does not have enough gold to buy item '%s' (cost=%d)."), *ItemId, RoundedGoldCost);
+        return;
+    }
+
     // Add the purchased item to the player's stash the same way Save does, so it shows up in
     // PlayerStashUniGrid (backed by SavedItems.json) without requiring a separate Save click.
     if (LastSelectedItemClass == EItemClass::Armor)
@@ -477,6 +496,12 @@ void UItemHandler::OnBuyButtonClicked(FString ItemId, FString ItemUUID)
     }
 
     OnItemBoughtEvent.Broadcast(ItemId, ItemUUID, BoughtGoldValue);
+
+    // Only remove the listing from the shop now that the purchase has actually gone through.
+    if (BoundCoreMenu)
+    {
+        BoundCoreMenu->RemoveItemFromShop(ItemId);
+    }
 }
 
 void UItemHandler::OnRandomizeItem()
@@ -612,6 +637,8 @@ bool UItemHandler::RandomizeWeaponItem()
     {
         UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Could not resolve class/type for '%s' to assign modifiers."), *RandomizeItemId);
     }
+
+    SavedItemsManager.SaveItem(GetUUID().ToString(), CachedWeaponStats);
 
     FString DamageSummary;
     for (const TPair<FString, FWeaponBaseDamage>& DamageEntry : CachedWeaponStats.WeaponDamage)
@@ -803,6 +830,8 @@ bool UItemHandler::RandomizeArmorItem()
     {
         UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Could not resolve class/type for '%s' to assign modifiers."), *RandomizeItemId);
     }
+
+    SavedItemsManager.SaveItem(GetUUID().ToString(), CachedArmorStats);
 
     const FString DefenseSummary = FString::Printf(
         TEXT("PhysicalMitigation:%d-%d | Evade:%d-%d | Overshield:%d-%d"),
@@ -1067,7 +1096,7 @@ void UItemHandler::RecalculateArmorDefense()
     CachedArmorStats.BaseDefense = NewDefense;
 }
 
-void UItemHandler::OnSaveItemButtonClicked(FString ItemId)
+void UItemHandler::OnSaveItem(FString ItemId)
 {
     if (ItemId.IsEmpty())
     {
@@ -1155,6 +1184,17 @@ void UItemHandler::OnSellButtonClicked(FString ItemId, FString ItemUUID)
     {
         UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
     }
+}
+
+void UItemHandler::OnResetGame()
+{
+    CachedWeaponStats = FItemWeaponStatsStruct();
+    CachedArmorStats = FItemArmorStatsStruct();
+    LastSelectedItemClass = EItemClass::Weapon;
+
+    SavedItemsManager.ClearAllSavedItems();
+
+    UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Reset - cleared cached item stats and SavedItems.json."));
 }
 
 float UItemHandler::GetItemGoldValue(const FString& ItemUUID) const

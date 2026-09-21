@@ -14,6 +14,7 @@
 #include "ItemHandler.generated.h"
 
 class UCoreMenu;
+class UPlayerInventory;
 
 // Broadcast by OnSellButtonClicked once it has resolved the sold item's gold value and before it
 // removes the item from SavedItems.json, so listeners (e.g. PlayerInventory) always get the correct
@@ -116,6 +117,11 @@ public:
     UFUNCTION()
     void BindToCoreMenuEvents(UCoreMenu* CoreMenu);
 
+    // Lets OnBuyButtonClicked query PlayerInventory::CanAffordGoldCost before granting a purchased
+    // item, so an unaffordable buy is rejected before the item ever reaches the stash.
+    UFUNCTION()
+    void BindToPlayerInventory(UPlayerInventory* PlayerInventory);
+
     UFUNCTION()
     FItemWeaponStatsStruct GetWeaponStatsForItem(const FString& ItemId);
 
@@ -153,10 +159,15 @@ public:
     bool RandomizeArmorItem();
 
     UFUNCTION()
-    void OnSaveItemButtonClicked(FString ItemId);
+    void OnSaveItem(FString ItemId);
 
     UFUNCTION()
     void OnSellButtonClicked(FString ItemId, FString ItemUUID);
+
+    // Bound to CoreMenu's OnResetGameButtonClickedEvent: clears cached item stats and wipes
+    // SavedItems.json (both on disk and in memory) via SavedItemsManager.
+    UFUNCTION()
+    void OnResetGame();
 
     // Reads a saved item's gold value straight from its saved JSON: itemGoldValue when present,
     // falling back to itemBaseGoldValue for saves from before itemGoldValue existed. Returns 0 if
@@ -190,6 +201,9 @@ protected:
 
     UPROPERTY()
     TObjectPtr<UCoreMenu> BoundCoreMenu = nullptr;
+
+    UPROPERTY()
+    TObjectPtr<UPlayerInventory> BoundPlayerInventory = nullptr;
 
     // Rebuilds CachedWeaponStats.WeaponLocalDamage from the item's base damage plus the rolled damage modifiers.
     void RecalculateWeaponLocalDamage();

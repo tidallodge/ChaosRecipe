@@ -56,11 +56,23 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void AdjustPlayerGoldCount(int32 GoldDelta);
 
+	// Bound to CoreMenu's OnResetGameButtonClickedEvent: deletes SavedCurrency.json and resets
+	// PlayerGoldCount back to DefaultPlayerGoldCount.
+	UFUNCTION()
+	void OnResetGame();
+
+	// Queried by ItemHandler before granting a purchased item, so an unaffordable buy is rejected
+	// before the item is saved to the stash rather than after (which would grant it for free).
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	bool CanAffordGoldCost(int32 GoldCost) const;
+
 protected:
 	// Pushes PlayerGoldCount to the bound CoreMenu's PlayerGoldTextBox, if a CoreMenu has been bound.
 	void UpdatePlayerGoldDisplay() const;
 
-	int32 PlayerGoldCount = 0;
+	static constexpr int32 DefaultPlayerGoldCount = 250;
+
+	int32 PlayerGoldCount = DefaultPlayerGoldCount;
 
 	TUniquePtr<UCurrencyManager> CurrencyManager;
 

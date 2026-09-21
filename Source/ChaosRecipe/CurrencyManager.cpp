@@ -5,6 +5,8 @@
 #include "Serialization/JsonReader.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "HAL/PlatformFileManager.h"
+#include "GenericPlatform/GenericPlatformFile.h"
 
 namespace
 {
@@ -49,4 +51,24 @@ bool UCurrencyManager::LoadPlayerGoldCount(int32& OutPlayerGoldCount) const
 
     OutPlayerGoldCount = static_cast<int32>(GoldCountValue);
     return true;
+}
+
+void UCurrencyManager::DeleteSavedCurrency() const
+{
+    const FString SaveFilePath = FPaths::ProjectSavedDir() / SavedCurrencyFileName;
+    IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+    if (PlatformFile.FileExists(*SaveFilePath))
+    {
+        PlatformFile.DeleteFile(*SaveFilePath);
+    }
+}
+
+bool UCurrencyManager::ValidateCurrencyUpdate(int32& InAdjustValue, int32& InCurrentCurrency) const
+{
+    if (InAdjustValue <= InCurrentCurrency)
+    {
+        return true;
+    }
+
+    return false;
 }

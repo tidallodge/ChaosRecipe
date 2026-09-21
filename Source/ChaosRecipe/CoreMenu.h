@@ -22,7 +22,6 @@ class UPanelWidget;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBuyButtonClickedEvent, FString, ItemId, FString, ItemUUID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSellButtonClickedEvent, FString, ItemId, FString, ItemUUID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRandomizeItemEvent);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSaveItemButtonClickedEvent, FString, ItemId);
 // Fired when a saved item is loaded from the PlayerStashUniGrid, so listeners (e.g. ItemHandler) can
 // prep that existing item - identified by ItemId and its already-assigned ItemUUID - as the active item.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStashItemSelectedEvent, FString, ItemId, FString, ItemUUID);
@@ -30,6 +29,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStashItemSelectedEvent, FString,
 // base stats and display them as the active item, the same way a stash selection or randomize does.
 // ItemUUID is the UUID minted for this shop listing back in PopulateShopGrid.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnShopItemSelectedEvent, FString, ItemId, FString, ItemUUID);
+// Fired when the Reset Game button is clicked, so listeners (e.g. ItemHandler, PlayerInventory)
+// can wipe their own persisted save data (SavedItems.json, SavedCurrency.json) and reset to defaults.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnResetGameEvent);
 
 class UCoreMenu;
 
@@ -98,13 +100,13 @@ public:
 	FOnRandomizeItemEvent OnRandomizeItemEvent;
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
-	FOnSaveItemButtonClickedEvent OnSaveItemButtonClickedEvent;
-
-	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnStashItemSelectedEvent OnStashItemSelectedEvent;
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnShopItemSelectedEvent OnShopItemSelectedEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnResetGameEvent OnResetGameButtonClickedEvent;
 
 	UPROPERTY()
 	int32 PlayerSwordCount;
@@ -140,6 +142,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Shop")
 	void RefreshShopGrid();
 
+	// Removes an item from CurrentShopItems (by ItemId) and refreshes the grid. Called by ItemHandler
+	// once a purchase has actually succeeded, so a rejected (unaffordable) buy leaves the shop unchanged.
+	UFUNCTION(BlueprintCallable, Category = "Shop")
+	void RemoveItemFromShop(const FString& ItemId);
+
 	UPROPERTY()
 	TArray<FName> ItemDataTableRowNames;
 
@@ -160,8 +167,6 @@ protected:
 	UButton* BuyButton;
 	UPROPERTY(meta = (BindWidget))
 	UButton* RandomizeButton;
-	UPROPERTY(meta = (BindWidget))
-	UButton* SaveItemButton;
 	UPROPERTY(meta = (BindWidget))
 	UButton* ShopButton;
 	UPROPERTY(meta = (BindWidget))
@@ -188,6 +193,8 @@ protected:
 	UButton* StashSelectButton;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* PlayerGoldTextBox;
+	UPROPERTY(meta = (BindWidget))
+	UButton* ResetGameButton;
 
 	// Click handler for SellButton
 	UFUNCTION()
@@ -201,9 +208,6 @@ protected:
 	// Click handler for the randomize item button
 	UFUNCTION()
 	void OnRandomizeItemButtonClicked();
-	// Click handler for the save item button
-	UFUNCTION()
-	void OnSaveItemButtonClicked();
 	// Click handler for a dynamically created saved-item button
 	UFUNCTION()
 	void OnSingleLoadItemButtonClicked(FString ItemUUID);
@@ -222,6 +226,10 @@ protected:
 	// Click handler for the Stash Select button; hides both the shop and stash panels
 	UFUNCTION()
 	void OnStashSelectButtonClicked();
+	// Click handler for the Reset Game button; wipes save data (broadcasts OnResetGameButtonClickedEvent
+	// for listeners like ItemHandler/PlayerInventory) and refreshes the stash and shop grids.
+	UFUNCTION()
+	void OnResetGameButtonClicked();
 	// Clears and repopulates ShopUniGrid with an item button + icon for every row in BaseItem_DT
 	void PopulateShopGrid();
 	// Clears and repopulates PlayerStashUniGrid with a WBP_SingleImageButton for every saved item (via ItemInstanceManager)

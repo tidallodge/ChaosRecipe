@@ -29,6 +29,7 @@ void UPlayerInventory::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
 	}
 
 	BoundCoreMenu = CoreMenu;
+	CoreMenu->OnResetGameButtonClickedEvent.AddDynamic(this, &UPlayerInventory::OnResetGame);
 
 	// Reflects the gold count loaded from SavedCurrency.json (in the constructor) now that a
 	// CoreMenu is available to display it.
@@ -88,6 +89,24 @@ void UPlayerInventory::HandleItemRandomized(int32 GoldCost)
 
 	UE_LOG(LogTemp, Warning, TEXT("PlayerInventory: Randomized item for %d gold (PlayerGoldCount=%d)"),
 		GoldCost, PlayerGoldCount);
+}
+
+void UPlayerInventory::OnResetGame()
+{
+	CurrencyManager->DeleteSavedCurrency();
+
+	PlayerGoldCount = DefaultPlayerGoldCount;
+	CurrencyManager->SaveCurrency(PlayerGoldCount);
+	UpdatePlayerGoldDisplay();
+
+	UE_LOG(LogTemp, Warning, TEXT("PlayerInventory: Reset - PlayerGoldCount back to default (%d)"), PlayerGoldCount);
+}
+
+bool UPlayerInventory::CanAffordGoldCost(int32 GoldCost) const
+{
+	int32 AdjustValue = GoldCost;
+	int32 CurrentCurrency = PlayerGoldCount;
+	return CurrencyManager->ValidateCurrencyUpdate(AdjustValue, CurrentCurrency);
 }
 
 void UPlayerInventory::AdjustPlayerGoldCount(int32 GoldDelta)

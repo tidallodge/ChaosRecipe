@@ -31,6 +31,9 @@ public:
     bool HasSavedItem(const FString& ItemUUID) const;
     void RemoveSavedItem(const FString& ItemUUID);
 
+    // Clears every saved item from memory and deletes SavedItems.json from disk (e.g. for a game reset).
+    void ClearAllSavedItems();
+
     const TMap<FString, TSharedPtr<FJsonObject>>& GetSavedItems() const
     {
         return SavedItemsByUUID;

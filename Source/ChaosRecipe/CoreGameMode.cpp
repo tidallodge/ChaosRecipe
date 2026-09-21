@@ -35,6 +35,7 @@ void ACoreGameMode::BeginPlay()
 			{
 				ItemHandler->BindToCoreMenuEvents(CoreMenuWidget);
 				PlayerInventory->BindToItemHandlerEvents(ItemHandler);
+				ItemHandler->BindToPlayerInventory(PlayerInventory);
 			}
 
 			UStoreManager* StoreManager = NewObject<UStoreManager>(this);

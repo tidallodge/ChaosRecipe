@@ -10,6 +10,8 @@
 #include "Serialization/JsonReader.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "HAL/PlatformFileManager.h"
+#include "GenericPlatform/GenericPlatformFile.h"
 
 namespace
 {
@@ -154,6 +156,19 @@ void UItemInstanceManager::RemoveSavedItem(const FString& ItemUUID)
     if (SavedItemsByUUID.Remove(ItemUUID) > 0)
     {
         WriteSavedItemsToDisk();
+    }
+}
+
+void UItemInstanceManager::ClearAllSavedItems()
+{
+    SavedItemsByUUID.Empty();
+    ItemUUIDToAssignedEntity.Empty();
+
+    const FString SaveFilePath = FPaths::ProjectSavedDir() / SavedItemsFileName;
+    IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
+    if (PlatformFile.FileExists(*SaveFilePath))
+    {
+        PlatformFile.DeleteFile(*SaveFilePath);
     }
 }
 

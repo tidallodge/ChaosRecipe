@@ -11,4 +11,9 @@ class CHAOSRECIPE_API UCurrencyManager
 public:
     void SaveCurrency(int32 PlayerGoldCount) const;
     bool LoadPlayerGoldCount(int32& OutPlayerGoldCount) const;
+
+    // Deletes SavedCurrency.json from disk (e.g. for a game reset).
+    void DeleteSavedCurrency() const;
+
+    bool ValidateCurrencyUpdate(int32& InAdjustValue, int32& InCurrentCurrency) const;
 };
