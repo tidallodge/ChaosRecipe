@@ -8,6 +8,50 @@
 #include "PlayerInventory.h"
 #include "StoreManager.h"
 #include "ItemHandler.h"
+#include "Engine/DataTable.h"
+#include "UObject/ConstructorHelpers.h"
+
+ACoreGameMode::ACoreGameMode()
+{
+	// FObjectFinder/FClassFinder only work inside a constructor - they populate the CDO's
+	// UPROPERTY directly, which is what makes the referenced asset a genuine hard reference
+	// the cooker will follow (see the "Hard References" comment in CoreGameMode.h).
+	static ConstructorHelpers::FClassFinder<UCoreMenu> CoreMenuFinder(TEXT("/Game/WBP_CoreMenu"));
+	if (CoreMenuFinder.Succeeded())
+	{
+		CoreMenuClass = CoreMenuFinder.Class;
+	}
+
+	static ConstructorHelpers::FClassFinder<UUserWidget> SingleImageButtonFinder(TEXT("/Game/WBP_SingleImageButton"));
+	if (SingleImageButtonFinder.Succeeded())
+	{
+		SingleImageButtonClass = SingleImageButtonFinder.Class;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UDataTable> BaseItemDataTableFinder(TEXT("/Game/ItemData/BaseItem_DT"));
+	if (BaseItemDataTableFinder.Succeeded())
+	{
+		BaseItemDataTable = BaseItemDataTableFinder.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UDataTable> BaseWeaponDataTableFinder(TEXT("/Game/ItemData/BaseWeapon_DT"));
+	if (BaseWeaponDataTableFinder.Succeeded())
+	{
+		BaseWeaponDataTable = BaseWeaponDataTableFinder.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UDataTable> BaseArmorDataTableFinder(TEXT("/Game/ItemData/BaseArmor_DT"));
+	if (BaseArmorDataTableFinder.Succeeded())
+	{
+		BaseArmorDataTable = BaseArmorDataTableFinder.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UDataTable> ItemModifierDataTableFinder(TEXT("/Game/ItemData/ItemModifier_DT"));
+	if (ItemModifierDataTableFinder.Succeeded())
+	{
+		ItemModifierDataTable = ItemModifierDataTableFinder.Object;
+	}
+}
 
 void ACoreGameMode::BeginPlay()
 {
