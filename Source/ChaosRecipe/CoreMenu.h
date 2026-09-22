@@ -22,7 +22,9 @@ class UPanelWidget;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBuyButtonClickedEvent, FString, ItemId, FString, ItemUUID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSellButtonClickedEvent, FString, ItemId, FString, ItemUUID);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRandomizeItemEvent);
+// CurrencyId is whatever SetSelectedCurrencyId last set (empty for a plain full reroll, or a
+// Currency_DT row id to modify the item's existing modifiers via that currency's rules instead).
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRandomizeItemEvent, FString, CurrencyId);
 // Fired when a saved item is loaded from the PlayerStashUniGrid, so listeners (e.g. ItemHandler) can
 // prep that existing item - identified by ItemId and its already-assigned ItemUUID - as the active item.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStashItemSelectedEvent, FString, ItemId, FString, ItemUUID);
@@ -140,6 +142,16 @@ public:
 	// Clears the currently loaded UUID, e.g. once it has been sold.
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void ClearSelectedItemUUID() { SelectedItemUUID.Empty(); }
+
+	// Sets which currency (a Currency_DT row id, or empty for a plain full reroll) the next Randomize
+	// click will use. Meant to be called from a future currency-selection widget (e.g. a combo box bound
+	// to CurrencyDataTableRowNames below) - no such widget exists yet, so this currently defaults to
+	// empty (full reroll) until one calls it.
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void SetSelectedCurrencyId(const FString& CurrencyId) { SelectedCurrencyId = CurrencyId; }
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	FString GetSelectedCurrencyId() const { return SelectedCurrencyId; }
 
 	// Rebuilds ShopUniGrid from CurrentShopItems without changing which items are listed
 	// (unlike RandomizeShopItems, which rolls a new set first). Useful for refreshing the
@@ -271,6 +283,19 @@ protected:
 	// Shared reference to BaseItem_DT, loaded once in NativeConstruct.
 	UPROPERTY()
 	UDataTable* ItemDataTable;
+
+	// Shared reference to Currency_DT, loaded once in NativeConstruct.
+	UPROPERTY()
+	UDataTable* CurrencyDataTable;
+
+	// Every row name in Currency_DT, so Blueprint can populate a currency-selection widget without
+	// needing its own data table reference.
+	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
+	TArray<FName> CurrencyDataTableRowNames;
+
+	// CurrencyId to use for the next Randomize click (empty = full reroll). Set via SetSelectedCurrencyId.
+	UPROPERTY()
+	FString SelectedCurrencyId;
 
 	UPROPERTY()
 	FBaseItemStruct SelectedItemData;

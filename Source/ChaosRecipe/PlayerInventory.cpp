@@ -12,6 +12,7 @@ UPlayerInventory::UPlayerInventory()
 {
 	CurrencyManager = MakeUnique<UCurrencyManager>();
 	CurrencyManager->LoadPlayerGoldCount(PlayerGoldCount);
+	CurrencyManager->LoadCurrencyStacks(CurrencyStackCounts);
 }
 
 UPlayerInventory::UPlayerInventory(FVTableHelper& Helper) : Super(Helper)
@@ -83,12 +84,17 @@ void UPlayerInventory::HandleItemBought(FString ItemId, FString ItemUUID, float 
 		*ItemId, *ItemUUID, RoundedGoldValue, PlayerGoldCount);
 }
 
-void UPlayerInventory::HandleItemRandomized(int32 GoldCost)
+void UPlayerInventory::HandleItemRandomized(int32 GoldCost, FString CurrencyId)
 {
 	AdjustPlayerGoldCount(-GoldCost);
 
-	UE_LOG(LogTemp, Warning, TEXT("PlayerInventory: Randomized item for %d gold (PlayerGoldCount=%d)"),
-		GoldCost, PlayerGoldCount);
+	if (!CurrencyId.IsEmpty())
+	{
+		AdjustCurrencyStackCount(CurrencyId, -1);
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("PlayerInventory: Randomized item for %d gold and currency '%s' (PlayerGoldCount=%d)"),
+		GoldCost, *CurrencyId, PlayerGoldCount);
 }
 
 void UPlayerInventory::OnResetGame()
@@ -96,7 +102,9 @@ void UPlayerInventory::OnResetGame()
 	CurrencyManager->DeleteSavedCurrency();
 
 	PlayerGoldCount = DefaultPlayerGoldCount;
+	CurrencyStackCounts.Empty();
 	CurrencyManager->SaveCurrency(PlayerGoldCount);
+	CurrencyManager->SaveCurrencyStacks(CurrencyStackCounts);
 	UpdatePlayerGoldDisplay();
 
 	UE_LOG(LogTemp, Warning, TEXT("PlayerInventory: Reset - PlayerGoldCount back to default (%d)"), PlayerGoldCount);
@@ -107,6 +115,31 @@ bool UPlayerInventory::CanAffordGoldCost(int32 GoldCost) const
 	int32 AdjustValue = GoldCost;
 	int32 CurrentCurrency = PlayerGoldCount;
 	return CurrencyManager->ValidateCurrencyUpdate(AdjustValue, CurrentCurrency);
+}
+
+bool UPlayerInventory::CanAffordCurrency(const FString& CurrencyId, int32 Count) const
+{
+	const int32* Found = CurrencyStackCounts.Find(CurrencyId);
+	return Found && *Found >= Count;
+}
+
+void UPlayerInventory::AdjustCurrencyStackCount(const FString& CurrencyId, int32 Delta)
+{
+	if (CurrencyId.IsEmpty())
+	{
+		return;
+	}
+
+	int32& Count = CurrencyStackCounts.FindOrAdd(CurrencyId);
+	Count = FMath::Max(0, Count + Delta);
+
+	CurrencyManager->SaveCurrencyStacks(CurrencyStackCounts);
+}
+
+int32 UPlayerInventory::GetCurrencyStackCount(const FString& CurrencyId) const
+{
+	const int32* Found = CurrencyStackCounts.Find(CurrencyId);
+	return Found ? *Found : 0;
 }
 
 void UPlayerInventory::AdjustPlayerGoldCount(int32 GoldDelta)

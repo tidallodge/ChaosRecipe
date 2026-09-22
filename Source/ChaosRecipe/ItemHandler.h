@@ -11,6 +11,8 @@
 #include "ItemInstanceManager.h"
 #include "ItemModifierStruct.h"
 #include "ModifierAssigner.h"
+#include "CurrencyManager.h"
+#include "CurrencyStruct.h"
 #include "ItemHandler.generated.h"
 
 class UCoreMenu;
@@ -26,8 +28,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnItemSoldEvent, FString, ItemId
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnItemBoughtEvent, FString, ItemId, FString, ItemUUID, float, GoldValue);
 
 // Broadcast by OnRandomizeItem once a reroll has actually happened (i.e. there was an active item to
-// reroll), so listeners (e.g. PlayerInventory) can charge the player RandomizeItemGoldCost.
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemRandomizedEvent, int32, GoldCost);
+// reroll), so listeners (e.g. PlayerInventory) can charge the player RandomizeItemGoldCost and, if a
+// currency was used (CurrencyId non-empty), consume one from that currency's stack.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnItemRandomizedEvent, int32, GoldCost, FString, CurrencyId);
 
 USTRUCT(BlueprintType)
 struct FItemWeaponStatsStruct : public FTableRowBase
@@ -143,20 +146,25 @@ public:
     UFUNCTION()
     void OnBuyButtonClicked(FString ItemId, FString ItemUUID);
 
+    // CurrencyId may be empty (full reroll, matching the original behavior) or a valid Currency_DT row
+    // id, in which case that currency's ModifierModificationType rules are applied to the item's
+    // existing modifiers instead of wiping and rerolling everything.
     UFUNCTION()
-    void OnRandomizeItem();
+    void OnRandomizeItem(FString CurrencyId);
 
     // Flat gold cost charged for each randomize/reroll, via OnItemRandomizedEvent.
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Economy")
     int32 RandomizeItemGoldCost = 25;
 
-    // Returns true if an active item was actually rerolled (i.e. there was one cached to reroll).
+    // Returns true if an active item was actually rerolled (i.e. there was one cached to reroll and,
+    // when CurrencyId is set, that currency actually had an effect on the item).
     UFUNCTION()
-    bool RandomizeWeaponItem();
+    bool RandomizeWeaponItem(const FString& CurrencyId = FString());
 
-    // Returns true if an active item was actually rerolled (i.e. there was one cached to reroll).
+    // Returns true if an active item was actually rerolled (i.e. there was one cached to reroll and,
+    // when CurrencyId is set, that currency actually had an effect on the item).
     UFUNCTION()
-    bool RandomizeArmorItem();
+    bool RandomizeArmorItem(const FString& CurrencyId = FString());
 
     UFUNCTION()
     void OnSaveItem(FString ItemId);
@@ -199,17 +207,37 @@ protected:
     // Receives the full pool of possible modifiers whenever an item is randomized.
     ModifierAssigner ItemModifierAssigner;
 
+    // Resolves currency rows from Currency_DT when a randomize uses a currency.
+    UCurrencyManager CurrencyManagerInstance;
+
     UPROPERTY()
     TObjectPtr<UCoreMenu> BoundCoreMenu = nullptr;
 
     UPROPERTY()
     TObjectPtr<UPlayerInventory> BoundPlayerInventory = nullptr;
 
-    // Rebuilds CachedWeaponStats.WeaponLocalDamage from the item's base damage plus the rolled damage modifiers.
+    // Rebuilds CachedWeaponStats.WeaponLocalDamage (and AttackRate) from the item's base weapon data
+    // plus every currently-assigned modifier, so it can be called after any partial modifier change
+    // (not just a full reroll) and always reflects exactly what's on the item right now.
     void RecalculateWeaponLocalDamage();
 
     // Rebuilds CachedArmorStats.BaseDefense from the item's base defense plus the rolled defense modifiers.
     void RecalculateArmorDefense();
+
+    // Applies Currency's ModifierModificationType rules (Add/Remove/RandomizeMods/RandomizeValues) to the
+    // given item's modifier maps in place, respecting Currency's AffectedAffixes/CurrencyModifierTags
+    // restrictions and the existing 3-prefix/3-suffix cap and bucket-exclusivity rules. RandomizeTiers and
+    // Other (the exotic-only mechanics) are not yet implemented and always return false. Returns true if
+    // the item's modifiers actually changed (so the caller should charge for and save/redisplay the roll).
+    bool ApplyCurrencyToItemModifiers(const FCurrencyStruct& Currency, const FString& ItemId, EItemClass ItemClass,
+        const FString& ItemType, TMap<FString, int32>& ImplicitModifiers, TMap<FString, int32>& PrefixModifiers,
+        TMap<FString, int32>& SuffixModifiers);
+
+    // Recomputes an item's gold value as ItemBaseGoldValue scaled by every currently-assigned modifier's
+    // GoldValueModifier (product across Implicit+Prefix+Suffix), from scratch - safe to call after any
+    // partial modifier change, not just a full reroll.
+    float ComputeModifiedGoldValue(float ItemBaseGoldValue, const TMap<FString, int32>& ImplicitModifiers,
+        const TMap<FString, int32>& PrefixModifiers, const TMap<FString, int32>& SuffixModifiers) const;
 
     // Shared by OnStashItemSelected/OnShopItemSelected/OnBuyButtonClicked: caches this item's stats
     // (preserving ItemUUID if given, e.g. for a saved stash item) and displays them as the active

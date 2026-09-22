@@ -104,6 +104,29 @@ namespace
 	{
 		return ItemStats.ItemGoldValue > 0.f ? ItemStats.ItemGoldValue : static_cast<float>(ItemStats.ItemBaseGoldValue);
 	}
+
+	// Picks one entry at random from a currency's ModifiersAffectedWeightedRange (e.g. [3,4,4,5,5,6]
+	// weights 4 and 5 as twice as likely as 3 or 6, matching how the pre-currency full reroll picked its
+	// modifier count). Falls back to DefaultIfEmpty when the range is empty.
+	int32 PickWeightedCount(const TArray<int32>& WeightedRange, int32 DefaultIfEmpty)
+	{
+		if (WeightedRange.Num() == 0)
+		{
+			return DefaultIfEmpty;
+		}
+
+		return WeightedRange[FMath::RandRange(0, WeightedRange.Num() - 1)];
+	}
+
+	// Fisher-Yates shuffle in place, so callers can take the first N entries as a random subset.
+	void ShuffleIds(TArray<FString>& Ids)
+	{
+		for (int32 i = Ids.Num() - 1; i > 0; --i)
+		{
+			const int32 j = FMath::RandRange(0, i);
+			Ids.Swap(i, j);
+		}
+	}
 }
 
 void UItemHandler::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
@@ -508,7 +531,7 @@ void UItemHandler::OnBuyButtonClicked(FString ItemId, FString ItemUUID)
     }
 }
 
-void UItemHandler::OnRandomizeItem()
+void UItemHandler::OnRandomizeItem(FString CurrencyId)
 {
     if (BoundPlayerInventory && !BoundPlayerInventory->CanAffordGoldCost(RandomizeItemGoldCost))
     {
@@ -520,14 +543,24 @@ void UItemHandler::OnRandomizeItem()
         return;
     }
 
+    if (BoundPlayerInventory && !CurrencyId.IsEmpty() && !BoundPlayerInventory->CanAffordCurrency(CurrencyId, 1))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Player does not have currency '%s' to randomize with."), *CurrencyId);
+        if (BoundCoreMenu)
+        {
+            BoundCoreMenu->SetWarningText(TEXT("You don't have that currency."));
+        }
+        return;
+    }
+
     bool bDidRandomize = false;
     if (LastSelectedItemClass == EItemClass::Weapon)
     {
-        bDidRandomize = RandomizeWeaponItem();
+        bDidRandomize = RandomizeWeaponItem(CurrencyId);
     }
     else if (LastSelectedItemClass == EItemClass::Armor)
     {
-        bDidRandomize = RandomizeArmorItem();
+        bDidRandomize = RandomizeArmorItem(CurrencyId);
     }
     else
     {
@@ -538,11 +571,309 @@ void UItemHandler::OnRandomizeItem()
 
     if (bDidRandomize)
     {
-        OnItemRandomizedEvent.Broadcast(RandomizeItemGoldCost);
+        OnItemRandomizedEvent.Broadcast(RandomizeItemGoldCost, CurrencyId);
     }
 }
 
-bool UItemHandler::RandomizeWeaponItem()
+bool UItemHandler::ApplyCurrencyToItemModifiers(const FCurrencyStruct& Currency, const FString& ItemId, EItemClass ItemClass,
+    const FString& ItemType, TMap<FString, int32>& ImplicitModifiers, TMap<FString, int32>& PrefixModifiers,
+    TMap<FString, int32>& SuffixModifiers)
+{
+    const FAffectedAffixes& Affected = Currency.AffectedAffixes;
+    const TArray<FItemModifierStruct> FullPool = ItemModifierAssigner.GetModifierPool();
+
+    auto FindRow = [&FullPool](const FString& Id) -> const FItemModifierStruct*
+    {
+        return FullPool.FindByPredicate([&Id](const FItemModifierStruct& Modifier)
+        {
+            return Modifier.ModifierId.ToString().Equals(Id, ESearchCase::IgnoreCase);
+        });
+    };
+
+    auto GetAllExistingIds = [&]() -> TArray<FString>
+    {
+        TArray<FString> Ids;
+        ImplicitModifiers.GetKeys(Ids);
+        TArray<FString> PrefixIds;
+        PrefixModifiers.GetKeys(PrefixIds);
+        Ids.Append(PrefixIds);
+        TArray<FString> SuffixIds;
+        SuffixModifiers.GetKeys(SuffixIds);
+        Ids.Append(SuffixIds);
+        return Ids;
+    };
+
+    auto GetEligibleExistingIds = [&]() -> TArray<FString>
+    {
+        TArray<FString> Ids;
+        if (Affected.Implicits)
+        {
+            TArray<FString> ImplicitIds;
+            ImplicitModifiers.GetKeys(ImplicitIds);
+            Ids.Append(ImplicitIds);
+        }
+        if (Affected.Prefixes)
+        {
+            TArray<FString> PrefixIds;
+            PrefixModifiers.GetKeys(PrefixIds);
+            Ids.Append(PrefixIds);
+        }
+        if (Affected.Suffixes)
+        {
+            TArray<FString> SuffixIds;
+            SuffixModifiers.GetKeys(SuffixIds);
+            Ids.Append(SuffixIds);
+        }
+        return Ids;
+    };
+
+    auto RemoveFromMaps = [&](const FString& Id)
+    {
+        ImplicitModifiers.Remove(Id);
+        PrefixModifiers.Remove(Id);
+        SuffixModifiers.Remove(Id);
+    };
+
+    auto RollValueForRow = [](const FItemModifierStruct* Row) -> int32
+    {
+        if (!Row) return 0;
+        if (Row->MinMaxRange.Num() >= 2) return FMath::RandRange(Row->MinMaxRange[0], Row->MinMaxRange[1]);
+        if (Row->MinMaxRange.Num() == 1) return Row->MinMaxRange[0];
+        return 0;
+    };
+
+    auto AddModifierToMaps = [&](const FString& Id)
+    {
+        const FItemModifierStruct* Row = FindRow(Id);
+        const int32 RolledValue = RollValueForRow(Row);
+        const EAffixType AffixType = Row ? Row->ModifierAffixType : EAffixType::Prefix;
+        switch (AffixType)
+        {
+        case EAffixType::Implicit: ImplicitModifiers.Add(Id, RolledValue); break;
+        case EAffixType::Suffix:   SuffixModifiers.Add(Id, RolledValue);   break;
+        case EAffixType::Prefix:
+        default:                   PrefixModifiers.Add(Id, RolledValue);  break;
+        }
+    };
+
+    // Rolls AddCount brand-new modifiers via the existing ModifierAssigner, restricted to whatever this
+    // currency's AffectedAffixes/CurrencyModifierTags allow and to whatever ValidateModifierPool says
+    // doesn't collide with a bucket already on the item (both already-public ModifierAssigner
+    // capabilities - no new rolling logic needed here). AssignModifiers has no notion of modifiers
+    // already on the item, so this temporarily swaps the assigner down to a pre-filtered pool and always
+    // restores the full pool afterward, so later id lookups (display text, gold value, local damage)
+    // still resolve every modifier, old and new.
+    auto RollAndAddNewModifiers = [&](const TArray<FString>& ExistingIds, int32 AddCount) -> TArray<FString>
+    {
+        if (AddCount <= 0)
+        {
+            return TArray<FString>();
+        }
+
+        int32 PrefixCount = 0;
+        int32 SuffixCount = 0;
+        for (const FString& Id : ExistingIds)
+        {
+            if (const FItemModifierStruct* Row = FindRow(Id))
+            {
+                if (Row->ModifierAffixType == EAffixType::Prefix) ++PrefixCount;
+                else if (Row->ModifierAffixType == EAffixType::Suffix) ++SuffixCount;
+            }
+        }
+
+        const bool bAnyTagRequired = ModifierAssigner::HasAnyTagSet(Currency.CurrencyModifierTags);
+        const TArray<FString> ValidIds = ItemModifierAssigner.ValidateModifierPool(FullPool, ExistingIds);
+
+        TArray<FItemModifierStruct> RestrictedPool;
+        for (const FItemModifierStruct& Modifier : FullPool)
+        {
+            const FString ModifierId = Modifier.ModifierId.ToString();
+            const bool bBucketValid = ValidIds.ContainsByPredicate(
+                [&ModifierId](const FString& ValidId) { return ModifierId.Equals(ValidId, ESearchCase::IgnoreCase); });
+            if (!bBucketValid)
+            {
+                continue;
+            }
+
+            const bool bAffixAllowed =
+                (Modifier.ModifierAffixType == EAffixType::Prefix && Affected.Prefixes && PrefixCount < 3) ||
+                (Modifier.ModifierAffixType == EAffixType::Suffix && Affected.Suffixes && SuffixCount < 3) ||
+                (Modifier.ModifierAffixType == EAffixType::Implicit && Affected.Implicits);
+            if (!bAffixAllowed)
+            {
+                continue;
+            }
+
+            if (bAnyTagRequired && !ModifierAssigner::ModifierTagsOverlap(Modifier.ModifierTags, Currency.CurrencyModifierTags))
+            {
+                continue;
+            }
+
+            RestrictedPool.Add(Modifier);
+        }
+
+        ItemModifierAssigner.SetModifierPool(RestrictedPool);
+        const TArray<FString> RolledIds = ItemModifierAssigner.AssignModifiers(ItemId, ItemClass, ItemType, AddCount);
+        ItemModifierAssigner.SetModifierPool(FullPool);
+
+        // AssignModifiers enforces its own 3-prefix/3-suffix cap, but starts counting from 0 - it has no
+        // notion of ExistingIds. Clamp here against the true existing counts so the combined (existing +
+        // newly rolled) total never exceeds the cap even when both affix types are being added to at once.
+        int32 RemainingPrefixRoom = FMath::Max(0, 3 - PrefixCount);
+        int32 RemainingSuffixRoom = FMath::Max(0, 3 - SuffixCount);
+        TArray<FString> NewIds;
+        for (const FString& RolledId : RolledIds)
+        {
+            const FItemModifierStruct* Row = FindRow(RolledId);
+            const EAffixType AffixType = Row ? Row->ModifierAffixType : EAffixType::Implicit;
+            if (AffixType == EAffixType::Prefix)
+            {
+                if (RemainingPrefixRoom <= 0) continue;
+                --RemainingPrefixRoom;
+            }
+            else if (AffixType == EAffixType::Suffix)
+            {
+                if (RemainingSuffixRoom <= 0) continue;
+                --RemainingSuffixRoom;
+            }
+            NewIds.Add(RolledId);
+        }
+
+        return NewIds;
+    };
+
+    switch (Currency.ModifierModificationType)
+    {
+    case EModifierModificationType::Add:
+    {
+        const int32 AddCount = PickWeightedCount(Currency.ModifiersAffectedWeightedRange, 1);
+        const TArray<FString> NewIds = RollAndAddNewModifiers(GetAllExistingIds(), AddCount);
+        if (NewIds.Num() == 0)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("ItemHandler: currency %s had no eligible modifiers to add."), *Currency.CurrencyId.ToString());
+            if (BoundCoreMenu) BoundCoreMenu->SetWarningText(TEXT("No room for additional modifiers."));
+            return false;
+        }
+
+        for (const FString& NewId : NewIds)
+        {
+            AddModifierToMaps(NewId);
+        }
+        return true;
+    }
+    case EModifierModificationType::Remove:
+    {
+        TArray<FString> EligibleIds = GetEligibleExistingIds();
+        if (EligibleIds.Num() == 0)
+        {
+            if (BoundCoreMenu) BoundCoreMenu->SetWarningText(TEXT("No eligible modifiers to remove."));
+            return false;
+        }
+
+        const int32 RemoveCount = FMath::Min(PickWeightedCount(Currency.ModifiersAffectedWeightedRange, 1), EligibleIds.Num());
+        ShuffleIds(EligibleIds);
+        for (int32 i = 0; i < RemoveCount; ++i)
+        {
+            RemoveFromMaps(EligibleIds[i]);
+        }
+        return true;
+    }
+    case EModifierModificationType::RandomizeMods:
+    {
+        TArray<FString> EligibleIds = GetEligibleExistingIds();
+        if (EligibleIds.Num() == 0)
+        {
+            if (BoundCoreMenu) BoundCoreMenu->SetWarningText(TEXT("No eligible modifiers to reroll."));
+            return false;
+        }
+
+        const int32 RerollCount = FMath::Min(PickWeightedCount(Currency.ModifiersAffectedWeightedRange, 1), EligibleIds.Num());
+        ShuffleIds(EligibleIds);
+        for (int32 i = 0; i < RerollCount; ++i)
+        {
+            RemoveFromMaps(EligibleIds[i]);
+        }
+
+        const TArray<FString> NewIds = RollAndAddNewModifiers(GetAllExistingIds(), RerollCount);
+        for (const FString& NewId : NewIds)
+        {
+            AddModifierToMaps(NewId);
+        }
+        return true;
+    }
+    case EModifierModificationType::RandomizeValues:
+    {
+        TArray<FString> EligibleIds = GetEligibleExistingIds();
+        if (EligibleIds.Num() == 0)
+        {
+            if (BoundCoreMenu) BoundCoreMenu->SetWarningText(TEXT("No eligible modifiers to reroll."));
+            return false;
+        }
+
+        TArray<FString> TargetIds;
+        if (Currency.ModifiersAffectedWeightedRange.Num() == 0)
+        {
+            // Empty range = affect every eligible modifier's value (e.g. Divine/Bless-style currencies).
+            TargetIds = EligibleIds;
+        }
+        else
+        {
+            const int32 Count = FMath::Min(PickWeightedCount(Currency.ModifiersAffectedWeightedRange, 1), EligibleIds.Num());
+            ShuffleIds(EligibleIds);
+            for (int32 i = 0; i < Count; ++i)
+            {
+                TargetIds.Add(EligibleIds[i]);
+            }
+        }
+
+        for (const FString& TargetId : TargetIds)
+        {
+            const int32 RolledValue = RollValueForRow(FindRow(TargetId));
+            if (ImplicitModifiers.Contains(TargetId))     ImplicitModifiers.Add(TargetId, RolledValue);
+            else if (PrefixModifiers.Contains(TargetId))  PrefixModifiers.Add(TargetId, RolledValue);
+            else if (SuffixModifiers.Contains(TargetId))  SuffixModifiers.Add(TargetId, RolledValue);
+        }
+        return true;
+    }
+    case EModifierModificationType::RandomizeTiers:
+    case EModifierModificationType::Other:
+    default:
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: currency %s uses an unsupported ModifierModificationType (%s); no changes made."),
+            *Currency.CurrencyId.ToString(), *UEnum::GetValueAsString(Currency.ModifierModificationType));
+        if (BoundCoreMenu) BoundCoreMenu->SetWarningText(TEXT("This currency isn't supported yet."));
+        return false;
+    }
+}
+
+float UItemHandler::ComputeModifiedGoldValue(float ItemBaseGoldValue, const TMap<FString, int32>& ImplicitModifiers,
+    const TMap<FString, int32>& PrefixModifiers, const TMap<FString, int32>& SuffixModifiers) const
+{
+    float GoldValueMultiplier = 1.f;
+
+    auto ApplyGroup = [this, &GoldValueMultiplier](const TMap<FString, int32>& Modifiers)
+    {
+        for (const TPair<FString, int32>& Entry : Modifiers)
+        {
+            const FItemModifierStruct* Row = ItemModifierAssigner.GetModifierPool().FindByPredicate(
+                [&Entry](const FItemModifierStruct& Modifier)
+                {
+                    return Modifier.ModifierId.ToString().Equals(Entry.Key, ESearchCase::IgnoreCase);
+                });
+            if (Row)
+            {
+                GoldValueMultiplier *= Row->GoldValueModifier;
+            }
+        }
+    };
+
+    ApplyGroup(ImplicitModifiers);
+    ApplyGroup(PrefixModifiers);
+    ApplyGroup(SuffixModifiers);
+
+    return ItemBaseGoldValue * GoldValueMultiplier;
+}
+
+bool UItemHandler::RandomizeWeaponItem(const FString& CurrencyId)
 {
     if (CachedWeaponStats.ItemId.IsEmpty())
     {
@@ -561,16 +892,8 @@ bool UItemHandler::RandomizeWeaponItem()
         UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Failed to load modifiers from ItemModifier_DT."));
     }
 
-    CachedWeaponStats = GetWeaponStatsForItem(CachedWeaponStats.ItemId.ToString());
-
-    // Roll how many modifiers this item gets: 3-6, weighted so 4 and 5 are the common outcomes.
-    {
-        static const int32 ModifierCountChoices[] = { 3, 4, 4, 5, 5, 6 };
-        ItemModifierAssigner.ModifierCount = ModifierCountChoices[FMath::RandRange(0, UE_ARRAY_COUNT(ModifierCountChoices) - 1)];
-        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: rolled ModifierCount=%d for this randomize."), ItemModifierAssigner.ModifierCount);
-    }
-
-    // Resolve this item's class and type, then let the ModifierAssigner pick the modifiers.
+    // Resolve this item's class and type, then either do a full reroll (no currency) or apply the
+    // chosen currency's modifier-modification rules to whatever is already on the item.
     const FString RandomizeItemId = CachedWeaponStats.ItemId.ToString();
     FString RandomizeItemName = RandomizeItemId;
     FString ModifiersText;
@@ -583,68 +906,90 @@ bool UItemHandler::RandomizeWeaponItem()
         const FString RandomizeItemType = UEnum::GetValueAsString(RandomizeWeaponData.WeaponType)
             .RightChop(FString(TEXT("EWeaponType::")).Len());
 
-        const TArray<FString> AssignedModifierIds =
-            ItemModifierAssigner.AssignModifiers(RandomizeItemId, RandomizeItemClass, RandomizeItemType, ItemModifierAssigner.ModifierCount);
-
-        CachedWeaponStats.ImplicitModifiers.Empty();
-        CachedWeaponStats.PrefixModifiers.Empty();
-        CachedWeaponStats.SuffixModifiers.Empty();
-
-        float GoldValueMultiplier = 1.f;
-        for (const FString& ModifierId : AssignedModifierIds)
+        if (CurrencyId.IsEmpty())
         {
-            const FItemModifierStruct* ModifierRow = ItemModifierAssigner.GetModifierPool().FindByPredicate(
-                [&ModifierId](const FItemModifierStruct& Modifier)
-                {
-                    return Modifier.ModifierId.ToString().Equals(ModifierId, ESearchCase::IgnoreCase);
-                });
+            // No currency selected: full reroll, matching the original (pre-currency) behavior - wipe
+            // back to base stats and roll an entirely new set of modifiers.
+            CachedWeaponStats = GetWeaponStatsForItem(RandomizeItemId);
 
-            int32 RolledValue = 0;
-            EAffixType AffixType = EAffixType::Prefix;
-            if (ModifierRow)
+            // Roll how many modifiers this item gets: 3-6, weighted so 4 and 5 are the common outcomes.
+            static const int32 ModifierCountChoices[] = { 3, 4, 4, 5, 5, 6 };
+            ItemModifierAssigner.ModifierCount = ModifierCountChoices[FMath::RandRange(0, UE_ARRAY_COUNT(ModifierCountChoices) - 1)];
+            UE_LOG(LogTemp, Warning, TEXT("ItemHandler: rolled ModifierCount=%d for this randomize."), ItemModifierAssigner.ModifierCount);
+
+            const TArray<FString> AssignedModifierIds =
+                ItemModifierAssigner.AssignModifiers(RandomizeItemId, RandomizeItemClass, RandomizeItemType, ItemModifierAssigner.ModifierCount);
+
+            CachedWeaponStats.ImplicitModifiers.Empty();
+            CachedWeaponStats.PrefixModifiers.Empty();
+            CachedWeaponStats.SuffixModifiers.Empty();
+
+            for (const FString& ModifierId : AssignedModifierIds)
             {
-                AffixType = ModifierRow->ModifierAffixType;
-                if (ModifierRow->MinMaxRange.Num() >= 2)
+                const FItemModifierStruct* ModifierRow = ItemModifierAssigner.GetModifierPool().FindByPredicate(
+                    [&ModifierId](const FItemModifierStruct& Modifier)
+                    {
+                        return Modifier.ModifierId.ToString().Equals(ModifierId, ESearchCase::IgnoreCase);
+                    });
+
+                int32 RolledValue = 0;
+                EAffixType AffixType = EAffixType::Prefix;
+                if (ModifierRow)
                 {
-                    RolledValue = FMath::RandRange(ModifierRow->MinMaxRange[0], ModifierRow->MinMaxRange[1]);
+                    AffixType = ModifierRow->ModifierAffixType;
+                    if (ModifierRow->MinMaxRange.Num() >= 2)
+                    {
+                        RolledValue = FMath::RandRange(ModifierRow->MinMaxRange[0], ModifierRow->MinMaxRange[1]);
+                    }
+                    else if (ModifierRow->MinMaxRange.Num() == 1)
+                    {
+                        RolledValue = ModifierRow->MinMaxRange[0];
+                    }
                 }
-                else if (ModifierRow->MinMaxRange.Num() == 1)
+
+                switch (AffixType)
                 {
-                    RolledValue = ModifierRow->MinMaxRange[0];
+                case EAffixType::Implicit: CachedWeaponStats.ImplicitModifiers.Add(ModifierId, RolledValue); break;
+                case EAffixType::Suffix:   CachedWeaponStats.SuffixModifiers.Add(ModifierId, RolledValue);   break;
+                case EAffixType::Prefix:
+                default:                   CachedWeaponStats.PrefixModifiers.Add(ModifierId, RolledValue);   break;
                 }
-            }
 
-            switch (AffixType)
+                UE_LOG(LogTemp, Warning, TEXT("ItemHandler: assigned modifier %s (%s) value=%d"),
+                    *ModifierId, *UEnum::GetValueAsString(AffixType), RolledValue);
+            }
+        }
+        else
+        {
+            FCurrencyStruct Currency;
+            if (!CurrencyManagerInstance.LoadCurrencyDataRow(CurrencyId, Currency))
             {
-            case EAffixType::Implicit: CachedWeaponStats.ImplicitModifiers.Add(ModifierId, RolledValue); break;
-            case EAffixType::Suffix:   CachedWeaponStats.SuffixModifiers.Add(ModifierId, RolledValue);   break;
-            case EAffixType::Prefix:
-            default:                   CachedWeaponStats.PrefixModifiers.Add(ModifierId, RolledValue);   break;
+                UE_LOG(LogTemp, Warning, TEXT("ItemHandler: unknown currency '%s'."), *CurrencyId);
+                if (BoundCoreMenu)
+                {
+                    BoundCoreMenu->SetWarningText(TEXT("Unknown currency."));
+                }
+                return false;
             }
 
-            // Attack speed modifiers scale the base attack rate by their rolled percentage.
-            if (ModifierRow && ModifierRow->ModifiedAttribute.WeaponAttackRate != 0.f)
+            const bool bModifiersChanged = ApplyCurrencyToItemModifiers(Currency, RandomizeItemId, RandomizeItemClass, RandomizeItemType,
+                CachedWeaponStats.ImplicitModifiers, CachedWeaponStats.PrefixModifiers, CachedWeaponStats.SuffixModifiers);
+
+            if (!bModifiersChanged)
             {
-                CachedWeaponStats.AttackRate *= 1.f + (RolledValue / 100.f);
+                return false;
             }
-
-            if (ModifierRow)
-            {
-                GoldValueMultiplier *= ModifierRow->GoldValueModifier;
-            }
-
-            UE_LOG(LogTemp, Warning, TEXT("ItemHandler: assigned modifier %s (%s) value=%d"),
-                *ModifierId, *UEnum::GetValueAsString(AffixType), RolledValue);
         }
 
-        // ItemGoldValue is the item's base gold value scaled by every rolled modifier's GoldValueModifier.
-        CachedWeaponStats.ItemGoldValue = CachedWeaponStats.ItemBaseGoldValue * GoldValueMultiplier;
+        // ItemGoldValue is the item's base gold value scaled by every currently-assigned modifier's GoldValueModifier.
+        CachedWeaponStats.ItemGoldValue = ComputeModifiedGoldValue(CachedWeaponStats.ItemBaseGoldValue,
+            CachedWeaponStats.ImplicitModifiers, CachedWeaponStats.PrefixModifiers, CachedWeaponStats.SuffixModifiers);
 
         // List prefixes before suffixes in the summary text, regardless of roll order.
         ModifiersText = BuildGroupedModifiersText(ItemModifierAssigner.GetModifierPool(),
             CachedWeaponStats.ImplicitModifiers, CachedWeaponStats.PrefixModifiers, CachedWeaponStats.SuffixModifiers);
 
-        // Fold the rolled damage modifiers into the item's local damage values.
+        // Fold the rolled damage/attack-rate modifiers into the item's local damage and attack rate.
         RecalculateWeaponLocalDamage();
     }
     else
@@ -741,7 +1086,7 @@ bool UItemHandler::RandomizeWeaponItem()
     return true;
 }
 
-bool UItemHandler::RandomizeArmorItem()
+bool UItemHandler::RandomizeArmorItem(const FString& CurrencyId)
 {
     if (CachedArmorStats.ItemId.IsEmpty())
     {
@@ -760,16 +1105,8 @@ bool UItemHandler::RandomizeArmorItem()
         UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Failed to load modifiers from ItemModifier_DT."));
     }
 
-    CachedArmorStats = GetArmorStatsForItem(CachedArmorStats.ItemId.ToString());
-
-    // Roll how many modifiers this item gets: 3-6, weighted so 4 and 5 are the common outcomes.
-    {
-        static const int32 ModifierCountChoices[] = { 3, 4, 4, 5, 5, 6 };
-        ItemModifierAssigner.ModifierCount = ModifierCountChoices[FMath::RandRange(0, UE_ARRAY_COUNT(ModifierCountChoices) - 1)];
-        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: rolled ModifierCount=%d for this randomize."), ItemModifierAssigner.ModifierCount);
-    }
-
-    // Resolve this item's class and type, then let the ModifierAssigner pick the modifiers.
+    // Resolve this item's class and type, then either do a full reroll (no currency) or apply the
+    // chosen currency's modifier-modification rules to whatever is already on the item.
     const FString RandomizeItemId = CachedArmorStats.ItemId.ToString();
     FString RandomizeItemName = RandomizeItemId;
     FString ModifiersText;
@@ -782,56 +1119,84 @@ bool UItemHandler::RandomizeArmorItem()
         const FString RandomizeItemType = UEnum::GetValueAsString(RandomizeArmorData.ArmorType)
             .RightChop(FString(TEXT("EArmorType::")).Len());
 
-        const TArray<FString> AssignedModifierIds =
-            ItemModifierAssigner.AssignModifiers(RandomizeItemId, RandomizeItemClass, RandomizeItemType, ItemModifierAssigner.ModifierCount);
-
-        CachedArmorStats.ImplicitModifiers.Empty();
-        CachedArmorStats.PrefixModifiers.Empty();
-        CachedArmorStats.SuffixModifiers.Empty();
-
-        float GoldValueMultiplier = 1.f;
-        for (const FString& ModifierId : AssignedModifierIds)
+        if (CurrencyId.IsEmpty())
         {
-            const FItemModifierStruct* ModifierRow = ItemModifierAssigner.GetModifierPool().FindByPredicate(
-                [&ModifierId](const FItemModifierStruct& Modifier)
-                {
-                    return Modifier.ModifierId.ToString().Equals(ModifierId, ESearchCase::IgnoreCase);
-                });
+            // No currency selected: full reroll, matching the original (pre-currency) behavior - wipe
+            // back to base stats and roll an entirely new set of modifiers.
+            CachedArmorStats = GetArmorStatsForItem(RandomizeItemId);
 
-            int32 RolledValue = 0;
-            EAffixType AffixType = EAffixType::Prefix;
-            if (ModifierRow)
+            // Roll how many modifiers this item gets: 3-6, weighted so 4 and 5 are the common outcomes.
+            static const int32 ModifierCountChoices[] = { 3, 4, 4, 5, 5, 6 };
+            ItemModifierAssigner.ModifierCount = ModifierCountChoices[FMath::RandRange(0, UE_ARRAY_COUNT(ModifierCountChoices) - 1)];
+            UE_LOG(LogTemp, Warning, TEXT("ItemHandler: rolled ModifierCount=%d for this randomize."), ItemModifierAssigner.ModifierCount);
+
+            const TArray<FString> AssignedModifierIds =
+                ItemModifierAssigner.AssignModifiers(RandomizeItemId, RandomizeItemClass, RandomizeItemType, ItemModifierAssigner.ModifierCount);
+
+            CachedArmorStats.ImplicitModifiers.Empty();
+            CachedArmorStats.PrefixModifiers.Empty();
+            CachedArmorStats.SuffixModifiers.Empty();
+
+            for (const FString& ModifierId : AssignedModifierIds)
             {
-                AffixType = ModifierRow->ModifierAffixType;
-                if (ModifierRow->MinMaxRange.Num() >= 2)
+                const FItemModifierStruct* ModifierRow = ItemModifierAssigner.GetModifierPool().FindByPredicate(
+                    [&ModifierId](const FItemModifierStruct& Modifier)
+                    {
+                        return Modifier.ModifierId.ToString().Equals(ModifierId, ESearchCase::IgnoreCase);
+                    });
+
+                int32 RolledValue = 0;
+                EAffixType AffixType = EAffixType::Prefix;
+                if (ModifierRow)
                 {
-                    RolledValue = FMath::RandRange(ModifierRow->MinMaxRange[0], ModifierRow->MinMaxRange[1]);
+                    AffixType = ModifierRow->ModifierAffixType;
+                    if (ModifierRow->MinMaxRange.Num() >= 2)
+                    {
+                        RolledValue = FMath::RandRange(ModifierRow->MinMaxRange[0], ModifierRow->MinMaxRange[1]);
+                    }
+                    else if (ModifierRow->MinMaxRange.Num() == 1)
+                    {
+                        RolledValue = ModifierRow->MinMaxRange[0];
+                    }
                 }
-                else if (ModifierRow->MinMaxRange.Num() == 1)
+
+                switch (AffixType)
                 {
-                    RolledValue = ModifierRow->MinMaxRange[0];
+                case EAffixType::Implicit: CachedArmorStats.ImplicitModifiers.Add(ModifierId, RolledValue); break;
+                case EAffixType::Suffix:   CachedArmorStats.SuffixModifiers.Add(ModifierId, RolledValue);   break;
+                case EAffixType::Prefix:
+                default:                   CachedArmorStats.PrefixModifiers.Add(ModifierId, RolledValue);   break;
                 }
-            }
 
-            switch (AffixType)
+                UE_LOG(LogTemp, Warning, TEXT("ItemHandler: assigned modifier %s (%s) value=%d"),
+                    *ModifierId, *UEnum::GetValueAsString(AffixType), RolledValue);
+            }
+        }
+        else
+        {
+            FCurrencyStruct Currency;
+            if (!CurrencyManagerInstance.LoadCurrencyDataRow(CurrencyId, Currency))
             {
-            case EAffixType::Implicit: CachedArmorStats.ImplicitModifiers.Add(ModifierId, RolledValue); break;
-            case EAffixType::Suffix:   CachedArmorStats.SuffixModifiers.Add(ModifierId, RolledValue);   break;
-            case EAffixType::Prefix:
-            default:                   CachedArmorStats.PrefixModifiers.Add(ModifierId, RolledValue);   break;
+                UE_LOG(LogTemp, Warning, TEXT("ItemHandler: unknown currency '%s'."), *CurrencyId);
+                if (BoundCoreMenu)
+                {
+                    BoundCoreMenu->SetWarningText(TEXT("Unknown currency."));
+                }
+                return false;
             }
 
-            if (ModifierRow)
+            const bool bModifiersChanged = ApplyCurrencyToItemModifiers(Currency, RandomizeItemId, RandomizeItemClass, RandomizeItemType,
+                CachedArmorStats.ImplicitModifiers, CachedArmorStats.PrefixModifiers, CachedArmorStats.SuffixModifiers);
+
+            if (!bModifiersChanged)
             {
-                GoldValueMultiplier *= ModifierRow->GoldValueModifier;
+                return false;
             }
-
-            UE_LOG(LogTemp, Warning, TEXT("ItemHandler: assigned modifier %s (%s) value=%d"),
-                *ModifierId, *UEnum::GetValueAsString(AffixType), RolledValue);
         }
 
-        // ItemGoldValue is the item's base gold value scaled by every rolled modifier's GoldValueModifier.
-        CachedArmorStats.ItemGoldValue = CachedArmorStats.ItemBaseGoldValue * GoldValueMultiplier;
+        // ItemGoldValue is the item's base gold value scaled by every currently-assigned modifier's GoldValueModifier.
+        CachedArmorStats.ItemGoldValue = ComputeModifiedGoldValue(CachedArmorStats.ItemBaseGoldValue,
+            CachedArmorStats.ImplicitModifiers, CachedArmorStats.PrefixModifiers, CachedArmorStats.SuffixModifiers);
 
         // List prefixes before suffixes in the summary text, regardless of roll order.
         ModifiersText = BuildGroupedModifiersText(ItemModifierAssigner.GetModifierPool(),
@@ -922,6 +1287,26 @@ void UItemHandler::RecalculateWeaponLocalDamage()
     GatherRolled(CachedWeaponStats.ImplicitModifiers);
     GatherRolled(CachedWeaponStats.PrefixModifiers);
     GatherRolled(CachedWeaponStats.SuffixModifiers);
+
+    // AttackRate is derived from scratch here (base rate scaled by every currently-assigned
+    // WeaponAttackRate modifier) rather than accumulated incrementally at roll time, so it stays correct
+    // across partial modifier changes (currency add/remove/reroll), not just a full reroll from base.
+    float BaseAttackRate = 0.f;
+    FBaseWeaponStruct WeaponData;
+    if (LoadWeaponDataRow(CachedWeaponStats.ItemId.ToString(), WeaponData))
+    {
+        BaseAttackRate = WeaponData.WeaponBaseAttackRate;
+    }
+
+    float AttackRateMultiplier = 1.f;
+    for (const FRolledModifier& Rolled : RolledModifiers)
+    {
+        if (Rolled.Row->ModifiedAttribute.WeaponAttackRate != 0.f)
+        {
+            AttackRateMultiplier *= 1.f + (Rolled.Value / 100.f);
+        }
+    }
+    CachedWeaponStats.AttackRate = BaseAttackRate * AttackRateMultiplier;
 
     struct FDamageChannel
     {

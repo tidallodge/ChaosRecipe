@@ -46,9 +46,10 @@ public:
 	void HandleItemBought(FString ItemId, FString ItemUUID, float GoldValue);
 
 	// Bound to ItemHandler's OnItemRandomizedEvent: fired each time an item is successfully
-	// rerolled, so the roll's gold cost can be charged to PlayerGoldCount.
+	// rerolled, so the roll's gold cost can be charged to PlayerGoldCount, and (if CurrencyId is set)
+	// one unit of that currency's stack can be consumed.
 	UFUNCTION()
-	void HandleItemRandomized(int32 GoldCost);
+	void HandleItemRandomized(int32 GoldCost, FString CurrencyId);
 
 	// Single entry point for changing PlayerGoldCount (positive to add, negative to charge), so
 	// every source of a gold change (sell, buy, randomize, future shop actions, ...) persists to
@@ -66,6 +67,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	bool CanAffordGoldCost(int32 GoldCost) const;
 
+	// Queried by ItemHandler before spending a currency on a randomize, so an unaffordable currency
+	// choice is rejected before any modifiers change.
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	bool CanAffordCurrency(const FString& CurrencyId, int32 Count = 1) const;
+
+	// Single entry point for changing a currency's stack count (positive to add, negative to spend), so
+	// every source of a currency change persists to SavedCurrency.json the same way AdjustPlayerGoldCount
+	// does for gold. Clamped at 0 - there is no other system yet that grants currencies to the player.
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void AdjustCurrencyStackCount(const FString& CurrencyId, int32 Delta);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	int32 GetCurrencyStackCount(const FString& CurrencyId) const;
+
 protected:
 	// Pushes PlayerGoldCount to the bound CoreMenu's PlayerGoldTextBox, if a CoreMenu has been bound.
 	void UpdatePlayerGoldDisplay() const;
@@ -73,6 +88,10 @@ protected:
 	static constexpr int32 DefaultPlayerGoldCount = 250;
 
 	int32 PlayerGoldCount = DefaultPlayerGoldCount;
+
+	// CurrencyId -> how many the player holds. Nothing grants currencies to the player yet (no shop/drop
+	// system for them), so this starts empty unless a previous save already has stacks in it.
+	TMap<FString, int32> CurrencyStackCounts;
 
 	TUniquePtr<UCurrencyManager> CurrencyManager;
 

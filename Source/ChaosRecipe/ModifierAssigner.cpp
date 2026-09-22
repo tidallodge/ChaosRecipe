@@ -286,6 +286,17 @@ bool ModifierAssigner::BucketsOverlap(const FModifierBuckets& A, const FModifier
 	return StructBucketsOverlap(FModifierBuckets::StaticStruct(), &A, &B);
 }
 
+bool ModifierAssigner::ModifierTagsOverlap(const FModifierTags& A, const FModifierTags& B)
+{
+	return StructBucketsOverlap(FModifierTags::StaticStruct(), &A, &B);
+}
+
+bool ModifierAssigner::HasAnyTagSet(const FModifierTags& Tags)
+{
+	// A struct "overlaps itself" under StructBucketsOverlap iff at least one bool field is true.
+	return ModifierTagsOverlap(Tags, Tags);
+}
+
 bool ModifierAssigner::IsModifierInAssignedBuckets(const FModifierBuckets& ModifierBuckets, const TArray<FModifierBuckets>& AssignedBuckets)
 {
 	for (const FModifierBuckets& Assigned : AssignedBuckets)

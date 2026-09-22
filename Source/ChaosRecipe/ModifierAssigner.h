@@ -35,6 +35,15 @@ public:
 	// already-assigned modifiers: not already assigned and no overlapping bucket. Logs the result.
 	TArray<FString> ValidateModifierPool(const TArray<FItemModifierStruct>& InModifierPool, const TArray<FString>& InAssignedModifierIds);
 
+	// True if any tag flag is set on both tag sets (reflection-driven, same approach as BucketsOverlap).
+	// FModifierTags is shared by both FItemModifierStruct::ModifierTags and
+	// FCurrencyStruct::CurrencyModifierTags, so this doubles as the currency-tag-restriction check.
+	static bool ModifierTagsOverlap(const FModifierTags& A, const FModifierTags& B);
+
+	// True if a tag set has any flag set at all (e.g. a currency's CurrencyModifierTags restricts which
+	// modifiers it can touch only when this is true; every flag defaults to false, meaning "unrestricted").
+	static bool HasAnyTagSet(const FModifierTags& Tags);
+
 private:
 	// True if the modifier is valid for the given item class or specific item type.
 	bool ModifierMatchesItem(const FItemModifierStruct& Modifier, EItemClass ItemClass, const FString& ItemType) const;

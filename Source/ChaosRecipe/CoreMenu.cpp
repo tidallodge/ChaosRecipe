@@ -52,6 +52,16 @@ void UCoreMenu::NativeConstruct()
 		UE_LOG(LogTemp, Error, TEXT("Failed to load BaseItem_DT data table."));
 	}
 
+	CurrencyDataTable = LoadObject<UDataTable>(nullptr, TEXT("/Game/ItemData/Currency_DT"));
+	if (CurrencyDataTable)
+	{
+		CurrencyDataTableRowNames = CurrencyDataTable->GetRowNames();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load Currency_DT data table."));
+	}
+
 
     ValidateButton(BuyButton);
     ValidateButton(SellButton);
@@ -203,7 +213,7 @@ void UCoreMenu::OnRandomizeItemButtonClicked()
 	UpdatePanelVisibility({ ShopWindowBox, PlayerStashHorizBox }, ESlateVisibility::Hidden);
 	ShowActiveItemImage();
 
-	OnRandomizeItemEvent.Broadcast();
+	OnRandomizeItemEvent.Broadcast(SelectedCurrencyId);
 }
 
 static bool GetSavedItemJsonByUUID(const FString& UUID, TSharedPtr<FJsonObject>& OutItemObject)
