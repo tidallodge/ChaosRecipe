@@ -26,6 +26,8 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
+static bool GetSavedItemJsonByUUID(const FString& UUID, TSharedPtr<FJsonObject>& OutItemObject);
+
 void UCoreMenu::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -187,6 +189,16 @@ void UCoreMenu::SelectItemData(const FText& ItemIdText)
 void UCoreMenu::OnRandomizeItemButtonClicked()
 {
 	UE_LOG(LogTemp, Warning, TEXT("RandomizeItemButton Clicked."));
+
+	// Randomize edits the selected item in place, so it must already be a saved/purchased item
+	// (present in SavedItems.json) before any of the button's functionality runs.
+	TSharedPtr<FJsonObject> ItemObject;
+	if (!GetSavedItemJsonByUUID(SelectedItemUUID, ItemObject))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("RandomizeItemButton: no saved item found for UUID: %s"), *SelectedItemUUID);
+		SetWarningText(TEXT("You have not purchased this item yet."));
+		return;
+	}
 
 	UpdatePanelVisibility({ ShopWindowBox, PlayerStashHorizBox }, ESlateVisibility::Hidden);
 	ShowActiveItemImage();
