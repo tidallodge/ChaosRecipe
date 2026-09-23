@@ -787,14 +787,16 @@ bool UItemHandler::ApplyCurrencyToItemModifiers(const FCurrencyStruct& Currency,
             return false;
         }
 
-        const int32 RerollCount = FMath::Min(PickWeightedCount(Currency.ModifiersAffectedWeightedRange, 1), EligibleIds.Num());
-        ShuffleIds(EligibleIds);
-        for (int32 i = 0; i < RerollCount; ++i)
+        // Wipes every eligible modifier (not just a subset) and rolls a brand new set sized from the
+        // currency's weighted range - independent of how many were just removed, so e.g. a 3-prefix item
+        // can land anywhere from 1 to 3 new prefixes.
+        for (const FString& Id : EligibleIds)
         {
-            RemoveFromMaps(EligibleIds[i]);
+            RemoveFromMaps(Id);
         }
 
-        const TArray<FString> NewIds = RollAndAddNewModifiers(GetAllExistingIds(), RerollCount);
+        const int32 AddCount = PickWeightedCount(Currency.ModifiersAffectedWeightedRange, 1);
+        const TArray<FString> NewIds = RollAndAddNewModifiers(GetAllExistingIds(), AddCount);
         for (const FString& NewId : NewIds)
         {
             AddModifierToMaps(NewId);

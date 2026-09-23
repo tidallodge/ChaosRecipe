@@ -1,7 +1,7 @@
 [
 	{
-		"Name": "magic_add_mod_01",
-		"CurrencyId": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"687E854E4CBD9F0F52B5CB9A5B763302\", \"magic_add_mod_01\")",
+		"Name": "add_mod_01",
+		"CurrencyId": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"687E854E4CBD9F0F52B5CB9A5B763302\", \"add_mod_01\")",
 		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"CBD957D84520A211CA3F36B3CB6BB445\", \"Transmute\")",
 		"BaseCurrencyType": "Basic",
 		"ModifierModificationType": "Add",
@@ -36,7 +36,6 @@
 		{
 			"Etch": false,
 			"RandomizeTiers": false,
-			"TempLock": false,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": false,
 			"AddUniqueModifier": false
@@ -80,7 +79,6 @@
 		{
 			"Etch": false,
 			"RandomizeTiers": false,
-			"TempLock": false,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": false,
 			"AddUniqueModifier": false
@@ -123,7 +121,6 @@
 		{
 			"Etch": false,
 			"RandomizeTiers": false,
-			"TempLock": false,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": false,
 			"AddUniqueModifier": false
@@ -171,7 +168,6 @@
 		{
 			"Etch": false,
 			"RandomizeTiers": false,
-			"TempLock": false,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": false,
 			"AddUniqueModifier": false
@@ -212,7 +208,6 @@
 		{
 			"Etch": false,
 			"RandomizeTiers": false,
-			"TempLock": false,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": false,
 			"AddUniqueModifier": false
@@ -253,7 +248,6 @@
 		{
 			"Etch": false,
 			"RandomizeTiers": false,
-			"TempLock": false,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": false,
 			"AddUniqueModifier": false
@@ -296,7 +290,6 @@
 		{
 			"Etch": true,
 			"RandomizeTiers": false,
-			"TempLock": false,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": false,
 			"AddUniqueModifier": false
@@ -339,7 +332,6 @@
 		{
 			"Etch": false,
 			"RandomizeTiers": false,
-			"TempLock": false,
 			"AddSpecificModifierTag": true,
 			"AddSpecialModPool": false,
 			"AddUniqueModifier": false
@@ -380,7 +372,6 @@
 		{
 			"Etch": false,
 			"RandomizeTiers": true,
-			"TempLock": false,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": false,
 			"AddUniqueModifier": false
@@ -426,7 +417,6 @@
 		{
 			"Etch": false,
 			"RandomizeTiers": false,
-			"TempLock": false,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": false,
 			"AddUniqueModifier": false
@@ -472,7 +462,6 @@
 		{
 			"Etch": false,
 			"RandomizeTiers": false,
-			"TempLock": false,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": false,
 			"AddUniqueModifier": false
@@ -515,65 +504,25 @@
 		{
 			"Etch": false,
 			"RandomizeTiers": false,
-			"TempLock": false,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": true,
 			"AddUniqueModifier": false
 		}
 	},
 	{
-		"Name": "lock_prefix_temp_01",
-		"CurrencyId": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"1258FE4B4B0EE1B365C5568C118C86A6\", \"lock_prefix_temp_01\")",
-		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"91FE3AB84C198D1FF8C6D78882DC97D6\", \"Patron\")",
+		"Name": "add_implicit_01",
+		"CurrencyId": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"54B7FC554929951B0F59328748946AA7\", \"add_implicit_01\")",
+		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"116ACD2C450BBE6C9BA10B8D0DB243CE\", \"Lurid\")",
 		"BaseCurrencyType": "Exotic",
-		"ModifierModificationType": "Other",
-		"ModifiersAffectedWeightedRange": [],
-		"AffectedAffixes":
-		{
-			"Prefixes": true,
-			"Suffixes": false,
-			"Implicits": false
-		},
-		"CurrencyModifierTags":
-		{
-			"Physical": false,
-			"Fire": false,
-			"Ice": false,
-			"Electric": false,
-			"Abyssal": false,
-			"Damage": false,
-			"Attack": false,
-			"Defense": false,
-			"Resistance": false,
-			"Speed": false,
-			"Critical": false,
-			"Life": false,
-			"Armor": false,
-			"Evade": false,
-			"Overshield": false
-		},
-		"ExoticCurrencyMethods":
-		{
-			"Etch": false,
-			"RandomizeTiers": false,
-			"TempLock": true,
-			"AddSpecificModifierTag": false,
-			"AddSpecialModPool": false,
-			"AddUniqueModifier": false
-		}
-	},
-	{
-		"Name": "lock_suffix_temp_01",
-		"CurrencyId": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"96075A53434F4D64932779BC744D8D4B\", \"lock_suffix_temp_01\")",
-		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"06AE64724CD1BF2D47CCE8BFB9D6F155\", \"Matron\")",
-		"BaseCurrencyType": "Exotic",
-		"ModifierModificationType": "Other",
-		"ModifiersAffectedWeightedRange": [],
+		"ModifierModificationType": "Add",
+		"ModifiersAffectedWeightedRange": [
+			1
+		],
 		"AffectedAffixes":
 		{
 			"Prefixes": false,
-			"Suffixes": true,
-			"Implicits": false
+			"Suffixes": false,
+			"Implicits": true
 		},
 		"CurrencyModifierTags":
 		{
@@ -597,7 +546,6 @@
 		{
 			"Etch": false,
 			"RandomizeTiers": false,
-			"TempLock": true,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": false,
 			"AddUniqueModifier": false

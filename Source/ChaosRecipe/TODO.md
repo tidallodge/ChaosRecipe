@@ -17,3 +17,19 @@ TODO:
 ART
     - Continue with tutorial, Cutlass looks good
         - get Breastplate, Leather CLoak, and Tassled Garb done rough to continue game logic development
+
+
+MISC
+    - Name Currency items, these are the zones/themes
+        - ANCIENT WOODS
+            - magic reroll | add mod
+        - FORBIDDEN FOREST
+            - rare reroll | minus mod
+        - LURID BOG
+            - mod value reroll | mod tier reroll | implicit value reroll
+        - SPECTRAL SHALLOWS
+            - reroll prefix | reroll suffix
+        - THE DEEP
+            - add specific mod | add from specific mod pool
+        - ABBSYAL PLANE
+            - etch | add implicit

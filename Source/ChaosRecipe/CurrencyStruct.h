@@ -36,9 +36,6 @@ struct FExoticCurrencyMethods
     bool RandomizeTiers;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Exotic Methods")
-    bool TempLock;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Exotic Methods")
     bool AddSpecificModifierTag;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Exotic Methods")
