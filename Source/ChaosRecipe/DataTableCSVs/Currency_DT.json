@@ -2,7 +2,7 @@
 	{
 		"Name": "add_mod_01",
 		"CurrencyId": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"687E854E4CBD9F0F52B5CB9A5B763302\", \"add_mod_01\")",
-		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"CBD957D84520A211CA3F36B3CB6BB445\", \"Transmute\")",
+		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"CBD957D84520A211CA3F36B3CB6BB445\", \"Bark Inscription\")",
 		"BaseCurrencyType": "Basic",
 		"ModifierModificationType": "Add",
 		"ModifiersAffectedWeightedRange": [
@@ -44,7 +44,7 @@
 	{
 		"Name": "magic_reroll_01",
 		"CurrencyId": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"FAE144B449816D6A946B578EFB24F1C3\", \"magic_reroll_01\")",
-		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"F3A523BB4CEA98BAC05669BFF8B8D129\", \"Alteration\")",
+		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"F3A523BB4CEA98BAC05669BFF8B8D129\", \"Wooden Glyph\")",
 		"BaseCurrencyType": "Basic",
 		"ModifierModificationType": "RandomizeMods",
 		"ModifiersAffectedWeightedRange": [
@@ -87,7 +87,7 @@
 	{
 		"Name": "remove_mod_01",
 		"CurrencyId": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"71F53F654F2D27D310AC05AE0A665E0D\", \"remove_mod_01\")",
-		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"BE9F51B74A3F22E04719E1B8D75B7BCF\", \"Annul\")",
+		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"BE9F51B74A3F22E04719E1B8D75B7BCF\", \"Slate Inscription\")",
 		"BaseCurrencyType": "Basic",
 		"ModifierModificationType": "Remove",
 		"ModifiersAffectedWeightedRange": [
@@ -129,7 +129,7 @@
 	{
 		"Name": "rare_reroll_01",
 		"CurrencyId": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"089FD3A641B3081F51E0BBB190B7FF13\", \"rare_reroll_01\")",
-		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"3177A2E94068613A82EC2D9E22EA6E77\", \"Chaos\")",
+		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"3177A2E94068613A82EC2D9E22EA6E77\", \"Rocky Glyph\")",
 		"BaseCurrencyType": "Basic",
 		"ModifierModificationType": "RandomizeMods",
 		"ModifiersAffectedWeightedRange": [
@@ -176,7 +176,7 @@
 	{
 		"Name": "reroll_mod_values_01",
 		"CurrencyId": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"12323072446A316B5F4BB7823EF6C4C6\", \"reroll_mod_values_01\")",
-		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"044B9DDA4B159B59BE7A0BA142DA0833\", \"Divine\")",
+		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"044B9DDA4B159B59BE7A0BA142DA0833\", \"Muddy Glyph\")",
 		"BaseCurrencyType": "Basic",
 		"ModifierModificationType": "RandomizeValues",
 		"ModifiersAffectedWeightedRange": [],
@@ -216,7 +216,7 @@
 	{
 		"Name": "reroll_implicit_values_01",
 		"CurrencyId": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"9723F9D94FBA392C6E16DAAF2D25B027\", \"reroll_implicit_values_01\")",
-		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"3462F8CE471254FC3CFAAC8A36B9E985\", \"Bless\")",
+		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"3462F8CE471254FC3CFAAC8A36B9E985\", \"Mossy Glyph\")",
 		"BaseCurrencyType": "Basic",
 		"ModifierModificationType": "RandomizeValues",
 		"ModifiersAffectedWeightedRange": [],
@@ -256,7 +256,7 @@
 	{
 		"Name": "etch_01",
 		"CurrencyId": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"CF71665D4277E5D7C382F58EC42C9550\", \"etch_01\")",
-		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"85E54E8E46DFC16F1AECE99068596F18\", \"Etching\")",
+		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"85E54E8E46DFC16F1AECE99068596F18\", \"Petrifying Effigy\")",
 		"BaseCurrencyType": "Exotic",
 		"ModifierModificationType": "Other",
 		"ModifiersAffectedWeightedRange": [
@@ -298,7 +298,7 @@
 	{
 		"Name": "tagged_add_mod_01",
 		"CurrencyId": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"7F7E0B4E4BFEE5260B634E88D0764C45\", \"tagged_add_mod_01\")",
-		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"3B6533324A4BEA3B0C5C098E45BD9C67\", \"Essence\")",
+		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"3B6533324A4BEA3B0C5C098E45BD9C67\", \"Bizzare Effigy\")",
 		"BaseCurrencyType": "Exotic",
 		"ModifierModificationType": "Add",
 		"ModifiersAffectedWeightedRange": [
@@ -340,7 +340,7 @@
 	{
 		"Name": "reroll_mod_tiers_01",
 		"CurrencyId": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"29FA330F4728852F3EC88487A7631AFB\", \"reroll_mod_tiers_01\")",
-		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"2854172A4F9EAA5DBC80C4A56C8BA55B\", \"Volatile\")",
+		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"2854172A4F9EAA5DBC80C4A56C8BA55B\", \"Animated Effigy\")",
 		"BaseCurrencyType": "Exotic",
 		"ModifierModificationType": "RandomizeTiers",
 		"ModifiersAffectedWeightedRange": [],
@@ -380,7 +380,7 @@
 	{
 		"Name": "reroll_prefix_mods_01",
 		"CurrencyId": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"36AC0B464DF3B58546D0D290277FE3A5\", \"reroll_prefix_mods_01\")",
-		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"9E208F55449C55EADC0BC8A1DA245C06\", \"Eldritch\")",
+		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"9E208F55449C55EADC0BC8A1DA245C06\", \"Winged Effigy\")",
 		"BaseCurrencyType": "Exotic",
 		"ModifierModificationType": "RandomizeMods",
 		"ModifiersAffectedWeightedRange": [
@@ -425,7 +425,7 @@
 	{
 		"Name": "reroll_suffix_mods_01",
 		"CurrencyId": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"D2211A0143F148A7B1F24F88045A782C\", \"reroll_suffix_mods_01\")",
-		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"37BDD6ED47D84C4C0F32C6A01FEAACB1\", \"Cosmic\")",
+		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"37BDD6ED47D84C4C0F32C6A01FEAACB1\", \"Bloated Effigy\")",
 		"BaseCurrencyType": "Exotic",
 		"ModifierModificationType": "RandomizeMods",
 		"ModifiersAffectedWeightedRange": [
@@ -470,7 +470,7 @@
 	{
 		"Name": "add_mod_pool_01",
 		"CurrencyId": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"9C81F8C04F86E291D48686964248CFB0\", \"add_mod_pool_01\")",
-		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"9A2CCA7940E06FCB58FF17AC8951E40B\", \"Ancient\")",
+		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"9A2CCA7940E06FCB58FF17AC8951E40B\", \"Enchanting Effigy\")",
 		"BaseCurrencyType": "Exotic",
 		"ModifierModificationType": "Add",
 		"ModifiersAffectedWeightedRange": [
@@ -512,7 +512,7 @@
 	{
 		"Name": "add_implicit_01",
 		"CurrencyId": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"54B7FC554929951B0F59328748946AA7\", \"add_implicit_01\")",
-		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"116ACD2C450BBE6C9BA10B8D0DB243CE\", \"Lurid\")",
+		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"116ACD2C450BBE6C9BA10B8D0DB243CE\", \"Towering Effigy\")",
 		"BaseCurrencyType": "Exotic",
 		"ModifierModificationType": "Add",
 		"ModifiersAffectedWeightedRange": [
