@@ -18,6 +18,17 @@ ART
     - Continue with tutorial, Cutlass looks good
         - get Breastplate, Leather CLoak, and Tassled Garb done rough to continue game logic development
 
+    - started https://gamedev.tv/courses/blender-pathway-guide/intro-to-the-course/8218
+        - DO IN THIS ORDER
+            - Complete Blender Creator section 1
+            - Complete Blender Creator section 2
+            - Low Poly Landscape section 2-4
+            - Low Poly Characters section 2-3
+            - Complete Blender Creator section 3
+            - Complete Blender Creator section 4
+            - Low Poly Characters section 4-6
+            - Complete Blender Creator section 5
+            - Complete Blender Creator section 6
 
 MISC
     - Name Currency items, these are the zones/themes
