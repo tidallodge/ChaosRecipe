@@ -33,3 +33,8 @@ MISC
             - add specific mod | add from specific mod pool
         - ABBSYAL PLANE
             - etch | add implicit
+
+    - Currency basees
+        - inscription | add / subtract
+        - glyph | reroll
+        - effigy | exotic currency
