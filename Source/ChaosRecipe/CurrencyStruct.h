@@ -43,6 +43,12 @@ struct FExoticCurrencyMethods
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Exotic Methods")
     bool AddUniqueModifier;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Exotic Methods")
+    bool MultiPoolBase;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Exotic Methods")
+    bool MultiPoolSingle;
 };
 
 USTRUCT(BlueprintType)

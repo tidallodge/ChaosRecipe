@@ -34,16 +34,21 @@ MISC
     - Name Currency items, these are the zones/themes
         - ANCIENT WOODS
             - magic reroll | add mod
+            - add from specific mod pool
         - FORBIDDEN FOREST
             - rare reroll | minus mod
+            - add specific mod
         - LURID BOG
             - mod value reroll | mod tier reroll | implicit value reroll
+            - add implicit
         - SPECTRAL SHALLOWS
             - reroll prefix | reroll suffix
         - THE DEEP
-            - add specific mod | add from specific mod pool
+            - fossils
+                - encrusted pedastal - resonator
+                - effigy fragment - fossil
         - ABBSYAL PLANE
-            - etch | add implicit
+            - etch 
 
     - Currency basees
         - inscription | add / subtract
