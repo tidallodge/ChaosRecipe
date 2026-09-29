@@ -4,14 +4,8 @@ Completed:
 
 TODO:
     - fill in base item DB
-    - update DB structure to better represent what base items are
     - change select item buttons to one button that creates a pop up menu for selecting items
 
-    just give me the green dot tday please
-
-    - added Shop button
-        - make a new grid widget to show when this is clicked
-        - pouplate grid with item icon buttons instead of the static list
 
 
 ART
@@ -21,6 +15,7 @@ ART
     - started https://gamedev.tv/courses/blender-pathway-guide/intro-to-the-course/8218
         - DO IN THIS ORDER
             - Complete Blender Creator section 1
+                - started
             - Complete Blender Creator section 2
             - Low Poly Landscape section 2-4
             - Low Poly Characters section 2-3
