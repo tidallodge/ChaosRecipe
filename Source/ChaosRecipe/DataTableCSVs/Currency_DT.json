@@ -38,7 +38,9 @@
 			"RandomizeTiers": false,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": false,
-			"AddUniqueModifier": false
+			"AddUniqueModifier": false,
+			"MultiPoolBase": false,
+			"MultiPoolSingle": false
 		}
 	},
 	{
@@ -81,7 +83,9 @@
 			"RandomizeTiers": false,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": false,
-			"AddUniqueModifier": false
+			"AddUniqueModifier": false,
+			"MultiPoolBase": false,
+			"MultiPoolSingle": false
 		}
 	},
 	{
@@ -123,7 +127,9 @@
 			"RandomizeTiers": false,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": false,
-			"AddUniqueModifier": false
+			"AddUniqueModifier": false,
+			"MultiPoolBase": false,
+			"MultiPoolSingle": false
 		}
 	},
 	{
@@ -170,7 +176,9 @@
 			"RandomizeTiers": false,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": false,
-			"AddUniqueModifier": false
+			"AddUniqueModifier": false,
+			"MultiPoolBase": false,
+			"MultiPoolSingle": false
 		}
 	},
 	{
@@ -210,7 +218,9 @@
 			"RandomizeTiers": false,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": false,
-			"AddUniqueModifier": false
+			"AddUniqueModifier": false,
+			"MultiPoolBase": false,
+			"MultiPoolSingle": false
 		}
 	},
 	{
@@ -250,7 +260,9 @@
 			"RandomizeTiers": false,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": false,
-			"AddUniqueModifier": false
+			"AddUniqueModifier": false,
+			"MultiPoolBase": false,
+			"MultiPoolSingle": false
 		}
 	},
 	{
@@ -292,7 +304,9 @@
 			"RandomizeTiers": false,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": false,
-			"AddUniqueModifier": false
+			"AddUniqueModifier": false,
+			"MultiPoolBase": false,
+			"MultiPoolSingle": false
 		}
 	},
 	{
@@ -334,7 +348,9 @@
 			"RandomizeTiers": false,
 			"AddSpecificModifierTag": true,
 			"AddSpecialModPool": false,
-			"AddUniqueModifier": false
+			"AddUniqueModifier": false,
+			"MultiPoolBase": false,
+			"MultiPoolSingle": false
 		}
 	},
 	{
@@ -374,7 +390,9 @@
 			"RandomizeTiers": true,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": false,
-			"AddUniqueModifier": false
+			"AddUniqueModifier": false,
+			"MultiPoolBase": false,
+			"MultiPoolSingle": false
 		}
 	},
 	{
@@ -419,7 +437,9 @@
 			"RandomizeTiers": false,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": false,
-			"AddUniqueModifier": false
+			"AddUniqueModifier": false,
+			"MultiPoolBase": false,
+			"MultiPoolSingle": false
 		}
 	},
 	{
@@ -464,7 +484,9 @@
 			"RandomizeTiers": false,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": false,
-			"AddUniqueModifier": false
+			"AddUniqueModifier": false,
+			"MultiPoolBase": false,
+			"MultiPoolSingle": false
 		}
 	},
 	{
@@ -506,7 +528,9 @@
 			"RandomizeTiers": false,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": true,
-			"AddUniqueModifier": false
+			"AddUniqueModifier": false,
+			"MultiPoolBase": false,
+			"MultiPoolSingle": false
 		}
 	},
 	{
@@ -548,7 +572,139 @@
 			"RandomizeTiers": false,
 			"AddSpecificModifierTag": false,
 			"AddSpecialModPool": false,
-			"AddUniqueModifier": false
+			"AddUniqueModifier": false,
+			"MultiPoolBase": false,
+			"MultiPoolSingle": false
+		}
+	},
+	{
+		"Name": "mulit_pool_base_01",
+		"CurrencyId": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"E9365DB3411AF0C618FF28B80AF9D2CB\", \"mulit_pool_base_01\")",
+		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"1C615E87433C8ED3EE2571BF3B32F760\", \"Encrusted Pedestal\")",
+		"BaseCurrencyType": "Exotic",
+		"ModifierModificationType": "Add",
+		"ModifiersAffectedWeightedRange": [],
+		"AffectedAffixes":
+		{
+			"Prefixes": false,
+			"Suffixes": false,
+			"Implicits": false
+		},
+		"CurrencyModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Abyssal": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
+		},
+		"ExoticCurrencyMethods":
+		{
+			"Etch": false,
+			"RandomizeTiers": false,
+			"AddSpecificModifierTag": false,
+			"AddSpecialModPool": false,
+			"AddUniqueModifier": false,
+			"MultiPoolBase": true,
+			"MultiPoolSingle": false
+		}
+	},
+	{
+		"Name": "mulit_pool_add_01",
+		"CurrencyId": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"C14B550C43393BF11EA694A89185E482\", \"mulit_pool_add_01\")",
+		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"93A3AFB04998927C87B586818036CCEA\", \"Encrusted Effigy Fragment\")",
+		"BaseCurrencyType": "Exotic",
+		"ModifierModificationType": "Add",
+		"ModifiersAffectedWeightedRange": [
+			1
+		],
+		"AffectedAffixes":
+		{
+			"Prefixes": false,
+			"Suffixes": false,
+			"Implicits": false
+		},
+		"CurrencyModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Abyssal": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
+		},
+		"ExoticCurrencyMethods":
+		{
+			"Etch": false,
+			"RandomizeTiers": false,
+			"AddSpecificModifierTag": false,
+			"AddSpecialModPool": false,
+			"AddUniqueModifier": false,
+			"MultiPoolBase": false,
+			"MultiPoolSingle": true
+		}
+	},
+	{
+		"Name": "mulit_pool_remove_01",
+		"CurrencyId": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"E539D2F04D735D0AFF25719165741CC9\", \"mulit_pool_remove_01\")",
+		"CurrencyName": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"0E78A2A1457365B9DD4841A0EB4E400F\", \"Oozing Effigy Fragment\")",
+		"BaseCurrencyType": "Exotic",
+		"ModifierModificationType": "Remove",
+		"ModifiersAffectedWeightedRange": [
+			1
+		],
+		"AffectedAffixes":
+		{
+			"Prefixes": false,
+			"Suffixes": false,
+			"Implicits": false
+		},
+		"CurrencyModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Abyssal": false,
+			"Damage": false,
+			"Attack": false,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
+		},
+		"ExoticCurrencyMethods":
+		{
+			"Etch": false,
+			"RandomizeTiers": false,
+			"AddSpecificModifierTag": false,
+			"AddSpecialModPool": false,
+			"AddUniqueModifier": false,
+			"MultiPoolBase": false,
+			"MultiPoolSingle": false
 		}
 	}
 ]

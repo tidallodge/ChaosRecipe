@@ -45,10 +45,11 @@ MISC
             - reroll prefix | reroll suffix
         - THE DEEP
             - fossils
-                - encrusted pedastal - resonator
-                - effigy fragment - fossil
+                - encrusted pedastal - add mod resonator
+                - effigy fragment - add mod fossil
         - ABBSYAL PLANE
             - etch 
+                - exclude mod fossil
 
     - Currency basees
         - inscription | add / subtract
