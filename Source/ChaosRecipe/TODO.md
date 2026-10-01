@@ -15,7 +15,7 @@ ART
     - started https://gamedev.tv/courses/blender-pathway-guide/intro-to-the-course/8218
         - DO IN THIS ORDER
             - Complete Blender Creator section 1
-                - started
+                - started, through materials intro
             - Complete Blender Creator section 2
             - Low Poly Landscape section 2-4
             - Low Poly Characters section 2-3
