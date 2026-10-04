@@ -27,7 +27,7 @@ ART
 
     - TODO Art
         - Inscriptions
-            - Slate
+
         - Glyphs
             - Wooden
             - Rocky
@@ -35,8 +35,9 @@ ART
             - Mossy
 
     - Temp Art Done
-            - Inscriptions
+        - Inscriptions
             - Bark
+            - Slate
 
 MISC
     - Name Currency items, these are the zones/themes
