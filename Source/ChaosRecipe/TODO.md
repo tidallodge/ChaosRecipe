@@ -25,6 +25,19 @@ ART
             - Complete Blender Creator section 5
             - Complete Blender Creator section 6
 
+    - TODO Art
+        - Inscriptions
+            - Slate
+        - Glyphs
+            - Wooden
+            - Rocky
+            - Muddy
+            - Mossy
+
+    - Temp Art Done
+            - Inscriptions
+            - Bark
+
 MISC
     - Name Currency items, these are the zones/themes
         - ANCIENT WOODS
