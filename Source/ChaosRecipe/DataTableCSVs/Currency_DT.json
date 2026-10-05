@@ -41,7 +41,13 @@
 			"AddUniqueModifier": false,
 			"MultiPoolBase": false,
 			"MultiPoolSingle": false
-		}
+		},
+		"CurrencyAssetData":
+		{
+			"CurrencyIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/CurrencyAssets/Inscription_Bark_2d.Inscription_Bark_2d'",
+			"CurrencyStaticMesh": "None"
+		},
+		"CurrencyDescription": "NSLOCTEXT(\"[DD62D34DC896A0DC8B3D7092A65897DD]\", \"A151D526489BFD483228F7ABAD1FFC80\", \"Add a Random Modifier\")"
 	},
 	{
 		"Name": "magic_reroll_01",
@@ -86,7 +92,13 @@
 			"AddUniqueModifier": false,
 			"MultiPoolBase": false,
 			"MultiPoolSingle": false
-		}
+		},
+		"CurrencyAssetData":
+		{
+			"CurrencyIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/CurrencyAssets/glyph_wooden.glyph_wooden'",
+			"CurrencyStaticMesh": "None"
+		},
+		"CurrencyDescription": ""
 	},
 	{
 		"Name": "remove_mod_01",
@@ -130,7 +142,13 @@
 			"AddUniqueModifier": false,
 			"MultiPoolBase": false,
 			"MultiPoolSingle": false
-		}
+		},
+		"CurrencyAssetData":
+		{
+			"CurrencyIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/CurrencyAssets/Inscription_Slate_2d.Inscription_Slate_2d'",
+			"CurrencyStaticMesh": "None"
+		},
+		"CurrencyDescription": ""
 	},
 	{
 		"Name": "rare_reroll_01",
@@ -179,7 +197,13 @@
 			"AddUniqueModifier": false,
 			"MultiPoolBase": false,
 			"MultiPoolSingle": false
-		}
+		},
+		"CurrencyAssetData":
+		{
+			"CurrencyIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/CurrencyAssets/glyph_rocky.glyph_rocky'",
+			"CurrencyStaticMesh": "None"
+		},
+		"CurrencyDescription": ""
 	},
 	{
 		"Name": "reroll_mod_values_01",
@@ -221,7 +245,13 @@
 			"AddUniqueModifier": false,
 			"MultiPoolBase": false,
 			"MultiPoolSingle": false
-		}
+		},
+		"CurrencyAssetData":
+		{
+			"CurrencyIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/CurrencyAssets/glyph_clay.glyph_clay'",
+			"CurrencyStaticMesh": "None"
+		},
+		"CurrencyDescription": ""
 	},
 	{
 		"Name": "reroll_implicit_values_01",
@@ -263,7 +293,13 @@
 			"AddUniqueModifier": false,
 			"MultiPoolBase": false,
 			"MultiPoolSingle": false
-		}
+		},
+		"CurrencyAssetData":
+		{
+			"CurrencyIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/CurrencyAssets/glyph_mossy.glyph_mossy'",
+			"CurrencyStaticMesh": "None"
+		},
+		"CurrencyDescription": ""
 	},
 	{
 		"Name": "etch_01",
@@ -307,7 +343,13 @@
 			"AddUniqueModifier": false,
 			"MultiPoolBase": false,
 			"MultiPoolSingle": false
-		}
+		},
+		"CurrencyAssetData":
+		{
+			"CurrencyIcon": "None",
+			"CurrencyStaticMesh": "None"
+		},
+		"CurrencyDescription": ""
 	},
 	{
 		"Name": "tagged_add_mod_01",
@@ -351,7 +393,13 @@
 			"AddUniqueModifier": false,
 			"MultiPoolBase": false,
 			"MultiPoolSingle": false
-		}
+		},
+		"CurrencyAssetData":
+		{
+			"CurrencyIcon": "None",
+			"CurrencyStaticMesh": "None"
+		},
+		"CurrencyDescription": ""
 	},
 	{
 		"Name": "reroll_mod_tiers_01",
@@ -393,7 +441,13 @@
 			"AddUniqueModifier": false,
 			"MultiPoolBase": false,
 			"MultiPoolSingle": false
-		}
+		},
+		"CurrencyAssetData":
+		{
+			"CurrencyIcon": "None",
+			"CurrencyStaticMesh": "None"
+		},
+		"CurrencyDescription": ""
 	},
 	{
 		"Name": "reroll_prefix_mods_01",
@@ -440,7 +494,13 @@
 			"AddUniqueModifier": false,
 			"MultiPoolBase": false,
 			"MultiPoolSingle": false
-		}
+		},
+		"CurrencyAssetData":
+		{
+			"CurrencyIcon": "None",
+			"CurrencyStaticMesh": "None"
+		},
+		"CurrencyDescription": ""
 	},
 	{
 		"Name": "reroll_suffix_mods_01",
@@ -487,7 +547,13 @@
 			"AddUniqueModifier": false,
 			"MultiPoolBase": false,
 			"MultiPoolSingle": false
-		}
+		},
+		"CurrencyAssetData":
+		{
+			"CurrencyIcon": "None",
+			"CurrencyStaticMesh": "None"
+		},
+		"CurrencyDescription": ""
 	},
 	{
 		"Name": "add_mod_pool_01",
@@ -531,7 +597,13 @@
 			"AddUniqueModifier": false,
 			"MultiPoolBase": false,
 			"MultiPoolSingle": false
-		}
+		},
+		"CurrencyAssetData":
+		{
+			"CurrencyIcon": "None",
+			"CurrencyStaticMesh": "None"
+		},
+		"CurrencyDescription": ""
 	},
 	{
 		"Name": "add_implicit_01",
@@ -575,7 +647,13 @@
 			"AddUniqueModifier": false,
 			"MultiPoolBase": false,
 			"MultiPoolSingle": false
-		}
+		},
+		"CurrencyAssetData":
+		{
+			"CurrencyIcon": "None",
+			"CurrencyStaticMesh": "None"
+		},
+		"CurrencyDescription": ""
 	},
 	{
 		"Name": "mulit_pool_base_01",
@@ -617,7 +695,13 @@
 			"AddUniqueModifier": false,
 			"MultiPoolBase": true,
 			"MultiPoolSingle": false
-		}
+		},
+		"CurrencyAssetData":
+		{
+			"CurrencyIcon": "None",
+			"CurrencyStaticMesh": "None"
+		},
+		"CurrencyDescription": ""
 	},
 	{
 		"Name": "mulit_pool_add_01",
@@ -661,7 +745,13 @@
 			"AddUniqueModifier": false,
 			"MultiPoolBase": false,
 			"MultiPoolSingle": true
-		}
+		},
+		"CurrencyAssetData":
+		{
+			"CurrencyIcon": "None",
+			"CurrencyStaticMesh": "None"
+		},
+		"CurrencyDescription": ""
 	},
 	{
 		"Name": "mulit_pool_remove_01",
@@ -705,6 +795,12 @@
 			"AddUniqueModifier": false,
 			"MultiPoolBase": false,
 			"MultiPoolSingle": false
-		}
+		},
+		"CurrencyAssetData":
+		{
+			"CurrencyIcon": "None",
+			"CurrencyStaticMesh": "None"
+		},
+		"CurrencyDescription": ""
 	}
 ]

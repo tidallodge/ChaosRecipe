@@ -109,4 +109,7 @@ struct FCurrencyStruct : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 	FCurrencyAssetData CurrencyAssetData;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	FText CurrencyDescription;
 };

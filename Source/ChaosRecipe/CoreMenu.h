@@ -35,6 +35,10 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnShopItemSelectedEvent, FString, 
 // Fired when the Reset Game button is clicked, so listeners (e.g. ItemHandler, PlayerInventory)
 // can wipe their own persisted save data (SavedItems.json, SavedCurrency.json) and reset to defaults.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnResetGameEvent);
+// Fired when Buy is clicked while a basic currency listing in ShopUniGrid is selected, so listeners
+// (e.g. PlayerInventory) can charge GoldCost and grant one of CurrencyId. Currency listings are never
+// removed from the shop after a purchase.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBuyCurrencyEvent, FString, CurrencyId, int32, GoldCost);
 
 class UCoreMenu;
 
@@ -78,6 +82,29 @@ public:
 	void HandleClicked();
 };
 
+// Carries a currency's Currency_DT RowName for a dynamically created currency grid button, since
+// UButton::OnClicked takes no parameters and can't otherwise identify its sender.
+UCLASS()
+class UCurrencyButtonProxy : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY()
+	FName RowName;
+
+	// True for a basic currency listing in ShopUniGrid (selects it for Buy), false for a button in
+	// InscriptionUniGrid/GlyphUniGrid (selects it for Randomize).
+	UPROPERTY()
+	bool bIsShopListing = false;
+
+	UPROPERTY()
+	TObjectPtr<UCoreMenu> OwningMenu;
+
+	UFUNCTION()
+	void HandleClicked();
+};
+
 /**
  *
  */
@@ -88,6 +115,7 @@ class CHAOSRECIPE_API UCoreMenu : public UUserWidget
 
 	friend class ULoadItemButtonProxy;
 	friend class UShopItemButtonProxy;
+	friend class UCurrencyButtonProxy;
 
 public:
 
@@ -110,6 +138,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnResetGameEvent OnResetGameButtonClickedEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnBuyCurrencyEvent OnBuyCurrencyEvent;
 
 	UPROPERTY()
 	int32 PlayerSwordCount;
@@ -144,9 +175,8 @@ public:
 	void ClearSelectedItemUUID() { SelectedItemUUID.Empty(); }
 
 	// Sets which currency (a Currency_DT row id, or empty for a plain full reroll) the next Randomize
-	// click will use. Meant to be called from a future currency-selection widget (e.g. a combo box bound
-	// to CurrencyDataTableRowNames below) - no such widget exists yet, so this currently defaults to
-	// empty (full reroll) until one calls it.
+	// click will use. Called when a currency button in InscriptionUniGrid/GlyphUniGrid is clicked;
+	// defaults to empty (full reroll) until one is.
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void SetSelectedCurrencyId(const FString& CurrencyId) { SelectedCurrencyId = CurrencyId; }
 
@@ -182,8 +212,6 @@ protected:
 	// Bound from the widget blueprint (named 'BuyButton')
 	UPROPERTY(meta = (BindWidget))
 	UButton* BuyButton;
-	UPROPERTY(meta = (BindWidget))
-	UButton* RandomizeButton;
 	UPROPERTY(meta = (BindWidget))
 	UButton* ShopButton;
 	UPROPERTY(meta = (BindWidget))
@@ -221,6 +249,10 @@ protected:
 	UUniformGridPanel* InscriptionUniGrid;
 	UPROPERTY(meta = (BindWidget))
 	UUniformGridPanel* GlyphUniGrid;
+	// WBP_SingleImageButton showing the currently selected currency's icon; clicking it rolls the
+	// active item with that currency (OnRandomizeItemButtonClicked)
+	UPROPERTY(meta = (BindWidget))
+	UUserWidget* ActiveItemRollButton;
 
 	// Click handler for SellButton
 	UFUNCTION()
@@ -231,7 +263,7 @@ protected:
 	// Generic item lookup helper
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void SelectItemData(const FText& ItemIdText);
-	// Click handler for the randomize item button
+	// Click handler for ActiveItemRollButton's inner SingleImageButton
 	UFUNCTION()
 	void OnRandomizeItemButtonClicked();
 	// Click handler for a dynamically created saved-item button
@@ -260,9 +292,18 @@ protected:
 	void PopulateShopGrid();
 	// Clears and repopulates PlayerStashUniGrid with a WBP_SingleImageButton for every saved item (via ItemInstanceManager)
 	void PopulatePlayerStash();
-	// Clears and repopulates InscriptionUniGrid and GlyphUniGrid with a slot for every Currency_DT row
-	// whose CurrencyName contains "Inscription" or "Glyph" respectively
+	// Clears and repopulates InscriptionUniGrid and GlyphUniGrid with a WBP_SingleImageButton for every
+	// Currency_DT row whose CurrencyName contains "Inscription" or "Glyph" respectively
 	void PopulateCurrencyGrids();
+	// Click handler for a dynamically created currency grid button; selects that currency and shows
+	// its icon on ActiveItemRollButton
+	UFUNCTION()
+	void OnCurrencyButtonClicked(FName RowName);
+	// Click handler for a basic currency listing in ShopUniGrid; selects it so the next Buy purchases it
+	UFUNCTION()
+	void OnShopCurrencyButtonClicked(FName RowName);
+	// Appends a button for every Basic Currency_DT row to ShopUniGrid, starting on a fresh row at StartRow
+	void PopulateShopCurrencyRow(UClass* SingleImageButtonClass, int32 StartRow, int32 NumColumns, float SlotSize);
 	// Sets IconImage's brush to the CurrencyIcon of the Currency_DT row named RowName
 	void LoadCurrencyIcon(UImage* IconImage, const FName& RowName);
 	// Sets the visibility of a panel widget and all of its children, recursively
@@ -294,6 +335,15 @@ protected:
 
 	UPROPERTY()
 	int32 Cost = 5;
+
+	// Flat gold cost of each basic currency listing in ShopUniGrid.
+	UPROPERTY()
+	int32 BasicCurrencyShopCost = 25;
+
+	// CurrencyId of the basic currency listing selected in ShopUniGrid (empty if none). When set, Buy
+	// purchases this currency instead of the selected item.
+	UPROPERTY()
+	FString SelectedShopCurrencyId;
 
 	UPROPERTY()
 	FString ItemType = TEXT("Sword");
@@ -335,6 +385,14 @@ protected:
 	// Keeps the per-button proxies alive (and their click bindings valid) between player stash repopulations.
 	UPROPERTY()
 	TArray<TObjectPtr<ULoadItemButtonProxy>> PlayerStashButtonProxies;
+
+	// Keeps the per-button proxies alive (and their click bindings valid) between currency grid repopulations.
+	UPROPERTY()
+	TArray<TObjectPtr<UCurrencyButtonProxy>> CurrencyButtonProxies;
+
+	// Keeps the per-button proxies alive (and their click bindings valid) between shop grid repopulations.
+	UPROPERTY()
+	TArray<TObjectPtr<UCurrencyButtonProxy>> ShopCurrencyButtonProxies;
 
 	// Clears WarningsTextBox; bound to WarningTextTimerHandle by SetWarningText, never called directly
 	// so that clearing the text never re-arms the timer.

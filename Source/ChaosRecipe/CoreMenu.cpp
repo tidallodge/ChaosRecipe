@@ -14,6 +14,11 @@
 #include "Components/PanelWidget.h"
 #include "Components/SizeBox.h"
 #include "Components/ButtonSlot.h"
+#include "Components/OverlaySlot.h"
+#include "Components/SizeBoxSlot.h"
+#include "Components/BorderSlot.h"
+#include "Components/HorizontalBoxSlot.h"
+#include "Components/VerticalBoxSlot.h"
 #include "Blueprint/WidgetTree.h"
 #include "Engine/DataTable.h"
 #include "Engine/Engine.h"
@@ -28,6 +33,89 @@
 #include "Misc/Paths.h"
 
 static bool GetSavedItemJsonByUUID(const FString& UUID, TSharedPtr<FJsonObject>& OutItemObject);
+
+// Resolves the SingleImageButtonIcon image inside a WBP_SingleImageButton instance (null if missing).
+static UImage* GetSingleImageButtonIcon(UUserWidget* SingleImageButtonWidget)
+{
+	if (!SingleImageButtonWidget)
+	{
+		return nullptr;
+	}
+
+	FObjectProperty* IconProp = FindFProperty<FObjectProperty>(SingleImageButtonWidget->GetClass(), TEXT("SingleImageButtonIcon"));
+	UImage* Icon = IconProp ? Cast<UImage>(IconProp->GetPropertyValue_InContainer(SingleImageButtonWidget)) : nullptr;
+	if (!Icon)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SingleImageButtonIcon not found on %s."), *SingleImageButtonWidget->GetName());
+	}
+	return Icon;
+}
+
+// Resolves the SingleImageButton button inside a WBP_SingleImageButton instance (null if missing).
+static UButton* GetSingleImageButton(UUserWidget* SingleImageButtonWidget)
+{
+	if (!SingleImageButtonWidget)
+	{
+		return nullptr;
+	}
+
+	FObjectProperty* ButtonProp = FindFProperty<FObjectProperty>(SingleImageButtonWidget->GetClass(), TEXT("SingleImageButton"));
+	UButton* Button = ButtonProp ? Cast<UButton>(ButtonProp->GetPropertyValue_InContainer(SingleImageButtonWidget)) : nullptr;
+	if (!Button)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("SingleImageButton not found on %s."), *SingleImageButtonWidget->GetName());
+	}
+	return Button;
+}
+
+// Strips all padding around the icon in a WBP_SingleImageButton instance: the button style's
+// normal/pressed padding, plus the slot padding of the icon and every panel between it and the button.
+static void RemoveSingleImageButtonPadding(UUserWidget* SingleImageButtonWidget)
+{
+	UImage* Icon = GetSingleImageButtonIcon(SingleImageButtonWidget);
+	if (!Icon)
+	{
+		return;
+	}
+
+	for (UWidget* Widget = Icon; Widget; Widget = Widget->GetParent())
+	{
+		UPanelSlot* Slot = Widget->Slot;
+		if (UButtonSlot* ButtonSlot = Cast<UButtonSlot>(Slot))
+		{
+			ButtonSlot->SetPadding(FMargin(0.f));
+		}
+		else if (UOverlaySlot* OverlaySlot = Cast<UOverlaySlot>(Slot))
+		{
+			OverlaySlot->SetPadding(FMargin(0.f));
+		}
+		else if (USizeBoxSlot* SizeBoxSlot = Cast<USizeBoxSlot>(Slot))
+		{
+			SizeBoxSlot->SetPadding(FMargin(0.f));
+		}
+		else if (UBorderSlot* BorderSlot = Cast<UBorderSlot>(Slot))
+		{
+			BorderSlot->SetPadding(FMargin(0.f));
+		}
+		else if (UHorizontalBoxSlot* HorizontalBoxSlot = Cast<UHorizontalBoxSlot>(Slot))
+		{
+			HorizontalBoxSlot->SetPadding(FMargin(0.f));
+		}
+		else if (UVerticalBoxSlot* VerticalBoxSlot = Cast<UVerticalBoxSlot>(Slot))
+		{
+			VerticalBoxSlot->SetPadding(FMargin(0.f));
+		}
+
+		if (UButton* Button = Cast<UButton>(Widget))
+		{
+			FButtonStyle Style = Button->GetStyle();
+			Style.SetNormalPadding(FMargin(0.f));
+			Style.SetPressedPadding(FMargin(0.f));
+			Button->SetStyle(Style);
+			break;
+		}
+	}
+}
 
 void UCoreMenu::NativeConstruct()
 {
@@ -66,7 +154,6 @@ void UCoreMenu::NativeConstruct()
 
     ValidateButton(BuyButton);
     ValidateButton(SellButton);
-    ValidateButton(RandomizeButton);
     ValidateButton(ShopButton);
     ValidateButton(RandomizeShopButton);
     ValidateButton(PlayerStashButton);
@@ -75,7 +162,6 @@ void UCoreMenu::NativeConstruct()
 
 	BuyButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBuyButtonClicked);
 	SellButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSellButtonClicked);
-	RandomizeButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeItemButtonClicked);
 	ShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnShopButtonClicked);
 	RandomizeShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeShopButtonClicked);
 	PlayerStashButton->OnClicked.AddDynamic(this, &UCoreMenu::OnPlayerStashButtonClicked);
@@ -95,6 +181,12 @@ void UCoreMenu::NativeConstruct()
 
 	UE_LOG(LogTemp, Warning, TEXT("CoreMenu initialized."));
 	UpdateSwordCount(PlayerSwordCount);
+
+	RemoveSingleImageButtonPadding(ActiveItemRollButton);
+	if (UButton* RollButton = GetSingleImageButton(ActiveItemRollButton))
+	{
+		RollButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeItemButtonClicked);
+	}
 
 	PopulatePlayerStash();
 	PopulateCurrencyGrids();
@@ -138,6 +230,15 @@ void UCoreMenu::OnBuyButtonClicked()
 	// Unlike Sell, Buy keeps ShopWindowBox open so the player can keep shopping, and leaves
 	// ActiveItemImageHorizBox alone rather than showing the purchased item there.
 	UpdatePanelVisibility({ PlayerStashHorizBox }, ESlateVisibility::Hidden);
+
+	// A selected basic currency listing takes priority over item data. PlayerInventory handles the
+	// affordability check and charge; the listing stays in the shop either way.
+	if (!SelectedShopCurrencyId.IsEmpty())
+	{
+		OnBuyCurrencyEvent.Broadcast(SelectedShopCurrencyId, BasicCurrencyShopCost);
+		return;
+	}
+
 	if (!bHasSelectedItemData)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No selected item to buy."));
@@ -283,11 +384,12 @@ void UCoreMenu::OnSingleLoadItemButtonClicked(FString ItemUUID)
 	}
 
 	SelectedItemUUID = ItemUUID;
+	SelectedShopCurrencyId.Empty();
 
 	FString ItemId;
 	ItemObject->TryGetStringField(TEXT("ItemId"), ItemId);
 
-	// Marks this stash item as the active item, so RandomizeButton acts on it.
+	// Marks this stash item as the active item, so ActiveItemRollButton acts on it.
 	SelectItemData(FText::FromString(ItemId));
 
 	// Lets listeners (e.g. ItemHandler) load this existing saved item's stats into their
@@ -472,6 +574,7 @@ void UCoreMenu::PopulatePlayerStash()
 			continue;
 		}
 
+		RemoveSingleImageButtonPadding(StashItemWidget);
 		ItemSlotBox->AddChild(StashItemWidget);
 
 		ULoadItemButtonProxy* Proxy = NewObject<ULoadItemButtonProxy>(this);
@@ -503,10 +606,18 @@ void UCoreMenu::PopulateCurrencyGrids()
 	GlyphUniGrid->ClearChildren();
 	InscriptionUniGrid->SetSlotPadding(FMargin(2.f));
 	GlyphUniGrid->SetSlotPadding(FMargin(2.f));
+	CurrencyButtonProxies.Empty();
 
 	if (!CurrencyDataTable)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Currency_DT data table is not loaded."));
+		return;
+	}
+
+	UClass* SingleImageButtonClass = LoadClass<UUserWidget>(nullptr, TEXT("/Game/WBP_SingleImageButton.WBP_SingleImageButton_C"));
+	if (!SingleImageButtonClass)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load WBP_SingleImageButton class."));
 		return;
 	}
 
@@ -540,11 +651,22 @@ void UCoreMenu::PopulateCurrencyGrids()
 			continue;
 		}
 
+		UUserWidget* CurrencyWidget = CreateWidget<UUserWidget>(this, SingleImageButtonClass);
 		USizeBox* IconSlotBox = WidgetTree->ConstructWidget<USizeBox>(USizeBox::StaticClass());
-		UImage* IconImage = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
-		if (!IconSlotBox || !IconImage)
+		if (!CurrencyWidget || !IconSlotBox)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Failed to construct SizeBox/Image for currency slot."));
+			UE_LOG(LogTemp, Error, TEXT("Failed to construct WBP_SingleImageButton/SizeBox for currency slot."));
+			continue;
+		}
+
+		UButton* InnerButton = nullptr;
+		if (FObjectProperty* ButtonProp = FindFProperty<FObjectProperty>(CurrencyWidget->GetClass(), TEXT("SingleImageButton")))
+		{
+			InnerButton = Cast<UButton>(ButtonProp->GetPropertyValue_InContainer(CurrencyWidget));
+		}
+		if (!InnerButton)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SingleImageButton property not found on WBP_SingleImageButton."));
 			continue;
 		}
 
@@ -552,13 +674,62 @@ void UCoreMenu::PopulateCurrencyGrids()
 		// uniform grid cell exactly CurrencyIconSize regardless of the source texture's resolution.
 		IconSlotBox->SetWidthOverride(CurrencyIconSize);
 		IconSlotBox->SetHeightOverride(CurrencyIconSize);
-		IconSlotBox->AddChild(IconImage);
+		RemoveSingleImageButtonPadding(CurrencyWidget);
+		IconSlotBox->AddChild(CurrencyWidget);
+
+		UCurrencyButtonProxy* Proxy = NewObject<UCurrencyButtonProxy>(this);
+		Proxy->RowName = RowName;
+		Proxy->OwningMenu = this;
+		CurrencyButtonProxies.Add(Proxy);
+		InnerButton->OnClicked.AddDynamic(Proxy, &UCurrencyButtonProxy::HandleClicked);
 
 		TargetGrid->AddChildToUniformGrid(IconSlotBox, *TargetIndex / CurrencyGridColumns, *TargetIndex % CurrencyGridColumns);
 		++(*TargetIndex);
 
-		LoadCurrencyIcon(IconImage, RowName);
+		LoadCurrencyIcon(GetSingleImageButtonIcon(CurrencyWidget), RowName);
 	}
+}
+
+void UCurrencyButtonProxy::HandleClicked()
+{
+	if (!OwningMenu)
+	{
+		return;
+	}
+
+	if (bIsShopListing)
+	{
+		OwningMenu->OnShopCurrencyButtonClicked(RowName);
+	}
+	else
+	{
+		OwningMenu->OnCurrencyButtonClicked(RowName);
+	}
+}
+
+void UCoreMenu::OnCurrencyButtonClicked(FName RowName)
+{
+	if (!CurrencyDataTable)
+	{
+		return;
+	}
+
+	const FCurrencyStruct* CurrencyRow = CurrencyDataTable->FindRow<FCurrencyStruct>(RowName, TEXT("CoreMenu::OnCurrencyButtonClicked"));
+	if (!CurrencyRow)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No Currency_DT row found for RowName: %s"), *RowName.ToString());
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Currency button clicked for CurrencyId: %s"), *CurrencyRow->CurrencyId.ToString());
+	SetSelectedCurrencyId(CurrencyRow->CurrencyId.ToString());
+
+	if (!ActiveItemRollButton)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ActiveItemRollButton is null or not found!"));
+		return;
+	}
+	LoadCurrencyIcon(GetSingleImageButtonIcon(ActiveItemRollButton), RowName);
 }
 
 void UCoreMenu::LoadCurrencyIcon(UImage* IconImage, const FName& RowName)
@@ -610,6 +781,12 @@ void UCoreMenu::OnShopButtonClicked()
 
 	SetPanelAndChildrenVisibility(ShopWindowBox, NewVisibility);
 
+	if (!bShouldShow)
+	{
+		// Closing the shop drops any currency listing selection, so a later Buy doesn't purchase it unseen.
+		SelectedShopCurrencyId.Empty();
+	}
+
 	if (PlayerStashHorizBox)
 	{
 		SetPanelAndChildrenVisibility(PlayerStashHorizBox, ESlateVisibility::Hidden);
@@ -640,12 +817,7 @@ void UCoreMenu::PopulateShopGrid()
 	ShopUniGrid->ClearChildren();
 	ShopUniGrid->SetSlotPadding(FMargin(4.f));
 	ShopItemButtonProxies.Empty();
-
-	if (!ItemDataTable)
-	{
-		UE_LOG(LogTemp, Error, TEXT("BaseItem_DT data table is not loaded."));
-		return;
-	}
+	ShopCurrencyButtonProxies.Empty();
 
 	UClass* SingleImageButtonClass = LoadClass<UUserWidget>(nullptr, TEXT("/Game/WBP_SingleImageButton.WBP_SingleImageButton_C"));
 	if (!SingleImageButtonClass)
@@ -655,10 +827,19 @@ void UCoreMenu::PopulateShopGrid()
 	}
 
 	constexpr int32 NumColumns = 4;
-	constexpr float ShopItemSlotSize = 256.f;
+	constexpr float ShopItemSlotSize = 128.f;
+	constexpr float ShopCurrencySlotSize = 64.f;
 	int32 Index = 0;
 
-	for (const FName& RowName : CurrentShopItems)
+	// A missing BaseItem_DT only skips the item listings; the basic currency row below still populates.
+	const TArray<FName> NoShopItems;
+	if (!ItemDataTable)
+	{
+		UE_LOG(LogTemp, Error, TEXT("BaseItem_DT data table is not loaded."));
+	}
+	const TArray<FName>& ShopItemRowNames = ItemDataTable ? CurrentShopItems : NoShopItems;
+
+	for (const FName& RowName : ShopItemRowNames)
 	{
 		const FBaseItemStruct* ItemRow = ItemDataTable->FindRow<FBaseItemStruct>(RowName, TEXT("CoreMenu::PopulateShopGrid"));
 		if (!ItemRow)
@@ -714,6 +895,7 @@ void UCoreMenu::PopulateShopGrid()
 			continue;
 		}
 
+		RemoveSingleImageButtonPadding(ShopItemWidget);
 		ItemSlotBox->AddChild(ShopItemWidget);
 
 		UShopItemButtonProxy* Proxy = NewObject<UShopItemButtonProxy>(this);
@@ -729,6 +911,97 @@ void UCoreMenu::PopulateShopGrid()
 
 		++Index;
 	}
+
+	// Basic currencies always start on their own row below the items. They're rebuilt from Currency_DT
+	// on every repopulation (not from CurrentShopItems), so buying one never removes it.
+	const int32 CurrencyStartRow = (Index + NumColumns - 1) / NumColumns;
+	PopulateShopCurrencyRow(SingleImageButtonClass, CurrencyStartRow, NumColumns, ShopCurrencySlotSize);
+}
+
+void UCoreMenu::PopulateShopCurrencyRow(UClass* SingleImageButtonClass, int32 StartRow, int32 NumColumns, float SlotSize)
+{
+	if (!CurrencyDataTable)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Currency_DT data table is not loaded."));
+		return;
+	}
+
+	int32 Index = 0;
+
+	for (const FName& RowName : CurrencyDataTable->GetRowNames())
+	{
+		const FCurrencyStruct* CurrencyRow = CurrencyDataTable->FindRow<FCurrencyStruct>(RowName, TEXT("CoreMenu::PopulateShopCurrencyRow"));
+		if (!CurrencyRow || CurrencyRow->BaseCurrencyType != EBaseCurrencyType::Basic)
+		{
+			continue;
+		}
+
+		UUserWidget* CurrencyWidget = CreateWidget<UUserWidget>(this, SingleImageButtonClass);
+		USizeBox* CurrencySlotBox = WidgetTree->ConstructWidget<USizeBox>(USizeBox::StaticClass());
+		if (!CurrencyWidget || !CurrencySlotBox)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed to construct WBP_SingleImageButton/SizeBox for shop currency."));
+			continue;
+		}
+
+		UButton* InnerButton = GetSingleImageButton(CurrencyWidget);
+		if (!InnerButton)
+		{
+			continue;
+		}
+
+		// UUniformGridPanel sizes every cell to its largest child, so the cell itself stays item-sized;
+		// the SizeBox keeps the currency icon at SlotSize within it (centered below).
+		CurrencySlotBox->SetWidthOverride(SlotSize);
+		CurrencySlotBox->SetHeightOverride(SlotSize);
+		RemoveSingleImageButtonPadding(CurrencyWidget);
+		CurrencySlotBox->AddChild(CurrencyWidget);
+
+		if (UImage* Icon = GetSingleImageButtonIcon(CurrencyWidget))
+		{
+			LoadCurrencyIcon(Icon, RowName);
+			Icon->SetDesiredSizeOverride(FVector2D(SlotSize, SlotSize));
+		}
+
+		UCurrencyButtonProxy* Proxy = NewObject<UCurrencyButtonProxy>(this);
+		Proxy->RowName = RowName;
+		Proxy->bIsShopListing = true;
+		Proxy->OwningMenu = this;
+		ShopCurrencyButtonProxies.Add(Proxy);
+		InnerButton->OnClicked.AddDynamic(Proxy, &UCurrencyButtonProxy::HandleClicked);
+
+		if (UUniformGridSlot* GridSlot = ShopUniGrid->AddChildToUniformGrid(CurrencySlotBox, StartRow + Index / NumColumns, Index % NumColumns))
+		{
+			GridSlot->SetHorizontalAlignment(HAlign_Center);
+			GridSlot->SetVerticalAlignment(VAlign_Center);
+		}
+
+		++Index;
+	}
+}
+
+void UCoreMenu::OnShopCurrencyButtonClicked(FName RowName)
+{
+	if (!CurrencyDataTable)
+	{
+		return;
+	}
+
+	const FCurrencyStruct* CurrencyRow = CurrencyDataTable->FindRow<FCurrencyStruct>(RowName, TEXT("CoreMenu::OnShopCurrencyButtonClicked"));
+	if (!CurrencyRow)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No Currency_DT row found for RowName: %s"), *RowName.ToString());
+		return;
+	}
+
+	SelectedShopCurrencyId = CurrencyRow->CurrencyId.ToString();
+	UE_LOG(LogTemp, Warning, TEXT("Shop currency button clicked for CurrencyId: %s"), *SelectedShopCurrencyId);
+
+	SetActiveItemText(FString::Printf(
+		TEXT("%s\n%s\nCost: %d gold"),
+		*CurrencyRow->CurrencyName.ToString(),
+		*CurrencyRow->CurrencyDescription.ToString(),
+		BasicCurrencyShopCost));
 }
 
 void UCoreMenu::RefreshShopGrid()
@@ -765,6 +1038,7 @@ void UCoreMenu::OnShopItemButtonClicked(FString ItemId, FString ItemUUID)
 	UE_LOG(LogTemp, Warning, TEXT("Shop item button clicked for ItemId: %s (UUID: %s)"), *ItemId, *ItemUUID);
 	SelectItemData(FText::FromString(ItemId));
 	SelectedItemUUID = ItemUUID;
+	SelectedShopCurrencyId.Empty();
 
 	// Lets listeners (e.g. ItemHandler) cache this item's base stats and display them as the
 	// active item, matching the stat breakdown shown for a stash selection or randomize.
