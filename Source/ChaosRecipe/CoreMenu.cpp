@@ -13,6 +13,8 @@
 #include "Components/UniformGridSlot.h"
 #include "Components/PanelWidget.h"
 #include "Components/SizeBox.h"
+#include "Components/Overlay.h"
+#include "Components/Border.h"
 #include "Components/ButtonSlot.h"
 #include "Components/OverlaySlot.h"
 #include "Components/SizeBoxSlot.h"
@@ -183,6 +185,12 @@ void UCoreMenu::NativeConstruct()
 	UpdateSwordCount(PlayerSwordCount);
 
 	RemoveSingleImageButtonPadding(ActiveItemRollButton);
+	// No currency is selected yet, so the icon has no texture and would render as a plain white box.
+	// Hidden (not Collapsed) keeps the button's layout size; LoadCurrencyIcon reveals it once a brush is set.
+	if (UImage* RollIcon = GetSingleImageButtonIcon(ActiveItemRollButton))
+	{
+		RollIcon->SetVisibility(ESlateVisibility::Hidden);
+	}
 	if (UButton* RollButton = GetSingleImageButton(ActiveItemRollButton))
 	{
 		RollButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeItemButtonClicked);
@@ -607,6 +615,7 @@ void UCoreMenu::PopulateCurrencyGrids()
 	InscriptionUniGrid->SetSlotPadding(FMargin(2.f));
 	GlyphUniGrid->SetSlotPadding(FMargin(2.f));
 	CurrencyButtonProxies.Empty();
+	CurrencyCountTextBlocks.Empty();
 
 	if (!CurrencyDataTable)
 	{
@@ -653,9 +662,11 @@ void UCoreMenu::PopulateCurrencyGrids()
 
 		UUserWidget* CurrencyWidget = CreateWidget<UUserWidget>(this, SingleImageButtonClass);
 		USizeBox* IconSlotBox = WidgetTree->ConstructWidget<USizeBox>(USizeBox::StaticClass());
-		if (!CurrencyWidget || !IconSlotBox)
+		UOverlay* IconOverlay = WidgetTree->ConstructWidget<UOverlay>(UOverlay::StaticClass());
+		UTextBlock* CountText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
+		if (!CurrencyWidget || !IconSlotBox || !IconOverlay || !CountText)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Failed to construct WBP_SingleImageButton/SizeBox for currency slot."));
+			UE_LOG(LogTemp, Error, TEXT("Failed to construct WBP_SingleImageButton/SizeBox/Overlay/TextBlock for currency slot."));
 			continue;
 		}
 
@@ -675,13 +686,39 @@ void UCoreMenu::PopulateCurrencyGrids()
 		IconSlotBox->SetWidthOverride(CurrencyIconSize);
 		IconSlotBox->SetHeightOverride(CurrencyIconSize);
 		RemoveSingleImageButtonPadding(CurrencyWidget);
-		IconSlotBox->AddChild(CurrencyWidget);
+		IconSlotBox->AddChild(IconOverlay);
+
+		// Overlay layers the stack count over the button's bottom-right corner. The text ignores hit
+		// testing so clicks still reach the button underneath.
+		if (UOverlaySlot* ButtonSlot = IconOverlay->AddChildToOverlay(CurrencyWidget))
+		{
+			ButtonSlot->SetHorizontalAlignment(HAlign_Fill);
+			ButtonSlot->SetVerticalAlignment(VAlign_Fill);
+		}
+
+		FSlateFontInfo CountFont = CountText->GetFont();
+		CountFont.Size = CurrencyCountFontSize;
+		CountText->SetFont(CountFont);
+		CountText->SetShadowOffset(FVector2D(1.f, 1.f));
+		CountText->SetShadowColorAndOpacity(FLinearColor::Black);
+		CountText->SetVisibility(ESlateVisibility::HitTestInvisible);
+		if (UOverlaySlot* TextSlot = IconOverlay->AddChildToOverlay(CountText))
+		{
+			TextSlot->SetHorizontalAlignment(HAlign_Right);
+			TextSlot->SetVerticalAlignment(VAlign_Bottom);
+			TextSlot->SetPadding(FMargin(0.f, 0.f, 3.f, 1.f));
+		}
+
+		const FString CurrencyId = CurrencyRow->CurrencyId.ToString();
+		CurrencyCountTextBlocks.Add(CurrencyId, CountText);
+		UpdateCurrencyCountText(CurrencyId);
 
 		UCurrencyButtonProxy* Proxy = NewObject<UCurrencyButtonProxy>(this);
 		Proxy->RowName = RowName;
 		Proxy->OwningMenu = this;
 		CurrencyButtonProxies.Add(Proxy);
 		InnerButton->OnClicked.AddDynamic(Proxy, &UCurrencyButtonProxy::HandleClicked);
+		InnerButton->SetToolTip(CreateCurrencyToolTip(RowName));
 
 		TargetGrid->AddChildToUniformGrid(IconSlotBox, *TargetIndex / CurrencyGridColumns, *TargetIndex % CurrencyGridColumns);
 		++(*TargetIndex);
@@ -730,6 +767,59 @@ void UCoreMenu::OnCurrencyButtonClicked(FName RowName)
 		return;
 	}
 	LoadCurrencyIcon(GetSingleImageButtonIcon(ActiveItemRollButton), RowName);
+	if (UButton* RollButton = GetSingleImageButton(ActiveItemRollButton))
+	{
+		RollButton->SetToolTip(CreateCurrencyToolTip(RowName));
+	}
+}
+
+UWidget* UCoreMenu::CreateCurrencyToolTip(const FName& RowName)
+{
+	if (!CurrencyDataTable)
+	{
+		return nullptr;
+	}
+
+	const FCurrencyStruct* CurrencyRow = CurrencyDataTable->FindRow<FCurrencyStruct>(RowName, TEXT("CoreMenu::CreateCurrencyToolTip"));
+	if (!CurrencyRow)
+	{
+		return nullptr;
+	}
+
+	UBorder* Background = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass());
+	UVerticalBox* Lines = WidgetTree->ConstructWidget<UVerticalBox>(UVerticalBox::StaticClass());
+	UTextBlock* NameText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
+	UTextBlock* DescriptionText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
+	if (!Background || !Lines || !NameText || !DescriptionText)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to construct currency tooltip widgets."));
+		return nullptr;
+	}
+
+	Background->SetBrushColor(FLinearColor(0.02f, 0.02f, 0.02f, 0.92f));
+	Background->SetPadding(FMargin(8.f));
+	Background->SetContent(Lines);
+
+	FSlateFontInfo NameFont = NameText->GetFont();
+	NameFont.Size = CurrencyToolTipNameFontSize;
+	NameFont.TypefaceFontName = TEXT("Bold");
+	NameText->SetFont(NameFont);
+	NameText->SetText(CurrencyRow->CurrencyName);
+	Lines->AddChildToVerticalBox(NameText);
+
+	FSlateFontInfo DescriptionFont = DescriptionText->GetFont();
+	DescriptionFont.Size = CurrencyToolTipDescriptionFontSize;
+	DescriptionText->SetFont(DescriptionFont);
+	DescriptionText->SetColorAndOpacity(FSlateColor(FLinearColor(0.8f, 0.8f, 0.8f)));
+	DescriptionText->SetText(CurrencyRow->CurrencyDescription);
+	// A tooltip has no width constraint of its own, so wrap at a fixed width instead of auto-wrapping.
+	DescriptionText->SetWrapTextAt(CurrencyToolTipWrapWidth);
+	if (UVerticalBoxSlot* DescriptionSlot = Lines->AddChildToVerticalBox(DescriptionText))
+	{
+		DescriptionSlot->SetPadding(FMargin(0.f, 4.f, 0.f, 0.f));
+	}
+
+	return Background;
 }
 
 void UCoreMenu::LoadCurrencyIcon(UImage* IconImage, const FName& RowName)
@@ -746,8 +836,6 @@ void UCoreMenu::LoadCurrencyIcon(UImage* IconImage, const FName& RowName)
 		return;
 	}
 
-	IconImage->SetToolTipText(CurrencyRow->CurrencyName);
-
 	if (!CurrencyRow->CurrencyAssetData.CurrencyIcon)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No CurrencyIcon set for currency: %s"), *CurrencyRow->CurrencyId.ToString());
@@ -756,6 +844,30 @@ void UCoreMenu::LoadCurrencyIcon(UImage* IconImage, const FName& RowName)
 
 	IconImage->SetBrushFromTexture(CurrencyRow->CurrencyAssetData.CurrencyIcon);
 	IconImage->SetDesiredSizeOverride(FVector2D(CurrencyIconSize, CurrencyIconSize));
+	// Not hit-testable so clicks still reach the owning button.
+	IconImage->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+}
+
+void UCoreMenu::SetCurrencyStackCounts(const TMap<FString, int32>& StackCounts)
+{
+	CurrencyStackCounts = StackCounts;
+
+	for (const TPair<FString, TObjectPtr<UTextBlock>>& Entry : CurrencyCountTextBlocks)
+	{
+		UpdateCurrencyCountText(Entry.Key);
+	}
+}
+
+void UCoreMenu::UpdateCurrencyCountText(const FString& CurrencyId)
+{
+	const TObjectPtr<UTextBlock>* CountText = CurrencyCountTextBlocks.Find(CurrencyId);
+	if (!CountText || !*CountText)
+	{
+		return;
+	}
+
+	const int32* Count = CurrencyStackCounts.Find(CurrencyId);
+	(*CountText)->SetText(FText::AsNumber(Count ? *Count : 0));
 }
 
 void UShopItemButtonProxy::HandleClicked()
@@ -792,7 +904,7 @@ void UCoreMenu::OnShopButtonClicked()
 		SetPanelAndChildrenVisibility(PlayerStashHorizBox, ESlateVisibility::Hidden);
 	}
 
-	UpdatePanelVisibility({ ActiveItemImageHorizBox }, ESlateVisibility::Hidden);
+	RefreshActiveItemDisplay();
 
 	if (bShouldShow)
 	{
@@ -817,7 +929,6 @@ void UCoreMenu::PopulateShopGrid()
 	ShopUniGrid->ClearChildren();
 	ShopUniGrid->SetSlotPadding(FMargin(4.f));
 	ShopItemButtonProxies.Empty();
-	ShopCurrencyButtonProxies.Empty();
 
 	UClass* SingleImageButtonClass = LoadClass<UUserWidget>(nullptr, TEXT("/Game/WBP_SingleImageButton.WBP_SingleImageButton_C"));
 	if (!SingleImageButtonClass)
@@ -828,6 +939,7 @@ void UCoreMenu::PopulateShopGrid()
 
 	constexpr int32 NumColumns = 4;
 	constexpr float ShopItemSlotSize = 128.f;
+	constexpr int32 ShopCurrencyNumColumns = 8;
 	constexpr float ShopCurrencySlotSize = 64.f;
 	int32 Index = 0;
 
@@ -912,14 +1024,23 @@ void UCoreMenu::PopulateShopGrid()
 		++Index;
 	}
 
-	// Basic currencies always start on their own row below the items. They're rebuilt from Currency_DT
-	// on every repopulation (not from CurrentShopItems), so buying one never removes it.
-	const int32 CurrencyStartRow = (Index + NumColumns - 1) / NumColumns;
-	PopulateShopCurrencyRow(SingleImageButtonClass, CurrencyStartRow, NumColumns, ShopCurrencySlotSize);
+	// Basic currencies are rebuilt from Currency_DT on every repopulation (not from CurrentShopItems),
+	// so buying one never removes it.
+	PopulateShopCurrencyGrid(SingleImageButtonClass, ShopCurrencyNumColumns, ShopCurrencySlotSize);
 }
 
-void UCoreMenu::PopulateShopCurrencyRow(UClass* SingleImageButtonClass, int32 StartRow, int32 NumColumns, float SlotSize)
+void UCoreMenu::PopulateShopCurrencyGrid(UClass* SingleImageButtonClass, int32 NumColumns, float SlotSize)
 {
+	if (!ShopCurrencyUniGrid)
+	{
+		UE_LOG(LogTemp, Error, TEXT("ShopCurrencyUniGrid is null or not found!"));
+		return;
+	}
+
+	ShopCurrencyUniGrid->ClearChildren();
+	ShopCurrencyUniGrid->SetSlotPadding(FMargin(4.f));
+	ShopCurrencyButtonProxies.Empty();
+
 	if (!CurrencyDataTable)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Currency_DT data table is not loaded."));
@@ -930,7 +1051,7 @@ void UCoreMenu::PopulateShopCurrencyRow(UClass* SingleImageButtonClass, int32 St
 
 	for (const FName& RowName : CurrencyDataTable->GetRowNames())
 	{
-		const FCurrencyStruct* CurrencyRow = CurrencyDataTable->FindRow<FCurrencyStruct>(RowName, TEXT("CoreMenu::PopulateShopCurrencyRow"));
+		const FCurrencyStruct* CurrencyRow = CurrencyDataTable->FindRow<FCurrencyStruct>(RowName, TEXT("CoreMenu::PopulateShopCurrencyGrid"));
 		if (!CurrencyRow || CurrencyRow->BaseCurrencyType != EBaseCurrencyType::Basic)
 		{
 			continue;
@@ -950,8 +1071,8 @@ void UCoreMenu::PopulateShopCurrencyRow(UClass* SingleImageButtonClass, int32 St
 			continue;
 		}
 
-		// UUniformGridPanel sizes every cell to its largest child, so the cell itself stays item-sized;
-		// the SizeBox keeps the currency icon at SlotSize within it (centered below).
+		// Same reasoning as the other grids: forcing the cell size on a SizeBox keeps every uniform grid
+		// cell exactly SlotSize regardless of the source texture's resolution.
 		CurrencySlotBox->SetWidthOverride(SlotSize);
 		CurrencySlotBox->SetHeightOverride(SlotSize);
 		RemoveSingleImageButtonPadding(CurrencyWidget);
@@ -969,12 +1090,9 @@ void UCoreMenu::PopulateShopCurrencyRow(UClass* SingleImageButtonClass, int32 St
 		Proxy->OwningMenu = this;
 		ShopCurrencyButtonProxies.Add(Proxy);
 		InnerButton->OnClicked.AddDynamic(Proxy, &UCurrencyButtonProxy::HandleClicked);
+		InnerButton->SetToolTip(CreateCurrencyToolTip(RowName));
 
-		if (UUniformGridSlot* GridSlot = ShopUniGrid->AddChildToUniformGrid(CurrencySlotBox, StartRow + Index / NumColumns, Index % NumColumns))
-		{
-			GridSlot->SetHorizontalAlignment(HAlign_Center);
-			GridSlot->SetVerticalAlignment(VAlign_Center);
-		}
+		ShopCurrencyUniGrid->AddChildToUniformGrid(CurrencySlotBox, Index / NumColumns, Index % NumColumns);
 
 		++Index;
 	}
@@ -1071,7 +1189,7 @@ void UCoreMenu::OnStashSelectButtonClicked()
 {
 	UE_LOG(LogTemp, Warning, TEXT("StashSelectButton Clicked."));
 	UpdatePanelVisibility({ ShopWindowBox, PlayerStashHorizBox }, ESlateVisibility::Hidden);
-	ShowActiveItemImage();
+	RefreshActiveItemDisplay();
 }
 
 void UCoreMenu::OnResetGameButtonClicked()
@@ -1099,6 +1217,21 @@ void UCoreMenu::UpdatePanelVisibility(const TArray<UPanelWidget*>& Panels, ESlat
 	for (UPanelWidget* Panel : Panels)
 	{
 		SetPanelAndChildrenVisibility(Panel, NewVisibility);
+	}
+}
+
+void UCoreMenu::RefreshActiveItemDisplay()
+{
+	const bool bShopOpen = ShopWindowBox && ShopWindowBox->GetVisibility() == ESlateVisibility::Visible;
+	const bool bStashOpen = PlayerStashHorizBox && PlayerStashHorizBox->GetVisibility() == ESlateVisibility::Visible;
+
+	if (!bShopOpen && !bStashOpen && bHasSelectedItemData)
+	{
+		ShowActiveItemImage();
+	}
+	else
+	{
+		UpdatePanelVisibility({ ActiveItemImageHorizBox }, ESlateVisibility::Hidden);
 	}
 }
 

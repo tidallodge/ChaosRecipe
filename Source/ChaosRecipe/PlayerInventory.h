@@ -91,6 +91,9 @@ protected:
 	// Pushes PlayerGoldCount to the bound CoreMenu's PlayerGoldTextBox, if a CoreMenu has been bound.
 	void UpdatePlayerGoldDisplay() const;
 
+	// Pushes CurrencyStackCounts to the bound CoreMenu's currency grid count text, if a CoreMenu has been bound.
+	void UpdateCurrencyStackDisplay() const;
+
 	static constexpr int32 DefaultPlayerGoldCount = 250;
 
 	int32 PlayerGoldCount = DefaultPlayerGoldCount;

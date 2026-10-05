@@ -162,6 +162,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Menu Text")
 	void SetPlayerGoldText(int32 NewGoldCount);
 
+	// Caches the player's currency stack counts (CurrencyId -> count) and updates the count text shown
+	// over each icon in InscriptionUniGrid/GlyphUniGrid. Called by PlayerInventory whenever a stack changes.
+	UFUNCTION(BlueprintCallable, Category = "Menu Text")
+	void SetCurrencyStackCounts(const TMap<FString, int32>& StackCounts);
+
 	// Sets the text shown in WarningsHorizBox's WarningsTextBox.
 	UFUNCTION(BlueprintCallable, Category = "Menu Text")
 	void SetWarningText(const FString& NewMessage);
@@ -220,6 +225,9 @@ protected:
 	UPanelWidget* ShopWindowBox;
 	UPROPERTY(meta = (BindWidget))
 	UUniformGridPanel* ShopUniGrid;
+	// Basic currency listings in the shop; filled by PopulateShopCurrencyGrid
+	UPROPERTY(meta = (BindWidget))
+	UUniformGridPanel* ShopCurrencyUniGrid;
 	UPROPERTY(meta = (BindWidget))
 	UHorizontalBox* ShopWindowHeader;
 	UPROPERTY(meta = (BindWidget))
@@ -302,16 +310,24 @@ protected:
 	// Click handler for a basic currency listing in ShopUniGrid; selects it so the next Buy purchases it
 	UFUNCTION()
 	void OnShopCurrencyButtonClicked(FName RowName);
-	// Appends a button for every Basic Currency_DT row to ShopUniGrid, starting on a fresh row at StartRow
-	void PopulateShopCurrencyRow(UClass* SingleImageButtonClass, int32 StartRow, int32 NumColumns, float SlotSize);
+	// Clears and repopulates ShopCurrencyUniGrid with a button for every Basic Currency_DT row
+	void PopulateShopCurrencyGrid(UClass* SingleImageButtonClass, int32 NumColumns, float SlotSize);
 	// Sets IconImage's brush to the CurrencyIcon of the Currency_DT row named RowName
 	void LoadCurrencyIcon(UImage* IconImage, const FName& RowName);
+	// Builds the hover flyout for a currency button: CurrencyName on top, CurrencyDescription underneath.
+	// Returns null if the Currency_DT row can't be found.
+	UWidget* CreateCurrencyToolTip(const FName& RowName);
+	// Sets the count text over CurrencyId's icon in InscriptionUniGrid/GlyphUniGrid from CurrencyStackCounts
+	void UpdateCurrencyCountText(const FString& CurrencyId);
 	// Sets the visibility of a panel widget and all of its children, recursively
 	void SetPanelAndChildrenVisibility(UPanelWidget* Panel, ESlateVisibility NewVisibility);
 	// Sets the visibility of each given panel (and its children)
 	void UpdatePanelVisibility(const TArray<UPanelWidget*>& Panels, ESlateVisibility NewVisibility);
 	// Shows ActiveItemImageHorizBox (and its children) and sets ActiveItemImage to the selected item's icon
 	void ShowActiveItemImage();
+	// Shows the active item display when neither ShopWindowBox nor PlayerStashHorizBox is visible and an
+	// item is selected; hides it otherwise. Call after changing either panel's visibility.
+	void RefreshActiveItemDisplay();
 
 	UFUNCTION()
 	void ValidateButton(UButton* InputButton);
@@ -393,6 +409,29 @@ protected:
 	// Keeps the per-button proxies alive (and their click bindings valid) between shop grid repopulations.
 	UPROPERTY()
 	TArray<TObjectPtr<UCurrencyButtonProxy>> ShopCurrencyButtonProxies;
+
+	// Last stack counts pushed by PlayerInventory (CurrencyId -> count), kept so PopulateCurrencyGrids can
+	// show them on rebuild.
+	UPROPERTY()
+	TMap<FString, int32> CurrencyStackCounts;
+
+	// CurrencyId -> the count text over that currency's icon in InscriptionUniGrid/GlyphUniGrid.
+	UPROPERTY()
+	TMap<FString, TObjectPtr<UTextBlock>> CurrencyCountTextBlocks;
+
+	// Font size of the count text over each currency icon.
+	UPROPERTY()
+	int32 CurrencyCountFontSize = 12;
+
+	// Font sizes and wrap width (px) of the currency hover flyout built by CreateCurrencyToolTip.
+	UPROPERTY()
+	int32 CurrencyToolTipNameFontSize = 14;
+
+	UPROPERTY()
+	int32 CurrencyToolTipDescriptionFontSize = 11;
+
+	UPROPERTY()
+	float CurrencyToolTipWrapWidth = 280.f;
 
 	// Clears WarningsTextBox; bound to WarningTextTimerHandle by SetWarningText, never called directly
 	// so that clearing the text never re-arms the timer.

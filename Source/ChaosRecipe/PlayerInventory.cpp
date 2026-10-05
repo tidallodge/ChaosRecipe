@@ -33,9 +33,10 @@ void UPlayerInventory::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
 	CoreMenu->OnResetGameButtonClickedEvent.AddDynamic(this, &UPlayerInventory::OnResetGame);
 	CoreMenu->OnBuyCurrencyEvent.AddDynamic(this, &UPlayerInventory::HandleCurrencyBought);
 
-	// Reflects the gold count loaded from SavedCurrency.json (in the constructor) now that a
-	// CoreMenu is available to display it.
+	// Reflects the gold count and currency stacks loaded from SavedCurrency.json (in the constructor)
+	// now that a CoreMenu is available to display them.
 	UpdatePlayerGoldDisplay();
+	UpdateCurrencyStackDisplay();
 }
 
 void UPlayerInventory::BindToItemHandlerEvents(UItemHandler* ItemHandler)
@@ -126,6 +127,7 @@ void UPlayerInventory::OnResetGame()
 	CurrencyManager->SaveCurrency(PlayerGoldCount);
 	CurrencyManager->SaveCurrencyStacks(CurrencyStackCounts);
 	UpdatePlayerGoldDisplay();
+	UpdateCurrencyStackDisplay();
 
 	UE_LOG(LogTemp, Warning, TEXT("PlayerInventory: Reset - PlayerGoldCount back to default (%d)"), PlayerGoldCount);
 }
@@ -154,6 +156,7 @@ void UPlayerInventory::AdjustCurrencyStackCount(const FString& CurrencyId, int32
 	Count = FMath::Max(0, Count + Delta);
 
 	CurrencyManager->SaveCurrencyStacks(CurrencyStackCounts);
+	UpdateCurrencyStackDisplay();
 }
 
 int32 UPlayerInventory::GetCurrencyStackCount(const FString& CurrencyId) const
@@ -175,5 +178,13 @@ void UPlayerInventory::UpdatePlayerGoldDisplay() const
 	if (BoundCoreMenu)
 	{
 		BoundCoreMenu->SetPlayerGoldText(PlayerGoldCount);
+	}
+}
+
+void UPlayerInventory::UpdateCurrencyStackDisplay() const
+{
+	if (BoundCoreMenu)
+	{
+		BoundCoreMenu->SetCurrencyStackCounts(CurrencyStackCounts);
 	}
 }
