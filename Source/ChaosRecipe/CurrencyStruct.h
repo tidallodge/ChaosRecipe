@@ -67,6 +67,18 @@ struct FAffectedAffixes
 };
 
 USTRUCT(BlueprintType)
+struct FCurrencyAssetData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	UTexture2D* CurrencyIcon;
+
+	UPROPERTY(EditAnywhere)
+	UStaticMesh* CurrencyStaticMesh;
+};
+
+USTRUCT(BlueprintType)
 struct FCurrencyStruct : public FTableRowBase
 {
 	GENERATED_BODY()
@@ -94,4 +106,7 @@ struct FCurrencyStruct : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Currency")
     FExoticCurrencyMethods ExoticCurrencyMethods;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	FCurrencyAssetData CurrencyAssetData;
 };

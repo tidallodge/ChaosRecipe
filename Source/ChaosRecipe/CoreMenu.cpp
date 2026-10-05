@@ -19,6 +19,7 @@
 #include "Engine/Engine.h"
 #include "Engine/Texture2D.h"
 #include "BaseItemStruct.h"
+#include "CurrencyStruct.h"
 #include "ItemInstanceManager.h"
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonReader.h"
@@ -96,6 +97,7 @@ void UCoreMenu::NativeConstruct()
 	UpdateSwordCount(PlayerSwordCount);
 
 	PopulatePlayerStash();
+	PopulateCurrencyGrids();
 
 	RandomizeShopItems();
 	PopulateShopGrid();
@@ -487,6 +489,102 @@ void UCoreMenu::PopulatePlayerStash()
 	{
 		StashSelectButton->SetVisibility(Index > 0 ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	}
+}
+
+void UCoreMenu::PopulateCurrencyGrids()
+{
+	if (!InscriptionUniGrid || !GlyphUniGrid)
+	{
+		UE_LOG(LogTemp, Error, TEXT("InscriptionUniGrid or GlyphUniGrid is null or not found!"));
+		return;
+	}
+
+	InscriptionUniGrid->ClearChildren();
+	GlyphUniGrid->ClearChildren();
+	InscriptionUniGrid->SetSlotPadding(FMargin(2.f));
+	GlyphUniGrid->SetSlotPadding(FMargin(2.f));
+
+	if (!CurrencyDataTable)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Currency_DT data table is not loaded."));
+		return;
+	}
+
+	int32 InscriptionIndex = 0;
+	int32 GlyphIndex = 0;
+
+	for (const FName& RowName : CurrencyDataTable->GetRowNames())
+	{
+		const FCurrencyStruct* CurrencyRow = CurrencyDataTable->FindRow<FCurrencyStruct>(RowName, TEXT("CoreMenu::PopulateCurrencyGrids"));
+		if (!CurrencyRow)
+		{
+			continue;
+		}
+
+		// The CurrencyName decides which grid this currency belongs in.
+		UUniformGridPanel* TargetGrid = nullptr;
+		int32* TargetIndex = nullptr;
+		const FString CurrencyName = CurrencyRow->CurrencyName.ToString();
+		if (CurrencyName.Contains(TEXT("Inscription"), ESearchCase::IgnoreCase))
+		{
+			TargetGrid = InscriptionUniGrid;
+			TargetIndex = &InscriptionIndex;
+		}
+		else if (CurrencyName.Contains(TEXT("Glyph"), ESearchCase::IgnoreCase))
+		{
+			TargetGrid = GlyphUniGrid;
+			TargetIndex = &GlyphIndex;
+		}
+		else
+		{
+			continue;
+		}
+
+		USizeBox* IconSlotBox = WidgetTree->ConstructWidget<USizeBox>(USizeBox::StaticClass());
+		UImage* IconImage = WidgetTree->ConstructWidget<UImage>(UImage::StaticClass());
+		if (!IconSlotBox || !IconImage)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed to construct SizeBox/Image for currency slot."));
+			continue;
+		}
+
+		// Same reasoning as the shop/stash grids: forcing the cell size on a SizeBox keeps every
+		// uniform grid cell exactly CurrencyIconSize regardless of the source texture's resolution.
+		IconSlotBox->SetWidthOverride(CurrencyIconSize);
+		IconSlotBox->SetHeightOverride(CurrencyIconSize);
+		IconSlotBox->AddChild(IconImage);
+
+		TargetGrid->AddChildToUniformGrid(IconSlotBox, *TargetIndex / CurrencyGridColumns, *TargetIndex % CurrencyGridColumns);
+		++(*TargetIndex);
+
+		LoadCurrencyIcon(IconImage, RowName);
+	}
+}
+
+void UCoreMenu::LoadCurrencyIcon(UImage* IconImage, const FName& RowName)
+{
+	if (!IconImage || !CurrencyDataTable)
+	{
+		return;
+	}
+
+	const FCurrencyStruct* CurrencyRow = CurrencyDataTable->FindRow<FCurrencyStruct>(RowName, TEXT("CoreMenu::LoadCurrencyIcon"));
+	if (!CurrencyRow)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No Currency_DT row found for RowName: %s"), *RowName.ToString());
+		return;
+	}
+
+	IconImage->SetToolTipText(CurrencyRow->CurrencyName);
+
+	if (!CurrencyRow->CurrencyAssetData.CurrencyIcon)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No CurrencyIcon set for currency: %s"), *CurrencyRow->CurrencyId.ToString());
+		return;
+	}
+
+	IconImage->SetBrushFromTexture(CurrencyRow->CurrencyAssetData.CurrencyIcon);
+	IconImage->SetDesiredSizeOverride(FVector2D(CurrencyIconSize, CurrencyIconSize));
 }
 
 void UShopItemButtonProxy::HandleClicked()

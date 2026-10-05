@@ -216,6 +216,11 @@ protected:
 	UHorizontalBox* WarningsHorizBox;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* WarningsTextBox;
+	// Nested in CurrencyVertBox; filled by PopulateCurrencyGrids
+	UPROPERTY(meta = (BindWidget))
+	UUniformGridPanel* InscriptionUniGrid;
+	UPROPERTY(meta = (BindWidget))
+	UUniformGridPanel* GlyphUniGrid;
 
 	// Click handler for SellButton
 	UFUNCTION()
@@ -255,6 +260,11 @@ protected:
 	void PopulateShopGrid();
 	// Clears and repopulates PlayerStashUniGrid with a WBP_SingleImageButton for every saved item (via ItemInstanceManager)
 	void PopulatePlayerStash();
+	// Clears and repopulates InscriptionUniGrid and GlyphUniGrid with a slot for every Currency_DT row
+	// whose CurrencyName contains "Inscription" or "Glyph" respectively
+	void PopulateCurrencyGrids();
+	// Sets IconImage's brush to the CurrencyIcon of the Currency_DT row named RowName
+	void LoadCurrencyIcon(UImage* IconImage, const FName& RowName);
 	// Sets the visibility of a panel widget and all of its children, recursively
 	void SetPanelAndChildrenVisibility(UPanelWidget* Panel, ESlateVisibility NewVisibility);
 	// Sets the visibility of each given panel (and its children)
@@ -270,6 +280,14 @@ protected:
 
 	UPROPERTY()
 	int32 ShopItemCount = 8;
+
+	// Column count for InscriptionUniGrid and GlyphUniGrid; rows grow as needed.
+	UPROPERTY()
+	int32 CurrencyGridColumns = 2;
+
+	// Width/height (px) of each currency icon slot in InscriptionUniGrid and GlyphUniGrid.
+	UPROPERTY()
+	float CurrencyIconSize = 64.f;
 
 	UPROPERTY()
 	int32 ItemDataTableRowCount;
