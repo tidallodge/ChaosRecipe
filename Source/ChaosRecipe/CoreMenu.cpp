@@ -420,24 +420,55 @@ void UCoreMenu::OnSingleLoadItemButtonClicked(FString ItemUUID)
 	ItemObject->TryGetNumberField(TEXT("itemBaseGoldValue"), ItemBaseGoldValue);
 	const double DisplayGoldValue = ItemGoldValue > 0.0 ? ItemGoldValue : ItemBaseGoldValue;
 
-	FString WeaponDamageText;
-	const TSharedPtr<FJsonObject>* WeaponDamageObject;
-	if (ItemObject->TryGetObjectField(TEXT("weaponDamage"), WeaponDamageObject))
+	// Damage is saved by FJsonObjectConverter as per-channel FIntPoints ({"x": min, "y": max}).
+	// Prefer weaponLocalDamage.LocalDamage (base damage with rolled modifiers applied, which is what
+	// ItemHandler shows for a freshly rolled item), falling back to weaponDamage.BaseDamage.
+	auto BuildDamageLinesFromJson = [](const TSharedPtr<FJsonObject>& DamageObject, const TCHAR* FieldPrefix)
 	{
-		for (const TPair<FString, TSharedPtr<FJsonValue>>& DamagePair : (*WeaponDamageObject)->Values)
+		const TCHAR* Channels[][2] = {
+			{ TEXT("Physical"), TEXT("PhysicalDamage") },
+			{ TEXT("Fire"),     TEXT("FireDamage") },
+			{ TEXT("Ice"),      TEXT("IceDamage") },
+			{ TEXT("Electric"), TEXT("ElectricDamage") },
+			{ TEXT("Abyssal"),  TEXT("AbyssalDamage") },
+		};
+
+		FString Text;
+		for (const auto& Channel : Channels)
 		{
-			const TSharedPtr<FJsonObject>* DamageObject;
-			if (DamagePair.Value->TryGetObject(DamageObject))
+			const TSharedPtr<FJsonObject>* RangeObject;
+			if (!DamageObject->TryGetObjectField(FString(FieldPrefix) + Channel[1], RangeObject))
 			{
-				int32 MinDamage = 0;
-				int32 MaxDamage = 0;
-				FString DamageType;
-				(*DamageObject)->TryGetNumberField(TEXT("minDamage"), MinDamage);
-				(*DamageObject)->TryGetNumberField(TEXT("maxDamage"), MaxDamage);
-				(*DamageObject)->TryGetStringField(TEXT("damageType"), DamageType);
-				WeaponDamageText += FString::Printf(TEXT("  %s: %d-%d (%s)\n"), *DamagePair.Key, MinDamage, MaxDamage, *DamageType);
+				continue;
 			}
+
+			int32 MinDamage = 0;
+			int32 MaxDamage = 0;
+			(*RangeObject)->TryGetNumberField(TEXT("x"), MinDamage);
+			(*RangeObject)->TryGetNumberField(TEXT("y"), MaxDamage);
+			if (MinDamage == 0 && MaxDamage == 0)
+			{
+				continue;
+			}
+
+			Text += FString::Printf(TEXT("  %s: %d-%d\n"), Channel[0], MinDamage, MaxDamage);
 		}
+		return Text;
+	};
+
+	FString WeaponDamageText;
+	const TSharedPtr<FJsonObject>* DamageMapObject;
+	const TSharedPtr<FJsonObject>* DamageObject;
+	if (ItemObject->TryGetObjectField(TEXT("weaponLocalDamage"), DamageMapObject)
+		&& (*DamageMapObject)->TryGetObjectField(TEXT("LocalDamage"), DamageObject))
+	{
+		WeaponDamageText = BuildDamageLinesFromJson(*DamageObject, TEXT("local"));
+	}
+	if (WeaponDamageText.IsEmpty()
+		&& ItemObject->TryGetObjectField(TEXT("weaponDamage"), DamageMapObject)
+		&& (*DamageMapObject)->TryGetObjectField(TEXT("BaseDamage"), DamageObject))
+	{
+		WeaponDamageText = BuildDamageLinesFromJson(*DamageObject, TEXT("base"));
 	}
 
 	// Collect implicit/prefix/suffix modifiers (ModifierId -> rolled value).
