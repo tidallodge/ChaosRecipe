@@ -1,6 +1,7 @@
 Completed:
     - base item db completed
     - core menu can read from db
+    - rearranged menu placements
 
 TODO:
     - fill in base item DB
