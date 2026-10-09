@@ -1,0 +1,59 @@
+[
+	{
+		"Name": "Warrior",
+		"MinionClass": "Warrior",
+		"ClassName": "NSLOCTEXT(\"MinionClass_DT [BB0C102B6B4522C2C8B41EC65AAA0F3C]\", \"Warrior_ClassName\", \"Warrior\")",
+		"BaseAttributes":
+		{
+			"Health": 60,
+			"Strength": 14,
+			"Intelligence": 4,
+			"Dexterity": 8
+		},
+		"AttributesPerLevel":
+		{
+			"Health": 12,
+			"Strength": 3,
+			"Intelligence": 1,
+			"Dexterity": 1
+		}
+	},
+	{
+		"Name": "Ranger",
+		"MinionClass": "Ranger",
+		"ClassName": "NSLOCTEXT(\"MinionClass_DT [BB0C102B6B4522C2C8B41EC65AAA0F3C]\", \"Ranger_ClassName\", \"Ranger\")",
+		"BaseAttributes":
+		{
+			"Health": 45,
+			"Strength": 8,
+			"Intelligence": 6,
+			"Dexterity": 14
+		},
+		"AttributesPerLevel":
+		{
+			"Health": 9,
+			"Strength": 1,
+			"Intelligence": 1,
+			"Dexterity": 3
+		}
+	},
+	{
+		"Name": "Mage",
+		"MinionClass": "Mage",
+		"ClassName": "NSLOCTEXT(\"MinionClass_DT [BB0C102B6B4522C2C8B41EC65AAA0F3C]\", \"Mage_ClassName\", \"Mage\")",
+		"BaseAttributes":
+		{
+			"Health": 35,
+			"Strength": 4,
+			"Intelligence": 14,
+			"Dexterity": 8
+		},
+		"AttributesPerLevel":
+		{
+			"Health": 7,
+			"Strength": 1,
+			"Intelligence": 3,
+			"Dexterity": 1
+		}
+	}
+]

@@ -255,6 +255,25 @@ struct FItemModifierReistanceStruct
 };
 
 USTRUCT(BlueprintType)
+struct FItemModifierAttributeStruct
+{
+    GENERATED_BODY()
+
+    // Wearer Stats - like resistances, these aren't baked into the item; whoever equips it applies them (UPlayerMinion)
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attribute Modifier")
+    float Health = 0.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attribute Modifier")
+    float Strength = 0.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attribute Modifier")
+    float Intelligence = 0.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attribute Modifier")
+    float Dexterity = 0.f;
+};
+
+USTRUCT(BlueprintType)
 struct FItemModifierAffectedAttributes
 {
     GENERATED_BODY()
@@ -279,6 +298,9 @@ struct FItemModifierAffectedAttributes
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modified Stats")
     FItemModifierReistanceStruct ResistanceModifier;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modified Stats")
+    FItemModifierAttributeStruct AttributeModifier;
 };
 
 USTRUCT(BlueprintType)
