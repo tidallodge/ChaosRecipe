@@ -82,7 +82,7 @@
 				"Y": 3
 			}
 		},
-		"AttackRate": 1,
+		"AttackRate": 0.8,
 		"Spells": [
 			{
 				"AbilityId": "NSLOCTEXT(\"Enemy_DT [FF67F8B3918D268E602182826EB948FA]\", \"woods_shaman_001_Spells_Index0_AbilityId\", \"firebolt_001\")",
@@ -123,11 +123,11 @@
 			},
 			{
 				"CurrencyId": "add_mod_01",
-				"DropChance": 10,
+				"DropChance": 20,
 				"DropCount":
 				{
 					"X": 1,
-					"Y": 1
+					"Y": 2
 				}
 			}
 		],
