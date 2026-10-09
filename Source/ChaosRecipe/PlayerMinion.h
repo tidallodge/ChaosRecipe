@@ -11,15 +11,13 @@
 #include "ItemHandler.h"
 #include "PlayerMinion.generated.h"
 
-struct FCombatAbilityStruct;
-
 // Broadcast whenever health, max health or overshield changes (hits, equipment, level, restores).
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnMinionHealthChangedEvent, float, CurrentHealth, float, MaxHealth, float, CurrentOvershield);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMinionDiedEvent);
 
 UCLASS()
-class CHAOSRECIPE_API UPlayerMinion : public UObject, public ICombatTarget
+class CHAOSRECIPE_API UPlayerMinion : public UObject, public ICombatant
 {
 	GENERATED_BODY()
 
@@ -67,10 +65,18 @@ public:
 
 	// Builds a hit from Ability and this minion's offense and applies it to Target. Returns an unresolved
 	// result (bResolved=false) if either side is defeated or the minion is below Ability's RequiredLevel.
-	FCombatHitResult UseAbility(const FCombatAbilityStruct& Ability, ICombatTarget* Target);
+	virtual FCombatHitResult UseAbility(const FCombatAbilityStruct& Ability, ICombatTarget* Target) override;
 
 	virtual FCombatHitResult ApplyHit(const FCombatHit& Hit) override;
 	virtual bool IsDefeated() const override;
+
+	virtual FString GetCombatantName() const override { return ClassData.ClassName.ToString(); }
+
+	// Its basic weapon attack, plus every class ability it's high enough level for.
+	virtual TArray<FCombatAbilityStruct> GetBattleAbilities() const override;
+
+	// The equipped weapon's attack rate, or its class's AttackRate with no weapon.
+	virtual float GetBattleAttackRate() const override { return Offense.AttackRate; }
 
 	// Refills health and rolls a fresh overshield pool from equipped armor, e.g. before a fight.
 	UFUNCTION(BlueprintCallable, Category = "Minion|Combat")

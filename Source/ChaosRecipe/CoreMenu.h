@@ -19,6 +19,9 @@ class UHorizontalBox;
 class UUniformGridPanel;
 class UDataTable;
 class UPanelWidget;
+class UProgressBar;
+class UPlayerMinion;
+class UEnemy;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBuyButtonClickedEvent, FString, ItemId, FString, ItemUUID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSellButtonClickedEvent, FString, ItemId, FString, ItemUUID);
@@ -39,6 +42,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnResetGameEvent);
 // (e.g. PlayerInventory) can charge GoldCost and grant one of CurrencyId. Currency listings are never
 // removed from the shop after a purchase.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBuyCurrencyEvent, FString, CurrencyId, int32, GoldCost);
+// Fired when BattlePlayButton in BattleWindow is clicked, so listeners (e.g. BattleManager) can start a battle.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBattlePlayButtonClickedEvent);
 
 class UCoreMenu;
 
@@ -142,6 +147,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnBuyCurrencyEvent OnBuyCurrencyEvent;
 
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnBattlePlayButtonClickedEvent OnBattlePlayButtonClickedEvent;
+
 	UPROPERTY()
 	int32 PlayerSwordCount;
 
@@ -198,6 +206,26 @@ public:
 	// once a purchase has actually succeeded, so a rejected (unaffordable) buy leaves the shop unchanged.
 	UFUNCTION(BlueprintCallable, Category = "Shop")
 	void RemoveItemFromShop(const FString& ItemId);
+
+	// Shows Minion's health in MinionHPBar/MinionHPText and keeps them updated as it changes (hits,
+	// equipment, level, restores) until another minion is selected. Pass null to clear the display.
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void SetSelectedMinion(UPlayerMinion* Minion);
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	UPlayerMinion* GetSelectedMinion() const { return SelectedMinion; }
+
+	// Same as SetSelectedMinion, for EnemyHPBar/EnemyHPText.
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	void SetSelectedEnemy(UEnemy* Enemy);
+
+	UFUNCTION(BlueprintCallable, Category = "Combat")
+	UEnemy* GetSelectedEnemy() const { return SelectedEnemy; }
+
+	// Shows BattleTime (seconds since the battle started) as "M:SS.s" in BattleTimerText, if the widget
+	// blueprint has one. Called by BattleManager every battle tick.
+	UFUNCTION(BlueprintCallable, Category = "Battle")
+	void SetBattleTimerText(float BattleTime);
 
 	UPROPERTY()
 	TArray<FName> ItemDataTableRowNames;
@@ -261,6 +289,21 @@ protected:
 	// active item with that currency (OnRandomizeItemButtonClicked)
 	UPROPERTY(meta = (BindWidget))
 	UUserWidget* ActiveItemRollButton;
+	// Nested in MinionVertBox/EnemyVertBox; driven by the selected minion/enemy (SetSelectedMinion/SetSelectedEnemy)
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* MinionHPBar;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* MinionHPText;
+	UPROPERTY(meta = (BindWidget))
+	UProgressBar* EnemyHPBar;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* EnemyHPText;
+	// Nested in BattleWindow
+	UPROPERTY(meta = (BindWidget))
+	UButton* BattlePlayButton;
+	// Optional: add a Text Block with this name to WBP_CoreMenu to show the running battle time.
+	UPROPERTY(meta = (BindWidgetOptional))
+	UTextBlock* BattleTimerText;
 
 	// Click handler for SellButton
 	UFUNCTION()
@@ -296,6 +339,9 @@ protected:
 	// for listeners like ItemHandler/PlayerInventory) and refreshes the stash and shop grids.
 	UFUNCTION()
 	void OnResetGameButtonClicked();
+	// Click handler for BattlePlayButton; broadcasts OnBattlePlayButtonClickedEvent
+	UFUNCTION()
+	void OnBattlePlayButtonClicked();
 	// Clears and repopulates ShopUniGrid with an item button + icon for every row in BaseItem_DT
 	void PopulateShopGrid();
 	// Clears and repopulates PlayerStashUniGrid with a WBP_SingleImageButton for every saved item (via ItemInstanceManager)
@@ -439,5 +485,49 @@ protected:
 	void ClearWarningText();
 
 	FTimerHandle WarningTextTimerHandle;
+
+	// Bound to the selected minion's/enemy's OnHealthChangedEvent by SetSelectedMinion/SetSelectedEnemy.
+	UFUNCTION()
+	void OnSelectedMinionHealthChanged(float CurrentHealth, float MaxHealth, float CurrentOvershield);
+	UFUNCTION()
+	void OnSelectedEnemyHealthChanged(float CurrentHealth, float MaxHealth, float CurrentOvershield);
+
+	// Sets HPBar and HPText to "Current / Max", with any overshield added to both sides. While there's
+	// overshield the bar uses ShieldedHPBarColor, otherwise UnshieldedBarColor. A MaxHealth of 0 (e.g. a
+	// minion/enemy that hasn't been initialized) clears both instead.
+	void SetHealthDisplay(UProgressBar* HPBar, UTextBlock* HPText, const FLinearColor& UnshieldedBarColor,
+		float CurrentHealth, float MaxHealth, float CurrentOvershield);
+
+	// Empties HPBar and HPText and puts the bar back to UnshieldedBarColor, for when nothing is selected.
+	void ClearHealthDisplay(UProgressBar* HPBar, UTextBlock* HPText, const FLinearColor& UnshieldedBarColor);
+
+	// Fill color for an HP bar while its minion/enemy has overshield left.
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	FLinearColor ShieldedHPBarColor = FLinearColor::Blue;
+
+	// Each HP bar's own fill color (from WBP_CoreMenu, or the override colors below), captured in
+	// NativeConstruct so it can be restored once a shield is gone.
+	UPROPERTY()
+	FLinearColor MinionHPBarDefaultColor;
+
+	UPROPERTY()
+	FLinearColor EnemyHPBarDefaultColor;
+
+	// Off by default so the HP bar fill colors set in WBP_CoreMenu are kept; turn on in the widget's
+	// Class Defaults to have NativeConstruct apply the colors below instead.
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	bool bOverrideHPBarColors = false;
+
+	UPROPERTY(EditAnywhere, Category = "Combat", meta = (EditCondition = "bOverrideHPBarColors"))
+	FLinearColor MinionHPBarColor = FLinearColor::Green;
+
+	UPROPERTY(EditAnywhere, Category = "Combat", meta = (EditCondition = "bOverrideHPBarColors"))
+	FLinearColor EnemyHPBarColor = FLinearColor::Red;
+
+	UPROPERTY()
+	TObjectPtr<UPlayerMinion> SelectedMinion;
+
+	UPROPERTY()
+	TObjectPtr<UEnemy> SelectedEnemy;
 
 };

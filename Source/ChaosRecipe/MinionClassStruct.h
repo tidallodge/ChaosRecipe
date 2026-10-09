@@ -31,4 +31,18 @@ struct FMinionClassStruct : public FTableRowBase
     // Added to BaseAttributes once for every level past 1.
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Minion Class")
     FCombatAttributes AttributesPerLevel;
+
+    // Min-max damage per type for this class's basic attack while it has no weapon equipped. An equipped
+    // weapon's damage replaces this entirely.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Minion Class")
+    TMap<EDamageType, FIntPoint> Damage;
+
+    // Basic attacks per second while no weapon is equipped. An equipped weapon's attack rate replaces this.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Minion Class", meta = (ClampMin = "0.1"))
+    float AttackRate = 1.f;
+
+    // Attacks/spells this class can pick in battle on top of its basic weapon attack, once the minion
+    // reaches each one's RequiredLevel.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Minion Class")
+    TArray<FCombatAbilityStruct> Abilities;
 };

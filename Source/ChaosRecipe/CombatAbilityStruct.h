@@ -65,4 +65,9 @@ struct FCombatAbilityStruct : public FTableRowBase
     // Subtracted from the target's resistances (not physical mitigation) for this ability's hits.
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability")
     float ResistancePenetration = 0.f;
+
+    // Spells only (attacks use the user's attack rate): casts per second. In battle, the caster can't act
+    // again for 1 / CastRate seconds after casting (see CombatMath::GetAbilityCooldown).
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ability", meta = (ClampMin = "0.1"))
+    float CastRate = 1.f;
 };

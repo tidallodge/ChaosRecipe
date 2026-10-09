@@ -3,9 +3,8 @@
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "EDamageType.h"
+#include "CombatAbilityStruct.h"
 #include "CombatTypes.generated.h"
-
-struct FCombatAbilityStruct;
 
 // The core stats every combatant (UPlayerMinion now, enemies later) is built from.
 USTRUCT(BlueprintType)
@@ -146,11 +145,42 @@ public:
     virtual bool IsDefeated() const = 0;
 };
 
+UINTERFACE(MinimalAPI, meta = (CannotImplementInterfaceInBlueprint))
+class UCombatant : public UCombatTarget
+{
+    GENERATED_BODY()
+};
+
+// A combat target that can also act on its own (UPlayerMinion, UEnemy), so UBattleManager can run
+// both sides of a battle through the same loop.
+class CHAOSRECIPE_API ICombatant : public ICombatTarget
+{
+    GENERATED_BODY()
+
+public:
+    virtual FString GetCombatantName() const = 0;
+
+    // Every attack/spell this combatant can pick from right now. Always includes a basic attack.
+    virtual TArray<FCombatAbilityStruct> GetBattleAbilities() const = 0;
+
+    // Attacks per second for Attack abilities (spells use their own CastRate instead).
+    virtual float GetBattleAttackRate() const = 0;
+
+    virtual FCombatHitResult UseAbility(const FCombatAbilityStruct& Ability, ICombatTarget* Target) = 0;
+};
+
 // The damage math shared by every combatant, kept in one place so minions and enemies can't drift apart.
 namespace CombatMath
 {
     // Picks a value between Range's two ends, inclusive, in whichever order they're stored.
     CHAOSRECIPE_API int32 RollRange(const FIntPoint& Range);
+
+    // The attack every combatant can always fall back on: 100% of its weapon damage, at its attack rate.
+    CHAOSRECIPE_API FCombatAbilityStruct MakeBasicAttack();
+
+    // Seconds a combatant has to wait after using Ability before it can act again: one over its rate,
+    // which is AttackRate (attacks per second) for attacks and the ability's CastRate for spells.
+    CHAOSRECIPE_API float GetAbilityCooldown(const FCombatAbilityStruct& Ability, float AttackRate);
 
     // Rolls Ability's damage as used by Attacker: attacks start from Attacker's weapon damage (scaled by
     // the ability's WeaponDamageEffectiveness) and use Attacker's crit, spells use only the ability's own

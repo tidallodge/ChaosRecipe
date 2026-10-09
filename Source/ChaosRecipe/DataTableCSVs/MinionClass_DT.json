@@ -16,7 +16,17 @@
 			"Strength": 3,
 			"Intelligence": 1,
 			"Dexterity": 1
-		}
+		},
+		"Damage":
+		{
+			"Physical":
+			{
+				"X": 2,
+				"Y": 4
+			}
+		},
+		"AttackRate": 1,
+		"Abilities": []
 	},
 	{
 		"Name": "Ranger",
@@ -35,7 +45,17 @@
 			"Strength": 1,
 			"Intelligence": 1,
 			"Dexterity": 3
-		}
+		},
+		"Damage":
+		{
+			"Physical":
+			{
+				"X": 1,
+				"Y": 3
+			}
+		},
+		"AttackRate": 0.75,
+		"Abilities": []
 	},
 	{
 		"Name": "Mage",
@@ -54,6 +74,16 @@
 			"Strength": 1,
 			"Intelligence": 3,
 			"Dexterity": 1
-		}
+		},
+		"Damage":
+		{
+			"Physical":
+			{
+				"X": 1,
+				"Y": 3
+			}
+		},
+		"AttackRate": 1,
+		"Abilities": []
 	}
 ]

@@ -5,12 +5,16 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "Blueprint/UserWidget.h"
+#include "MinionClassStruct.h"
 #include "CoreGameMode.generated.h"
 
 class UCoreMenu;
 class UStoreManager;
 class UItemHandler;
 class UPlayerInventory;
+class UPlayerMinion;
+class UEnemy;
+class UBattleManager;
 class UDataTable;
 
 /**
@@ -54,6 +58,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hard References")
 	UDataTable* ItemModifierDataTable;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hard References")
+	UDataTable* MinionClassDataTable;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hard References")
+	UDataTable* EnemyDataTable;
+
+	// The MinionClass_DT class and Enemy_DT EnemyId spawned at BeginPlay and selected in the CoreMenu HP bars.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	EMinionClass StartingMinionClass = EMinionClass::Warrior;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
+	FString StartingEnemyId = TEXT("woods_shaman_001");
+
 	UPROPERTY()
 	UItemHandler* ItemHandler;
 
@@ -61,4 +78,14 @@ public:
 	// ItemHandler's sell flow and this the same PlayerInventory instance for the whole session.
 	UPROPERTY()
 	UPlayerInventory* PlayerInventory;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Combat")
+	UPlayerMinion* Minion;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Combat")
+	UEnemy* Enemy;
+
+	// Runs a battle between Minion and Enemy each time CoreMenu's BattlePlayButton is clicked.
+	UPROPERTY(BlueprintReadOnly, Category = "Combat")
+	UBattleManager* BattleManager;
 };

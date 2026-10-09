@@ -21,6 +21,7 @@
 #include "Components/BorderSlot.h"
 #include "Components/HorizontalBoxSlot.h"
 #include "Components/VerticalBoxSlot.h"
+#include "Components/ProgressBar.h"
 #include "Blueprint/WidgetTree.h"
 #include "Engine/DataTable.h"
 #include "Engine/Engine.h"
@@ -28,6 +29,8 @@
 #include "BaseItemStruct.h"
 #include "CurrencyStruct.h"
 #include "ItemInstanceManager.h"
+#include "PlayerMinion.h"
+#include "Enemy.h"
 #include "Dom/JsonObject.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
@@ -161,6 +164,7 @@ void UCoreMenu::NativeConstruct()
     ValidateButton(PlayerStashButton);
     ValidateButton(StashSelectButton);
     ValidateButton(ResetGameButton);
+    ValidateButton(BattlePlayButton);
 
 	BuyButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBuyButtonClicked);
 	SellButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSellButtonClicked);
@@ -169,6 +173,7 @@ void UCoreMenu::NativeConstruct()
 	PlayerStashButton->OnClicked.AddDynamic(this, &UCoreMenu::OnPlayerStashButtonClicked);
 	StashSelectButton->OnClicked.AddDynamic(this, &UCoreMenu::OnStashSelectButtonClicked);
 	ResetGameButton->OnClicked.AddDynamic(this, &UCoreMenu::OnResetGameButtonClicked);
+	BattlePlayButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBattlePlayButtonClicked);
 
 	if (ShopWindowBox)
 	{
@@ -195,6 +200,15 @@ void UCoreMenu::NativeConstruct()
 	{
 		RollButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeItemButtonClicked);
 	}
+
+	// Off by default, so the fill colors set in WBP_CoreMenu are kept.
+	if (bOverrideHPBarColors)
+	{
+		MinionHPBar->SetFillColorAndOpacity(MinionHPBarColor);
+		EnemyHPBar->SetFillColorAndOpacity(EnemyHPBarColor);
+	}
+	MinionHPBarDefaultColor = MinionHPBar->GetFillColorAndOpacity();
+	EnemyHPBarDefaultColor = EnemyHPBar->GetFillColorAndOpacity();
 
 	PopulatePlayerStash();
 	PopulateCurrencyGrids();
@@ -1313,6 +1327,24 @@ void UCoreMenu::SetPanelAndChildrenVisibility(UPanelWidget* Panel, ESlateVisibil
 	}
 }
 
+void UCoreMenu::OnBattlePlayButtonClicked()
+{
+	UE_LOG(LogTemp, Warning, TEXT("BattlePlayButton Clicked."));
+	OnBattlePlayButtonClickedEvent.Broadcast();
+}
+
+void UCoreMenu::SetBattleTimerText(float BattleTime)
+{
+	if (!BattleTimerText)
+	{
+		return;
+	}
+
+	const int32 Minutes = FMath::FloorToInt(BattleTime / 60.f);
+	const float Seconds = BattleTime - Minutes * 60.f;
+	BattleTimerText->SetText(FText::FromString(FString::Printf(TEXT("%d:%04.1f"), Minutes, Seconds)));
+}
+
 void UCoreMenu::ValidateButton(UButton* InputButton)
 {
 	if (!InputButton)
@@ -1408,6 +1440,98 @@ void UCoreMenu::ClearWarningText()
 	if (WarningsTextBox)
 	{
 		WarningsTextBox->SetText(FText::GetEmpty());
+	}
+}
+
+void UCoreMenu::SetSelectedMinion(UPlayerMinion* Minion)
+{
+	if (SelectedMinion)
+	{
+		SelectedMinion->OnHealthChangedEvent.RemoveDynamic(this, &UCoreMenu::OnSelectedMinionHealthChanged);
+	}
+
+	SelectedMinion = Minion;
+	if (!SelectedMinion)
+	{
+		ClearHealthDisplay(MinionHPBar, MinionHPText, MinionHPBarDefaultColor);
+		return;
+	}
+
+	SelectedMinion->OnHealthChangedEvent.AddDynamic(this, &UCoreMenu::OnSelectedMinionHealthChanged);
+	SetHealthDisplay(MinionHPBar, MinionHPText, MinionHPBarDefaultColor,
+		SelectedMinion->GetCurrentHealth(), SelectedMinion->GetMaxHealth(), SelectedMinion->GetCurrentOvershield());
+}
+
+void UCoreMenu::SetSelectedEnemy(UEnemy* Enemy)
+{
+	if (SelectedEnemy)
+	{
+		SelectedEnemy->OnHealthChangedEvent.RemoveDynamic(this, &UCoreMenu::OnSelectedEnemyHealthChanged);
+	}
+
+	SelectedEnemy = Enemy;
+	if (!SelectedEnemy)
+	{
+		ClearHealthDisplay(EnemyHPBar, EnemyHPText, EnemyHPBarDefaultColor);
+		return;
+	}
+
+	SelectedEnemy->OnHealthChangedEvent.AddDynamic(this, &UCoreMenu::OnSelectedEnemyHealthChanged);
+	SetHealthDisplay(EnemyHPBar, EnemyHPText, EnemyHPBarDefaultColor,
+		SelectedEnemy->GetCurrentHealth(), SelectedEnemy->GetMaxHealth(), SelectedEnemy->GetCurrentOvershield());
+}
+
+void UCoreMenu::OnSelectedMinionHealthChanged(float CurrentHealth, float MaxHealth, float CurrentOvershield)
+{
+	SetHealthDisplay(MinionHPBar, MinionHPText, MinionHPBarDefaultColor, CurrentHealth, MaxHealth, CurrentOvershield);
+}
+
+void UCoreMenu::OnSelectedEnemyHealthChanged(float CurrentHealth, float MaxHealth, float CurrentOvershield)
+{
+	SetHealthDisplay(EnemyHPBar, EnemyHPText, EnemyHPBarDefaultColor, CurrentHealth, MaxHealth, CurrentOvershield);
+}
+
+void UCoreMenu::SetHealthDisplay(UProgressBar* HPBar, UTextBlock* HPText, const FLinearColor& UnshieldedBarColor,
+	float CurrentHealth, float MaxHealth, float CurrentOvershield)
+{
+	if (MaxHealth <= 0.f)
+	{
+		ClearHealthDisplay(HPBar, HPText, UnshieldedBarColor);
+		return;
+	}
+
+	// Overshield is added to both sides (e.g. 25 health + 15 shield reads "40 / 40"), and the bar stays
+	// ShieldedHPBarColor until the shield is used up and the total is back down to MaxHealth.
+	const float Overshield = FMath::Max(0.f, CurrentOvershield);
+	const float DisplayedHealth = CurrentHealth + Overshield;
+	const float DisplayedMaxHealth = MaxHealth + Overshield;
+
+	if (HPBar)
+	{
+		HPBar->SetPercent(FMath::Clamp(DisplayedHealth / DisplayedMaxHealth, 0.f, 1.f));
+		HPBar->SetFillColorAndOpacity(Overshield > 0.f ? ShieldedHPBarColor : UnshieldedBarColor);
+	}
+
+	if (HPText)
+	{
+		// Both rounded up, so a partly-drained shield can't read as e.g. "40 / 39", and a combatant
+		// with a sliver of health left never reads as 0.
+		HPText->SetText(FText::FromString(FString::Printf(TEXT("%d / %d"),
+			FMath::CeilToInt(DisplayedHealth), FMath::CeilToInt(DisplayedMaxHealth))));
+	}
+}
+
+void UCoreMenu::ClearHealthDisplay(UProgressBar* HPBar, UTextBlock* HPText, const FLinearColor& UnshieldedBarColor)
+{
+	if (HPBar)
+	{
+		HPBar->SetPercent(0.f);
+		HPBar->SetFillColorAndOpacity(UnshieldedBarColor);
+	}
+
+	if (HPText)
+	{
+		HPText->SetText(FText::GetEmpty());
 	}
 }
 

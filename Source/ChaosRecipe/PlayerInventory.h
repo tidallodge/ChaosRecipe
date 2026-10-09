@@ -3,12 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "EnemyStruct.h"
 #include "PlayerInventory.generated.h"
 
 class UCoreMenu;
 class UStoreManager;
 class UItemHandler;
 class UCurrencyManager;
+class UEnemy;
 
 UCLASS()
 class CHAOSRECIPE_API UPlayerInventory : public UObject
@@ -30,9 +32,16 @@ public:
 	void BindToStoreManagerEvents(UStoreManager* StoreManager);
 	UFUNCTION()
 	void BindToItemHandlerEvents(UItemHandler* ItemHandler);
+	// Call for every enemy spawned, so its drops reach the player when it's killed.
+	UFUNCTION()
+	void BindToEnemyEvents(UEnemy* Enemy);
 
 	UFUNCTION()
 	void HandleStoreBuy(FString ItemType, FString ItemUUID);
+
+	// Bound to each Enemy's OnKilledEvent: grants the gold and currency it dropped.
+	UFUNCTION()
+	void HandleEnemyKilled(FString EnemyId, const FEnemyLoot& Loot);
 
 	// Bound to ItemHandler's OnItemSoldEvent: that single shared ItemHandler instance (see
 	// CoreGameMode::BeginPlay) resolves the sold item's gold value and broadcasts it here before it

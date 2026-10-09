@@ -6,6 +6,7 @@
 #include "StoreManager.h"
 #include "ItemHandler.h"
 #include "CurrencyManager.h"
+#include "Enemy.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 UPlayerInventory::UPlayerInventory()
@@ -63,9 +64,36 @@ void UPlayerInventory::BindToStoreManagerEvents(UStoreManager* StoreManager)
 	StoreManager->OnStoreBuy.AddDynamic(this, &UPlayerInventory::HandleStoreBuy);
 }
 
+void UPlayerInventory::BindToEnemyEvents(UEnemy* Enemy)
+{
+	if (!Enemy)
+	{
+		UE_LOG(LogTemp, Error, TEXT("no Enemy for PlayerInventory"));
+		return;
+	}
+
+	Enemy->OnKilledEvent.AddDynamic(this, &UPlayerInventory::HandleEnemyKilled);
+}
+
 void UPlayerInventory::HandleStoreBuy(FString ItemType, FString ItemUUID)
 {
 	UE_LOG(LogTemp, Warning, TEXT("HandleStoreBuy: ItemId=%s, UUID=%s"), *ItemType, *ItemUUID);
+}
+
+void UPlayerInventory::HandleEnemyKilled(FString EnemyId, const FEnemyLoot& Loot)
+{
+	if (Loot.Gold > 0)
+	{
+		AdjustPlayerGoldCount(Loot.Gold);
+	}
+
+	for (const TPair<FString, int32>& Entry : Loot.CurrencyCounts)
+	{
+		AdjustCurrencyStackCount(Entry.Key, Entry.Value);
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("PlayerInventory: Looted %s for %d gold and %d currency type(s) (PlayerGoldCount=%d)"),
+		*EnemyId, Loot.Gold, Loot.CurrencyCounts.Num(), PlayerGoldCount);
 }
 
 void UPlayerInventory::HandleItemSold(FString ItemId, FString ItemUUID, float GoldValue)

@@ -16,6 +16,11 @@ namespace
     constexpr float MaxResistance = 75.f;
     constexpr float MaxEvadeChance = 75.f;
 
+    // Bounds on attack/cast rates, so a rate of 0 can't stall a combatant forever and a huge one can't
+    // make the battle loop spin through thousands of actions in a single tick.
+    constexpr float MinActionsPerSecond = 0.1f;
+    constexpr float MaxActionsPerSecond = 100.f;
+
     int32 GetAttributeValue(const FCombatAttributes& Attributes, ECombatAttribute Attribute)
     {
         switch (Attribute)
@@ -32,6 +37,21 @@ namespace
 int32 CombatMath::RollRange(const FIntPoint& Range)
 {
     return FMath::RandRange(FMath::Min(Range.X, Range.Y), FMath::Max(Range.X, Range.Y));
+}
+
+FCombatAbilityStruct CombatMath::MakeBasicAttack()
+{
+    FCombatAbilityStruct BasicAttack;
+    BasicAttack.AbilityId = FText::FromString(TEXT("basic_attack"));
+    BasicAttack.AbilityName = FText::FromString(TEXT("Basic Attack"));
+    BasicAttack.AbilityType = EAbilityType::Attack;
+    return BasicAttack;
+}
+
+float CombatMath::GetAbilityCooldown(const FCombatAbilityStruct& Ability, float AttackRate)
+{
+    const float ActionsPerSecond = Ability.AbilityType == EAbilityType::Attack ? AttackRate : Ability.CastRate;
+    return 1.f / FMath::Clamp(ActionsPerSecond, MinActionsPerSecond, MaxActionsPerSecond);
 }
 
 FCombatHit CombatMath::BuildHit(const FCombatAbilityStruct& Ability, const FCombatOffense& Attacker)

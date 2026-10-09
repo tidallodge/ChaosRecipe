@@ -1,0 +1,227 @@
+[
+	{
+		"Name": "bog_slime_001",
+		"EnemyId": "NSLOCTEXT(\"Enemy_DT [FF67F8B3918D268E602182826EB948FA]\", \"bog_slime_001_EnemyId\", \"bog_slime_001\")",
+		"EnemyName": "NSLOCTEXT(\"Enemy_DT [FF67F8B3918D268E602182826EB948FA]\", \"bog_slime_001_EnemyName\", \"Bog Slime\")",
+		"MaxHealth": 30,
+		"Overshield": 0,
+		"PhysicalMitigation": 10,
+		"EvadeChance": 0,
+		"Resistances":
+		{
+			"Ice":
+			{
+				"Resistances": 25
+			},
+			"Fire":
+			{
+				"Resistances": -25
+			}
+		},
+		"Damage":
+		{
+			"Physical":
+			{
+				"X": 2,
+				"Y": 4
+			}
+		},
+		"AttackRate": 0.8,
+		"Spells": [],
+		"GoldDrop":
+		{
+			"X": 5,
+			"Y": 12
+		},
+		"CurrencyDrops": [
+			{
+				"CurrencyId": "add_mod_01",
+				"DropChance": 10,
+				"DropCount":
+				{
+					"X": 1,
+					"Y": 1
+				}
+			},
+			{
+				"CurrencyId": "reroll_mod_values_01",
+				"DropChance": 5,
+				"DropCount":
+				{
+					"X": 1,
+					"Y": 1
+				}
+			}
+		],
+		"EnemyAssetData":
+		{
+			"EnemyIcon": "None",
+			"EnemyStaticMesh": "None"
+		}
+	},
+	{
+		"Name": "woods_shaman_001",
+		"EnemyId": "NSLOCTEXT(\"Enemy_DT [FF67F8B3918D268E602182826EB948FA]\", \"woods_shaman_001_EnemyId\", \"woods_shaman_001\")",
+		"EnemyName": "NSLOCTEXT(\"Enemy_DT [FF67F8B3918D268E602182826EB948FA]\", \"woods_shaman_001_EnemyName\", \"Woods Shaman\")",
+		"MaxHealth": 15,
+		"Overshield": 10,
+		"PhysicalMitigation": 0,
+		"EvadeChance": 0,
+		"Resistances":
+		{
+			"Electric":
+			{
+				"Resistances": 20
+			}
+		},
+		"Damage":
+		{
+			"Physical":
+			{
+				"X": 1,
+				"Y": 3
+			}
+		},
+		"AttackRate": 1,
+		"Spells": [
+			{
+				"AbilityId": "NSLOCTEXT(\"Enemy_DT [FF67F8B3918D268E602182826EB948FA]\", \"woods_shaman_001_Spells_Index0_AbilityId\", \"firebolt_001\")",
+				"AbilityName": "NSLOCTEXT(\"Enemy_DT [FF67F8B3918D268E602182826EB948FA]\", \"woods_shaman_001_Spells_Index0_AbilityName\", \"Firebolt\")",
+				"AbilityType": "Spell",
+				"RequiredLevel": 1,
+				"BaseDamage":
+				{
+					"Fire":
+					{
+						"X": 4,
+						"Y": 7
+					}
+				},
+				"WeaponDamageEffectiveness": 100,
+				"ScalingAttribute": "None",
+				"DamagePerAttributePoint": 0,
+				"CritChance": 5,
+				"CritMultiplier": 1.5,
+				"ResistancePenetration": 0,
+				"CastRate": 1
+			}
+		],
+		"GoldDrop":
+		{
+			"X": 8,
+			"Y": 15
+		},
+		"CurrencyDrops": [
+			{
+				"CurrencyId": "magic_reroll_01",
+				"DropChance": 15,
+				"DropCount":
+				{
+					"X": 1,
+					"Y": 1
+				}
+			},
+			{
+				"CurrencyId": "add_mod_01",
+				"DropChance": 10,
+				"DropCount":
+				{
+					"X": 1,
+					"Y": 1
+				}
+			}
+		],
+		"EnemyAssetData":
+		{
+			"EnemyIcon": "None",
+			"EnemyStaticMesh": "None"
+		}
+	},
+	{
+		"Name": "abyssal_knight_001",
+		"EnemyId": "NSLOCTEXT(\"Enemy_DT [FF67F8B3918D268E602182826EB948FA]\", \"abyssal_knight_001_EnemyId\", \"abyssal_knight_001\")",
+		"EnemyName": "NSLOCTEXT(\"Enemy_DT [FF67F8B3918D268E602182826EB948FA]\", \"abyssal_knight_001_EnemyName\", \"Abyssal Knight\")",
+		"MaxHealth": 80,
+		"Overshield": 30,
+		"PhysicalMitigation": 40,
+		"EvadeChance": 5,
+		"Resistances":
+		{
+			"Abyssal":
+			{
+				"Resistances": 50
+			},
+			"Fire":
+			{
+				"Resistances": 10
+			}
+		},
+		"Damage":
+		{
+			"Physical":
+			{
+				"X": 6,
+				"Y": 10
+			},
+			"Abyssal":
+			{
+				"X": 2,
+				"Y": 4
+			}
+		},
+		"AttackRate": 0.9,
+		"Spells": [
+			{
+				"AbilityId": "NSLOCTEXT(\"Enemy_DT [FF67F8B3918D268E602182826EB948FA]\", \"abyssal_knight_001_Spells_Index0_AbilityId\", \"void_lance_001\")",
+				"AbilityName": "NSLOCTEXT(\"Enemy_DT [FF67F8B3918D268E602182826EB948FA]\", \"abyssal_knight_001_Spells_Index0_AbilityName\", \"Void Lance\")",
+				"AbilityType": "Spell",
+				"RequiredLevel": 1,
+				"BaseDamage":
+				{
+					"Abyssal":
+					{
+						"X": 8,
+						"Y": 14
+					}
+				},
+				"WeaponDamageEffectiveness": 100,
+				"ScalingAttribute": "None",
+				"DamagePerAttributePoint": 0,
+				"CritChance": 5,
+				"CritMultiplier": 1.5,
+				"ResistancePenetration": 10,
+				"CastRate": 1
+			}
+		],
+		"GoldDrop":
+		{
+			"X": 25,
+			"Y": 40
+		},
+		"CurrencyDrops": [
+			{
+				"CurrencyId": "rare_reroll_01",
+				"DropChance": 15,
+				"DropCount":
+				{
+					"X": 1,
+					"Y": 2
+				}
+			},
+			{
+				"CurrencyId": "etch_01",
+				"DropChance": 2,
+				"DropCount":
+				{
+					"X": 1,
+					"Y": 1
+				}
+			}
+		],
+		"EnemyAssetData":
+		{
+			"EnemyIcon": "None",
+			"EnemyStaticMesh": "None"
+		}
+	}
+]

@@ -8,7 +8,7 @@
 #include "CombatAbilityStruct.h"
 #include "ItemInstanceManager.h"
 #include "JsonObjectConverter.h"
-#include "Engine/DataTable.h"
+#include "DataTableHelpers.h"
 
 namespace
 {
@@ -16,38 +16,6 @@ namespace
 	const TCHAR* BaseWeaponDataTablePath = TEXT("/Game/ItemData/BaseWeapon_DT.BaseWeapon_DT");
 	const TCHAR* BaseArmorDataTablePath = TEXT("/Game/ItemData/BaseArmor_DT.BaseArmor_DT");
 	const TCHAR* ItemModifierDataTablePath = TEXT("/Game/ItemData/ItemModifier_DT.ItemModifier_DT");
-
-	// What an Attack ability hits with when no weapon is equipped.
-	constexpr int32 UnarmedMinPhysicalDamage = 1;
-	constexpr int32 UnarmedMaxPhysicalDamage = 3;
-	constexpr float UnarmedAttackRate = 1.f;
-
-	// Copies out the first row matching Predicate, the same linear search ItemHandler and
-	// CurrencyManager use for their tables.
-	template <typename TRow, typename TPredicate>
-	bool FindDataTableRow(const TCHAR* DataTablePath, TPredicate Predicate, TRow& OutRow)
-	{
-		UDataTable* DataTable = LoadObject<UDataTable>(nullptr, DataTablePath);
-		if (!DataTable)
-		{
-			UE_LOG(LogTemp, Error, TEXT("PlayerMinion: Failed to load data table at %s."), DataTablePath);
-			return false;
-		}
-
-		for (const FName& RowName : DataTable->GetRowNames())
-		{
-			if (const TRow* Row = DataTable->FindRow<TRow>(RowName, TEXT("PlayerMinion::FindDataTableRow"), true))
-			{
-				if (Predicate(*Row))
-				{
-					OutRow = *Row;
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
 
 	// An equipped item's modifier row paired with the value it rolled.
 	struct FRolledModifier { const FItemModifierStruct* Row = nullptr; int32 Value = 0; };
@@ -84,7 +52,7 @@ namespace
 bool UPlayerMinion::InitializeMinion(EMinionClass InMinionClass, int32 InLevel)
 {
 	FMinionClassStruct LoadedClassData;
-	const bool bFoundClass = FindDataTableRow(MinionClassDataTablePath,
+	const bool bFoundClass = DataTableHelpers::FindRow(MinionClassDataTablePath,
 		[InMinionClass](const FMinionClassStruct& Row) { return Row.MinionClass == InMinionClass; }, LoadedClassData);
 	if (!bFoundClass)
 	{
@@ -94,6 +62,12 @@ bool UPlayerMinion::InitializeMinion(EMinionClass InMinionClass, int32 InLevel)
 
 	ClassData = LoadedClassData;
 	Level = FMath::Max(1, InLevel);
+
+	if (ClassData.Damage.Num() == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PlayerMinion: %s has no Damage set in MinionClass_DT, so it deals no damage without a weapon."),
+			*ClassData.ClassName.ToString());
+	}
 
 	RecalculateStats();
 	RestoreToFull();
@@ -185,7 +159,7 @@ bool UPlayerMinion::EquipWeapon(const FItemWeaponStatsStruct& WeaponStats)
 {
 	const FString ItemId = WeaponStats.ItemId.ToString();
 	FBaseWeaponStruct WeaponBase;
-	const bool bFoundWeapon = FindDataTableRow(BaseWeaponDataTablePath,
+	const bool bFoundWeapon = DataTableHelpers::FindRow(BaseWeaponDataTablePath,
 		[&ItemId](const FBaseWeaponStruct& Row) { return Row.ItemId.ToString().Equals(ItemId, ESearchCase::IgnoreCase); }, WeaponBase);
 	if (!bFoundWeapon)
 	{
@@ -210,7 +184,7 @@ bool UPlayerMinion::EquipArmor(const FItemArmorStatsStruct& ArmorStats)
 {
 	const FString ItemId = ArmorStats.ItemId.ToString();
 	FBaseArmorStruct ArmorBase;
-	const bool bFoundArmor = FindDataTableRow(BaseArmorDataTablePath,
+	const bool bFoundArmor = DataTableHelpers::FindRow(BaseArmorDataTablePath,
 		[&ItemId](const FBaseArmorStruct& Row) { return Row.ItemId.ToString().Equals(ItemId, ESearchCase::IgnoreCase); }, ArmorBase);
 	if (!bFoundArmor)
 	{
@@ -350,6 +324,19 @@ bool UPlayerMinion::IsDefeated() const
 	return CurrentHealth <= 0.f;
 }
 
+TArray<FCombatAbilityStruct> UPlayerMinion::GetBattleAbilities() const
+{
+	TArray<FCombatAbilityStruct> Abilities = { CombatMath::MakeBasicAttack() };
+	for (const FCombatAbilityStruct& Ability : ClassData.Abilities)
+	{
+		if (Level >= Ability.RequiredLevel)
+		{
+			Abilities.Add(Ability);
+		}
+	}
+	return Abilities;
+}
+
 void UPlayerMinion::RestoreToFull()
 {
 	CurrentHealth = GetMaxHealth();
@@ -374,20 +361,7 @@ void UPlayerMinion::RecalculateStats()
 
 	if (ModifierPool.Num() == 0)
 	{
-		if (UDataTable* ModifierDataTable = LoadObject<UDataTable>(nullptr, ItemModifierDataTablePath))
-		{
-			for (const FName& RowName : ModifierDataTable->GetRowNames())
-			{
-				if (const FItemModifierStruct* ModifierRow = ModifierDataTable->FindRow<FItemModifierStruct>(RowName, TEXT("PlayerMinion::RecalculateStats"), true))
-				{
-					ModifierPool.Add(*ModifierRow);
-				}
-			}
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("PlayerMinion: Failed to load data table at %s."), ItemModifierDataTablePath);
-		}
+		DataTableHelpers::LoadAllRows(ItemModifierDataTablePath, ModifierPool);
 	}
 
 	auto GatherRolled = [this](const TMap<FString, int32>& Modifiers, TArray<FRolledModifier>& OutRolled)
@@ -493,8 +467,8 @@ void UPlayerMinion::RecalculateStats()
 	}
 	else
 	{
-		Offense.WeaponDamage.Add(EDamageType::Physical, FIntPoint(UnarmedMinPhysicalDamage, UnarmedMaxPhysicalDamage));
-		Offense.AttackRate = UnarmedAttackRate;
+		Offense.WeaponDamage = ClassData.Damage;
+		Offense.AttackRate = ClassData.AttackRate;
 	}
 
 	// Keep the same amount of missing health across stat changes, so a full-health minion stays full after

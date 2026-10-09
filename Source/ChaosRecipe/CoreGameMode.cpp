@@ -8,6 +8,9 @@
 #include "PlayerInventory.h"
 #include "StoreManager.h"
 #include "ItemHandler.h"
+#include "PlayerMinion.h"
+#include "Enemy.h"
+#include "BattleManager.h"
 #include "Engine/DataTable.h"
 #include "UObject/ConstructorHelpers.h"
 
@@ -51,6 +54,18 @@ ACoreGameMode::ACoreGameMode()
 	{
 		ItemModifierDataTable = ItemModifierDataTableFinder.Object;
 	}
+
+	static ConstructorHelpers::FObjectFinder<UDataTable> MinionClassDataTableFinder(TEXT("/Game/MinionData/MinionClass_DT"));
+	if (MinionClassDataTableFinder.Succeeded())
+	{
+		MinionClassDataTable = MinionClassDataTableFinder.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UDataTable> EnemyDataTableFinder(TEXT("/Game/EnemyData/Enemy_DT"));
+	if (EnemyDataTableFinder.Succeeded())
+	{
+		EnemyDataTable = EnemyDataTableFinder.Object;
+	}
 }
 
 void ACoreGameMode::BeginPlay()
@@ -85,6 +100,24 @@ void ACoreGameMode::BeginPlay()
 			UStoreManager* StoreManager = NewObject<UStoreManager>(this);
 			StoreManager->BindToCoreMenuEvents(CoreMenuWidget);
 			PlayerInventory->BindToStoreManagerEvents(StoreManager);
+
+			Minion = NewObject<UPlayerMinion>(this);
+			if (Minion->InitializeMinion(StartingMinionClass))
+			{
+				Minion->BindToItemHandlerEvents(ItemHandler);
+				CoreMenuWidget->SetSelectedMinion(Minion);
+			}
+
+			Enemy = NewObject<UEnemy>(this);
+			if (Enemy->InitializeEnemy(StartingEnemyId))
+			{
+				PlayerInventory->BindToEnemyEvents(Enemy);
+				CoreMenuWidget->SetSelectedEnemy(Enemy);
+			}
+
+			BattleManager = NewObject<UBattleManager>(this);
+			BattleManager->BindToCoreMenuEvents(CoreMenuWidget);
+			BattleManager->SetCombatants({ Minion }, { Enemy });
 
 			UE_LOG(LogTemp, Warning, TEXT("CoreMenu widget loaded and displayed"));
 		}
