@@ -32,7 +32,6 @@ void UPlayerInventory::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
 
 	BoundCoreMenu = CoreMenu;
 	CoreMenu->OnResetGameButtonClickedEvent.AddDynamic(this, &UPlayerInventory::OnResetGame);
-	CoreMenu->OnBuyCurrencyEvent.AddDynamic(this, &UPlayerInventory::HandleCurrencyBought);
 
 	// Reflects the gold count and currency stacks loaded from SavedCurrency.json (in the constructor)
 	// now that a CoreMenu is available to display them.
@@ -125,25 +124,6 @@ void UPlayerInventory::HandleItemRandomized(int32 GoldCost, FString CurrencyId)
 
 	UE_LOG(LogTemp, Warning, TEXT("PlayerInventory: Randomized item for %d gold and currency '%s' (PlayerGoldCount=%d)"),
 		GoldCost, *CurrencyId, PlayerGoldCount);
-}
-
-void UPlayerInventory::HandleCurrencyBought(FString CurrencyId, int32 GoldCost)
-{
-	if (!CanAffordGoldCost(GoldCost))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("PlayerInventory: Not enough gold to buy currency '%s' (cost=%d)."), *CurrencyId, GoldCost);
-		if (BoundCoreMenu)
-		{
-			BoundCoreMenu->SetWarningText(TEXT("Not enough gold to complete action!"));
-		}
-		return;
-	}
-
-	AdjustPlayerGoldCount(-GoldCost);
-	AdjustCurrencyStackCount(CurrencyId, 1);
-
-	UE_LOG(LogTemp, Warning, TEXT("PlayerInventory: Bought currency '%s' for %d gold (stack=%d, PlayerGoldCount=%d)"),
-		*CurrencyId, GoldCost, GetCurrencyStackCount(CurrencyId), PlayerGoldCount);
 }
 
 void UPlayerInventory::OnResetGame()

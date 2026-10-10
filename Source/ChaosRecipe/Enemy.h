@@ -10,6 +10,9 @@
 // Broadcast whenever health or overshield changes (hits, initialization).
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnEnemyHealthChangedEvent, float, CurrentHealth, float, MaxHealth, float, CurrentOvershield);
 
+// Broadcast for every hit that reaches the enemy (evaded or not) with what it did, e.g. for damage numbers.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEnemyHitTakenEvent, const FCombatHitResult&, HitResult);
+
 // Broadcast once when the enemy dies, with the gold and currency it dropped (already rolled), so
 // listeners (e.g. PlayerInventory) can grant them.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEnemyKilledEvent, FString, EnemyId, const FEnemyLoot&, Loot);
@@ -84,6 +87,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnEnemyHealthChangedEvent OnHealthChangedEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnEnemyHitTakenEvent OnHitTakenEvent;
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnEnemyKilledEvent OnKilledEvent;

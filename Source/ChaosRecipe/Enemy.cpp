@@ -122,6 +122,7 @@ FCombatHitResult UEnemy::ApplyHit(const FCombatHit& Hit)
 	{
 		BroadcastHealthChanged();
 	}
+	OnHitTakenEvent.Broadcast(Result);
 
 	if (Result.bKilledTarget)
 	{

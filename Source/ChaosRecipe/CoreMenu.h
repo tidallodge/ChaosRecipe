@@ -8,6 +8,7 @@
 #include "Components/RichTextBlock.h"
 #include "TimerManager.h"
 #include "BaseItemStruct.h"
+#include "CombatTypes.h"
 #include "CoreMenu.generated.h"
 
 class UButton;
@@ -22,6 +23,7 @@ class UPanelWidget;
 class UProgressBar;
 class UPlayerMinion;
 class UEnemy;
+class UBorder;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBuyButtonClickedEvent, FString, ItemId, FString, ItemUUID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSellButtonClickedEvent, FString, ItemId, FString, ItemUUID);
@@ -38,10 +40,6 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnShopItemSelectedEvent, FString, 
 // Fired when the Reset Game button is clicked, so listeners (e.g. ItemHandler, PlayerInventory)
 // can wipe their own persisted save data (SavedItems.json, SavedCurrency.json) and reset to defaults.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnResetGameEvent);
-// Fired when Buy is clicked while a basic currency listing in ShopUniGrid is selected, so listeners
-// (e.g. PlayerInventory) can charge GoldCost and grant one of CurrencyId. Currency listings are never
-// removed from the shop after a purchase.
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBuyCurrencyEvent, FString, CurrencyId, int32, GoldCost);
 // Fired when BattlePlayButton in BattleWindow is clicked, so listeners (e.g. BattleManager) can start a battle.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBattlePlayButtonClickedEvent);
 
@@ -98,16 +96,61 @@ public:
 	UPROPERTY()
 	FName RowName;
 
-	// True for a basic currency listing in ShopUniGrid (selects it for Buy), false for a button in
-	// InscriptionUniGrid/GlyphUniGrid (selects it for Randomize).
 	UPROPERTY()
-	bool bIsShopListing = false;
+	TObjectPtr<UCoreMenu> OwningMenu;
+
+	UFUNCTION()
+	void HandleClicked();
+};
+
+// Carries the minion a dynamically created WBP_MinionButton stands for, since UButton::OnClicked takes no
+// parameters and can't otherwise identify its sender.
+UCLASS()
+class UMinionButtonProxy : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY()
+	TObjectPtr<UPlayerMinion> Minion;
 
 	UPROPERTY()
 	TObjectPtr<UCoreMenu> OwningMenu;
 
 	UFUNCTION()
 	void HandleClicked();
+};
+
+// One damage number shown in a FDamageNumberStack.
+USTRUCT()
+struct FDamageNumber
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TObjectPtr<UTextBlock> Text;
+
+	// Seconds since it was shown. It fades out as this approaches UCoreMenu::DamageNumberLifetime.
+	float Age = 0.f;
+};
+
+// The damage numbers shown where an HP text (BattleMinionHPText/BattleEnemyHPText) used to be, oldest on top.
+USTRUCT()
+struct FDamageNumberStack
+{
+	GENERATED_BODY()
+
+	// Put in the HP text's place by UCoreMenu::InitDamageNumberStack; null if that failed.
+	UPROPERTY()
+	TObjectPtr<UVerticalBox> Box;
+
+	// The HP text itself, no longer shown, kept as the template every number copies its look from.
+	UPROPERTY()
+	TObjectPtr<UTextBlock> Template;
+
+	// In the same order as Box's children: oldest first.
+	UPROPERTY()
+	TArray<FDamageNumber> Numbers;
 };
 
 /**
@@ -121,6 +164,7 @@ class CHAOSRECIPE_API UCoreMenu : public UUserWidget
 	friend class ULoadItemButtonProxy;
 	friend class UShopItemButtonProxy;
 	friend class UCurrencyButtonProxy;
+	friend class UMinionButtonProxy;
 
 public:
 
@@ -143,9 +187,6 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnResetGameEvent OnResetGameButtonClickedEvent;
-
-	UPROPERTY(BlueprintAssignable, Category = "Events")
-	FOnBuyCurrencyEvent OnBuyCurrencyEvent;
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnBattlePlayButtonClickedEvent OnBattlePlayButtonClickedEvent;
@@ -175,9 +216,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Menu Text")
 	void SetCurrencyStackCounts(const TMap<FString, int32>& StackCounts);
 
-	// Sets the text shown in WarningsHorizBox's WarningsTextBox.
+	// Sets the text shown in WarningsHorizBox's WarningsTextBox. It stays fully visible for DisplaySeconds, then
+	// fades out over WarningTextFadeSeconds; a DisplaySeconds of 0 or less keeps it up until the next warning.
 	UFUNCTION(BlueprintCallable, Category = "Menu Text")
-	void SetWarningText(const FString& NewMessage);
+	void SetWarningText(const FString& NewMessage, float DisplaySeconds = 3.f);
 
 	// UUID of the saved item currently loaded via the Load Item box (empty if none).
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
@@ -185,7 +227,7 @@ public:
 
 	// Clears the currently loaded UUID, e.g. once it has been sold.
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void ClearSelectedItemUUID() { SelectedItemUUID.Empty(); }
+	void ClearSelectedItemUUID() { SetSelectedItemUUID(FString()); }
 
 	// Sets which currency (a Currency_DT row id, or empty for a plain full reroll) the next Randomize
 	// click will use. Called when a currency button in InscriptionUniGrid/GlyphUniGrid is clicked;
@@ -202,25 +244,36 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Shop")
 	void RefreshShopGrid();
 
-	// Removes an item from CurrentShopItems (by ItemId) and refreshes the grid. Called by ItemHandler
-	// once a purchase has actually succeeded, so a rejected (unaffordable) buy leaves the shop unchanged.
+	// Removes an item from CurrentShopItems (by ItemId, preferring the selected listing) and refreshes the
+	// grid. Called by ItemHandler once a purchase has actually succeeded, so a rejected (unaffordable) buy
+	// leaves the shop unchanged.
 	UFUNCTION(BlueprintCallable, Category = "Shop")
 	void RemoveItemFromShop(const FString& ItemId);
 
-	// Shows Minion's health in MinionHPBar/MinionHPText and keeps them updated as it changes (hits,
-	// equipment, level, restores) until another minion is selected. Pass null to clear the display.
+	// Shows Minion's health in BattleMinionHPBar and keeps it updated as it changes (hits, equipment, level,
+	// restores), and shows the damage of every hit it takes as a number where BattleMinionHPText was, until
+	// another minion is selected. Pass null to clear the display.
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void SetSelectedMinion(UPlayerMinion* Minion);
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	UPlayerMinion* GetSelectedMinion() const { return SelectedMinion; }
 
-	// Same as SetSelectedMinion, for EnemyHPBar/EnemyHPText.
+	// Same as SetSelectedMinion, for BattleEnemyHPBar/BattleEnemyHPText.
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	void SetSelectedEnemy(UEnemy* Enemy);
 
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	UEnemy* GetSelectedEnemy() const { return SelectedEnemy; }
+
+	// Rebuilds MinionButtonsVertBox with a WBP_MinionButton for each of Minions, up to MaxMinionButtons, showing
+	// its class's MinionIcon and ClassName. Called by MinionHandler whenever a minion is created or loaded.
+	UFUNCTION(BlueprintCallable, Category = "Minion")
+	void SetMinionButtons(const TArray<UPlayerMinion*>& Minions);
+
+	// MinionUUID of the minion last clicked in MinionButtonsVertBox (empty if none has been yet).
+	UFUNCTION(BlueprintCallable, Category = "Minion")
+	FString GetSelectedMinionUUID() const { return SelectedMinionUUID; }
 
 	// Shows BattleTime (seconds since the battle started) as "M:SS.s" in BattleTimerText, if the widget
 	// blueprint has one. Called by BattleManager every battle tick.
@@ -233,8 +286,15 @@ public:
 	UPROPERTY()
 	TArray<FName> CurrentShopItems;
 
+	// Each CurrentShopItems listing's UUID (same index), minted when the shop is rolled so a listing keeps
+	// its UUID, and its selection, across grid rebuilds.
+	UPROPERTY()
+	TArray<FString> CurrentShopItemUUIDs;
+
 protected:
+	virtual void NativeOnInitialized() override;
 	virtual void NativeConstruct() override;
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	// UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	// UTextBlock* TestTextBlock;
@@ -253,9 +313,6 @@ protected:
 	UPanelWidget* ShopWindowBox;
 	UPROPERTY(meta = (BindWidget))
 	UUniformGridPanel* ShopUniGrid;
-	// Basic currency listings in the shop; filled by PopulateShopCurrencyGrid
-	UPROPERTY(meta = (BindWidget))
-	UUniformGridPanel* ShopCurrencyUniGrid;
 	UPROPERTY(meta = (BindWidget))
 	UHorizontalBox* ShopWindowHeader;
 	UPROPERTY(meta = (BindWidget))
@@ -289,21 +346,26 @@ protected:
 	// active item with that currency (OnRandomizeItemButtonClicked)
 	UPROPERTY(meta = (BindWidget))
 	UUserWidget* ActiveItemRollButton;
-	// Nested in MinionVertBox/EnemyVertBox; driven by the selected minion/enemy (SetSelectedMinion/SetSelectedEnemy)
+	// Nested in BattleMinionVertBox/BattleEnemyVertBox; driven by the selected minion/enemy (SetSelectedMinion/SetSelectedEnemy).
+	// The HP texts are swapped out for damage number stacks at runtime (see InitDamageNumberStack) and only
+	// kept as the look those numbers copy.
 	UPROPERTY(meta = (BindWidget))
-	UProgressBar* MinionHPBar;
+	UProgressBar* BattleMinionHPBar;
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* MinionHPText;
+	UTextBlock* BattleMinionHPText;
 	UPROPERTY(meta = (BindWidget))
-	UProgressBar* EnemyHPBar;
+	UProgressBar* BattleEnemyHPBar;
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* EnemyHPText;
+	UTextBlock* BattleEnemyHPText;
 	// Nested in BattleWindow
 	UPROPERTY(meta = (BindWidget))
 	UButton* BattlePlayButton;
 	// Optional: add a Text Block with this name to WBP_CoreMenu to show the running battle time.
 	UPROPERTY(meta = (BindWidgetOptional))
 	UTextBlock* BattleTimerText;
+	// Filled with a WBP_MinionButton per minion by SetMinionButtons
+	UPROPERTY(meta = (BindWidget))
+	UVerticalBox* MinionButtonsVertBox;
 
 	// Click handler for SellButton
 	UFUNCTION()
@@ -353,11 +415,10 @@ protected:
 	// its icon on ActiveItemRollButton
 	UFUNCTION()
 	void OnCurrencyButtonClicked(FName RowName);
-	// Click handler for a basic currency listing in ShopUniGrid; selects it so the next Buy purchases it
+	// Click handler for a dynamically created WBP_MinionButton; selects that minion's UUID and says so in
+	// WarningsTextBox
 	UFUNCTION()
-	void OnShopCurrencyButtonClicked(FName RowName);
-	// Clears and repopulates ShopCurrencyUniGrid with a button for every Basic Currency_DT row
-	void PopulateShopCurrencyGrid(UClass* SingleImageButtonClass, int32 NumColumns, float SlotSize);
+	void OnMinionButtonClicked(UPlayerMinion* Minion);
 	// Sets IconImage's brush to the CurrencyIcon of the Currency_DT row named RowName
 	void LoadCurrencyIcon(UImage* IconImage, const FName& RowName);
 	// Builds the hover flyout for a currency button: CurrencyName on top, CurrencyDescription underneath.
@@ -374,6 +435,13 @@ protected:
 	// Shows the active item display when neither ShopWindowBox nor PlayerStashHorizBox is visible and an
 	// item is selected; hides it otherwise. Call after changing either panel's visibility.
 	void RefreshActiveItemDisplay();
+	// Sets SelectedItemUUID and moves the white selection border onto that item's icon in the shop/stash grids.
+	void SetSelectedItemUUID(const FString& ItemUUID);
+	// Wraps a shop/stash grid item widget in a border (added to Borders under ItemUUID) that shows white
+	// while ItemUUID is the selected item. Returns the border, to add to the grid in the item's place.
+	UBorder* WrapInSelectionBorder(UWidget* ItemWidget, const FString& ItemUUID, TMap<FString, TObjectPtr<UBorder>>& Borders);
+	// Shows the selection border on whichever grid item matches SelectedItemUUID and hides it on the rest.
+	void RefreshSelectionBorders();
 
 	UFUNCTION()
 	void ValidateButton(UButton* InputButton);
@@ -386,7 +454,7 @@ protected:
 
 	// Column count for InscriptionUniGrid and GlyphUniGrid; rows grow as needed.
 	UPROPERTY()
-	int32 CurrencyGridColumns = 2;
+	int32 CurrencyGridColumns = 3;
 
 	// Width/height (px) of each currency icon slot in InscriptionUniGrid and GlyphUniGrid.
 	UPROPERTY()
@@ -397,15 +465,6 @@ protected:
 
 	UPROPERTY()
 	int32 Cost = 5;
-
-	// Flat gold cost of each basic currency listing in ShopUniGrid.
-	UPROPERTY()
-	int32 BasicCurrencyShopCost = 25;
-
-	// CurrencyId of the basic currency listing selected in ShopUniGrid (empty if none). When set, Buy
-	// purchases this currency instead of the selected item.
-	UPROPERTY()
-	FString SelectedShopCurrencyId;
 
 	UPROPERTY()
 	FString ItemType = TEXT("Sword");
@@ -448,13 +507,20 @@ protected:
 	UPROPERTY()
 	TArray<TObjectPtr<ULoadItemButtonProxy>> PlayerStashButtonProxies;
 
+	// ItemUUID -> the selection border around that item's icon, rebuilt with the shop/stash grids.
+	UPROPERTY()
+	TMap<FString, TObjectPtr<UBorder>> ShopItemSelectionBorders;
+
+	UPROPERTY()
+	TMap<FString, TObjectPtr<UBorder>> StashItemSelectionBorders;
+
+	// Width (px) of the white border drawn around the selected item's icon.
+	UPROPERTY()
+	float ItemSelectionBorderWidth = 3.f;
+
 	// Keeps the per-button proxies alive (and their click bindings valid) between currency grid repopulations.
 	UPROPERTY()
 	TArray<TObjectPtr<UCurrencyButtonProxy>> CurrencyButtonProxies;
-
-	// Keeps the per-button proxies alive (and their click bindings valid) between shop grid repopulations.
-	UPROPERTY()
-	TArray<TObjectPtr<UCurrencyButtonProxy>> ShopCurrencyButtonProxies;
 
 	// Last stack counts pushed by PlayerInventory (CurrencyId -> count), kept so PopulateCurrencyGrids can
 	// show them on rebuild.
@@ -479,12 +545,30 @@ protected:
 	UPROPERTY()
 	float CurrencyToolTipWrapWidth = 280.f;
 
-	// Clears WarningsTextBox; bound to WarningTextTimerHandle by SetWarningText, never called directly
-	// so that clearing the text never re-arms the timer.
-	UFUNCTION()
-	void ClearWarningText();
+	// Most minion buttons SetMinionButtons shows; minions past this many get no button.
+	UPROPERTY()
+	int32 MaxMinionButtons = 8;
 
-	FTimerHandle WarningTextTimerHandle;
+	// Keeps the per-button proxies alive (and their click bindings valid) between minion button repopulations.
+	UPROPERTY()
+	TArray<TObjectPtr<UMinionButtonProxy>> MinionButtonProxies;
+
+	// MinionUUID of the minion last clicked in MinionButtonsVertBox. Set via OnMinionButtonClicked.
+	UPROPERTY()
+	FString SelectedMinionUUID;
+
+	// Ages the current warning by DeltaTime, fading WarningsTextBox out once its DisplaySeconds are up and
+	// clearing it once the fade is done.
+	void TickWarningText(float DeltaTime);
+
+	// Seconds WarningsTextBox takes to fade out once a warning's DisplaySeconds are up.
+	UPROPERTY(EditAnywhere, Category = "Menu Text")
+	float WarningTextFadeSeconds = 1.f;
+
+	// Seconds the current warning has been shown, and how long it stays fully visible (0 when nothing is
+	// counting down).
+	float WarningTextAge = 0.f;
+	float WarningTextDisplaySeconds = 0.f;
 
 	// Bound to the selected minion's/enemy's OnHealthChangedEvent by SetSelectedMinion/SetSelectedEnemy.
 	UFUNCTION()
@@ -492,14 +576,44 @@ protected:
 	UFUNCTION()
 	void OnSelectedEnemyHealthChanged(float CurrentHealth, float MaxHealth, float CurrentOvershield);
 
-	// Sets HPBar and HPText to "Current / Max", with any overshield added to both sides. While there's
-	// overshield the bar uses ShieldedHPBarColor, otherwise UnshieldedBarColor. A MaxHealth of 0 (e.g. a
-	// minion/enemy that hasn't been initialized) clears both instead.
-	void SetHealthDisplay(UProgressBar* HPBar, UTextBlock* HPText, const FLinearColor& UnshieldedBarColor,
+	// Bound to the selected minion's/enemy's OnHitTakenEvent by SetSelectedMinion/SetSelectedEnemy.
+	UFUNCTION()
+	void OnSelectedMinionHitTaken(const FCombatHitResult& HitResult);
+	UFUNCTION()
+	void OnSelectedEnemyHitTaken(const FCombatHitResult& HitResult);
+
+	// Fills HPBar to Current / Max, with any overshield added to both sides. While there's overshield the
+	// bar uses ShieldedHPBarColor, otherwise UnshieldedBarColor. A MaxHealth of 0 (e.g. a minion/enemy that
+	// hasn't been initialized) clears it instead.
+	void SetHealthDisplay(UProgressBar* HPBar, const FLinearColor& UnshieldedBarColor,
 		float CurrentHealth, float MaxHealth, float CurrentOvershield);
 
-	// Empties HPBar and HPText and puts the bar back to UnshieldedBarColor, for when nothing is selected.
-	void ClearHealthDisplay(UProgressBar* HPBar, UTextBlock* HPText, const FLinearColor& UnshieldedBarColor);
+	// Empties HPBar and puts it back to UnshieldedBarColor, for when nothing is selected.
+	void ClearHealthDisplay(UProgressBar* HPBar, const FLinearColor& UnshieldedBarColor);
+
+	// Swaps HPText out of the layout for an empty vertical box in the same spot (same slot settings), which
+	// becomes Stack's Box, and keeps HPText as Stack's Template. Must run before the Slate widgets are built.
+	void InitDamageNumberStack(UTextBlock* HPText, FDamageNumberStack& Stack);
+
+	// Adds the damage HitResult did as a new number at the bottom of Stack. Hits that did no damage
+	// (evaded or fully mitigated) don't show anything.
+	void ShowDamageNumber(FDamageNumberStack& Stack, const FCombatHitResult& HitResult);
+
+	// Ages every number in Stack by DeltaTime, fading it out, and removes the ones past DamageNumberLifetime.
+	void TickDamageNumbers(FDamageNumberStack& Stack, float DeltaTime);
+
+	void ClearDamageNumbers(FDamageNumberStack& Stack);
+
+	UPROPERTY()
+	FDamageNumberStack MinionDamageNumbers;
+
+	UPROPERTY()
+	FDamageNumberStack EnemyDamageNumbers;
+
+	// Seconds each damage number takes to fade from fully visible to gone. Every number fades on its own
+	// clock, so several hits close together show as a stack that empties from the top.
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	float DamageNumberLifetime = 1.f;
 
 	// Fill color for an HP bar while its minion/enemy has overshield left.
 	UPROPERTY(EditAnywhere, Category = "Combat")

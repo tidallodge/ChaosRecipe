@@ -122,6 +122,25 @@ static void RemoveSingleImageButtonPadding(UUserWidget* SingleImageButtonWidget)
 	}
 }
 
+void UCoreMenu::NativeOnInitialized()
+{
+	Super::NativeOnInitialized();
+
+	// Done here rather than in NativeConstruct because it changes the layout, which only shows up if it
+	// happens before the Slate widgets are built.
+	InitDamageNumberStack(BattleMinionHPText, MinionDamageNumbers);
+	InitDamageNumberStack(BattleEnemyHPText, EnemyDamageNumbers);
+}
+
+void UCoreMenu::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+	Super::NativeTick(MyGeometry, InDeltaTime);
+
+	TickDamageNumbers(MinionDamageNumbers, InDeltaTime);
+	TickDamageNumbers(EnemyDamageNumbers, InDeltaTime);
+	TickWarningText(InDeltaTime);
+}
+
 void UCoreMenu::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -204,11 +223,11 @@ void UCoreMenu::NativeConstruct()
 	// Off by default, so the fill colors set in WBP_CoreMenu are kept.
 	if (bOverrideHPBarColors)
 	{
-		MinionHPBar->SetFillColorAndOpacity(MinionHPBarColor);
-		EnemyHPBar->SetFillColorAndOpacity(EnemyHPBarColor);
+		BattleMinionHPBar->SetFillColorAndOpacity(MinionHPBarColor);
+		BattleEnemyHPBar->SetFillColorAndOpacity(EnemyHPBarColor);
 	}
-	MinionHPBarDefaultColor = MinionHPBar->GetFillColorAndOpacity();
-	EnemyHPBarDefaultColor = EnemyHPBar->GetFillColorAndOpacity();
+	MinionHPBarDefaultColor = BattleMinionHPBar->GetFillColorAndOpacity();
+	EnemyHPBarDefaultColor = BattleEnemyHPBar->GetFillColorAndOpacity();
 
 	PopulatePlayerStash();
 	PopulateCurrencyGrids();
@@ -230,7 +249,7 @@ void UCoreMenu::OnSellButtonClicked()
 	// Unload the cached item data now that it's been sold, and clear the Load Item box's text.
 	SelectedItemData = FBaseItemStruct();
 	SelectedItemId.Empty();
-	SelectedItemUUID.Empty();
+	SetSelectedItemUUID(FString());
 	bHasSelectedItemData = false;
 	SetActiveItemText(TEXT(""));
 
@@ -252,14 +271,6 @@ void UCoreMenu::OnBuyButtonClicked()
 	// Unlike Sell, Buy keeps ShopWindowBox open so the player can keep shopping, and leaves
 	// ActiveItemImageHorizBox alone rather than showing the purchased item there.
 	UpdatePanelVisibility({ PlayerStashHorizBox }, ESlateVisibility::Hidden);
-
-	// A selected basic currency listing takes priority over item data. PlayerInventory handles the
-	// affordability check and charge; the listing stays in the shop either way.
-	if (!SelectedShopCurrencyId.IsEmpty())
-	{
-		OnBuyCurrencyEvent.Broadcast(SelectedShopCurrencyId, BasicCurrencyShopCost);
-		return;
-	}
 
 	if (!bHasSelectedItemData)
 	{
@@ -405,8 +416,7 @@ void UCoreMenu::OnSingleLoadItemButtonClicked(FString ItemUUID)
 		return;
 	}
 
-	SelectedItemUUID = ItemUUID;
-	SelectedShopCurrencyId.Empty();
+	SetSelectedItemUUID(ItemUUID);
 
 	FString ItemId;
 	ItemObject->TryGetStringField(TEXT("ItemId"), ItemId);
@@ -534,6 +544,7 @@ void UCoreMenu::PopulatePlayerStash()
 	PlayerStashUniGrid->ClearChildren();
 	PlayerStashUniGrid->SetSlotPadding(FMargin(4.f));
 	PlayerStashButtonProxies.Empty();
+	StashItemSelectionBorders.Empty();
 
 	if (!ItemDataTable)
 	{
@@ -549,7 +560,7 @@ void UCoreMenu::PopulatePlayerStash()
 	}
 
 	constexpr int32 NumColumns = 4;
-	constexpr float StashItemSlotSize = 256.f;
+	constexpr float StashItemSlotSize = 160.f;
 	int32 Index = 0;
 
 	UItemInstanceManager StashManager;
@@ -628,7 +639,7 @@ void UCoreMenu::PopulatePlayerStash()
 		}
 
 		RemoveSingleImageButtonPadding(StashItemWidget);
-		ItemSlotBox->AddChild(StashItemWidget);
+		ItemSlotBox->AddChild(WrapInSelectionBorder(StashItemWidget, SavedItem.Key, StashItemSelectionBorders));
 
 		ULoadItemButtonProxy* Proxy = NewObject<ULoadItemButtonProxy>(this);
 		Proxy->ItemUUID = SavedItem.Key;
@@ -774,16 +785,7 @@ void UCoreMenu::PopulateCurrencyGrids()
 
 void UCurrencyButtonProxy::HandleClicked()
 {
-	if (!OwningMenu)
-	{
-		return;
-	}
-
-	if (bIsShopListing)
-	{
-		OwningMenu->OnShopCurrencyButtonClicked(RowName);
-	}
-	else
+	if (OwningMenu)
 	{
 		OwningMenu->OnCurrencyButtonClicked(RowName);
 	}
@@ -915,6 +917,108 @@ void UCoreMenu::UpdateCurrencyCountText(const FString& CurrencyId)
 	(*CountText)->SetText(FText::AsNumber(Count ? *Count : 0));
 }
 
+void UCoreMenu::SetMinionButtons(const TArray<UPlayerMinion*>& Minions)
+{
+	if (!MinionButtonsVertBox)
+	{
+		UE_LOG(LogTemp, Error, TEXT("MinionButtonsVertBox is null or not found!"));
+		return;
+	}
+
+	MinionButtonsVertBox->ClearChildren();
+	MinionButtonProxies.Empty();
+
+	UClass* MinionButtonClass = LoadClass<UUserWidget>(nullptr, TEXT("/Game/WBP_MinionButton.WBP_MinionButton_C"));
+	if (!MinionButtonClass)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load WBP_MinionButton class."));
+		return;
+	}
+
+	for (UPlayerMinion* Minion : Minions)
+	{
+		if (MinionButtonsVertBox->GetChildrenCount() >= MaxMinionButtons)
+		{
+			break;
+		}
+		if (!Minion)
+		{
+			continue;
+		}
+
+		UUserWidget* MinionButtonWidget = CreateWidget<UUserWidget>(this, MinionButtonClass);
+		if (!MinionButtonWidget)
+		{
+			UE_LOG(LogTemp, Error, TEXT("Failed to construct WBP_MinionButton for minion %s."), *Minion->GetMinionUUID());
+			continue;
+		}
+
+		// Found by name rather than as Blueprint variables, since UMG only marks Buttons "Is Variable" by
+		// default, not Images or Text Blocks.
+		UButton* MinionButton = Cast<UButton>(MinionButtonWidget->GetWidgetFromName(TEXT("MinionButton")));
+		if (!MinionButton)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("MinionButton not found on WBP_MinionButton."));
+			continue;
+		}
+
+		if (UImage* MinionButtonIcon = Cast<UImage>(MinionButtonWidget->GetWidgetFromName(TEXT("MinionButtonIcon"))))
+		{
+			if (UTexture2D* MinionIcon = Minion->GetMinionIcon())
+			{
+				MinionButtonIcon->SetBrushFromTexture(MinionIcon);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("No MinionIcon set in MinionClass_DT for %s."), *Minion->GetMinionClassName().ToString());
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("MinionButtonIcon not found on WBP_MinionButton."));
+		}
+
+		if (UTextBlock* MinionButtonText = Cast<UTextBlock>(MinionButtonWidget->GetWidgetFromName(TEXT("MinionButtonText"))))
+		{
+			MinionButtonText->SetText(Minion->GetMinionClassName());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("MinionButtonText not found on WBP_MinionButton."));
+		}
+
+		UMinionButtonProxy* Proxy = NewObject<UMinionButtonProxy>(this);
+		Proxy->Minion = Minion;
+		Proxy->OwningMenu = this;
+		MinionButtonProxies.Add(Proxy);
+		MinionButton->OnClicked.AddDynamic(Proxy, &UMinionButtonProxy::HandleClicked);
+
+		MinionButtonsVertBox->AddChildToVerticalBox(MinionButtonWidget);
+	}
+}
+
+void UMinionButtonProxy::HandleClicked()
+{
+	if (OwningMenu)
+	{
+		OwningMenu->OnMinionButtonClicked(Minion);
+	}
+}
+
+void UCoreMenu::OnMinionButtonClicked(UPlayerMinion* Minion)
+{
+	if (!Minion)
+	{
+		return;
+	}
+
+	SelectedMinionUUID = Minion->GetMinionUUID();
+
+	const FString Message = FString::Printf(TEXT("Selected Minion %s %s"), *Minion->GetMinionClassName().ToString(), *SelectedMinionUUID);
+	LogToScreen(Message);
+	SetWarningText(Message, 6.f);
+}
+
 void UShopItemButtonProxy::HandleClicked()
 {
 	if (OwningMenu)
@@ -937,12 +1041,6 @@ void UCoreMenu::OnShopButtonClicked()
 	const ESlateVisibility NewVisibility = bShouldShow ? ESlateVisibility::Visible : ESlateVisibility::Hidden;
 
 	SetPanelAndChildrenVisibility(ShopWindowBox, NewVisibility);
-
-	if (!bShouldShow)
-	{
-		// Closing the shop drops any currency listing selection, so a later Buy doesn't purchase it unseen.
-		SelectedShopCurrencyId.Empty();
-	}
 
 	if (PlayerStashHorizBox)
 	{
@@ -974,6 +1072,7 @@ void UCoreMenu::PopulateShopGrid()
 	ShopUniGrid->ClearChildren();
 	ShopUniGrid->SetSlotPadding(FMargin(4.f));
 	ShopItemButtonProxies.Empty();
+	ShopItemSelectionBorders.Empty();
 
 	UClass* SingleImageButtonClass = LoadClass<UUserWidget>(nullptr, TEXT("/Game/WBP_SingleImageButton.WBP_SingleImageButton_C"));
 	if (!SingleImageButtonClass)
@@ -983,26 +1082,23 @@ void UCoreMenu::PopulateShopGrid()
 	}
 
 	constexpr int32 NumColumns = 4;
-	constexpr float ShopItemSlotSize = 128.f;
-	constexpr int32 ShopCurrencyNumColumns = 8;
-	constexpr float ShopCurrencySlotSize = 64.f;
+	constexpr float ShopItemSlotSize = 160.f;
 	int32 Index = 0;
 
-	// A missing BaseItem_DT only skips the item listings; the basic currency row below still populates.
-	const TArray<FName> NoShopItems;
 	if (!ItemDataTable)
 	{
 		UE_LOG(LogTemp, Error, TEXT("BaseItem_DT data table is not loaded."));
+		return;
 	}
-	const TArray<FName>& ShopItemRowNames = ItemDataTable ? CurrentShopItems : NoShopItems;
 
-	for (const FName& RowName : ShopItemRowNames)
+	for (int32 ListingIndex = 0; ListingIndex < CurrentShopItems.Num(); ++ListingIndex)
 	{
-		const FBaseItemStruct* ItemRow = ItemDataTable->FindRow<FBaseItemStruct>(RowName, TEXT("CoreMenu::PopulateShopGrid"));
-		if (!ItemRow)
+		const FBaseItemStruct* ItemRow = ItemDataTable->FindRow<FBaseItemStruct>(CurrentShopItems[ListingIndex], TEXT("CoreMenu::PopulateShopGrid"));
+		if (!ItemRow || !CurrentShopItemUUIDs.IsValidIndex(ListingIndex))
 		{
 			continue;
 		}
+		const FString& ListingUUID = CurrentShopItemUUIDs[ListingIndex];
 
 		UUserWidget* ShopItemWidget = CreateWidget<UUserWidget>(this, SingleImageButtonClass);
 		USizeBox* ItemSlotBox = WidgetTree->ConstructWidget<USizeBox>(USizeBox::StaticClass());
@@ -1053,13 +1149,11 @@ void UCoreMenu::PopulateShopGrid()
 		}
 
 		RemoveSingleImageButtonPadding(ShopItemWidget);
-		ItemSlotBox->AddChild(ShopItemWidget);
+		ItemSlotBox->AddChild(WrapInSelectionBorder(ShopItemWidget, ListingUUID, ShopItemSelectionBorders));
 
 		UShopItemButtonProxy* Proxy = NewObject<UShopItemButtonProxy>(this);
 		Proxy->ItemId = ItemRow->ItemId.ToString();
-		// Mint this shop listing's UUID now, rather than waiting for Buy to be clicked, so every
-		// item shown in the grid already has one assigned the moment it's populated.
-		Proxy->ItemUUID = FGuid::NewGuid().ToString();
+		Proxy->ItemUUID = ListingUUID;
 		Proxy->OwningMenu = this;
 		ShopItemButtonProxies.Add(Proxy);
 		InnerButton->OnClicked.AddDynamic(Proxy, &UShopItemButtonProxy::HandleClicked);
@@ -1068,103 +1162,6 @@ void UCoreMenu::PopulateShopGrid()
 
 		++Index;
 	}
-
-	// Basic currencies are rebuilt from Currency_DT on every repopulation (not from CurrentShopItems),
-	// so buying one never removes it.
-	PopulateShopCurrencyGrid(SingleImageButtonClass, ShopCurrencyNumColumns, ShopCurrencySlotSize);
-}
-
-void UCoreMenu::PopulateShopCurrencyGrid(UClass* SingleImageButtonClass, int32 NumColumns, float SlotSize)
-{
-	if (!ShopCurrencyUniGrid)
-	{
-		UE_LOG(LogTemp, Error, TEXT("ShopCurrencyUniGrid is null or not found!"));
-		return;
-	}
-
-	ShopCurrencyUniGrid->ClearChildren();
-	ShopCurrencyUniGrid->SetSlotPadding(FMargin(4.f));
-	ShopCurrencyButtonProxies.Empty();
-
-	if (!CurrencyDataTable)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Currency_DT data table is not loaded."));
-		return;
-	}
-
-	int32 Index = 0;
-
-	for (const FName& RowName : CurrencyDataTable->GetRowNames())
-	{
-		const FCurrencyStruct* CurrencyRow = CurrencyDataTable->FindRow<FCurrencyStruct>(RowName, TEXT("CoreMenu::PopulateShopCurrencyGrid"));
-		if (!CurrencyRow || CurrencyRow->BaseCurrencyType != EBaseCurrencyType::Basic)
-		{
-			continue;
-		}
-
-		UUserWidget* CurrencyWidget = CreateWidget<UUserWidget>(this, SingleImageButtonClass);
-		USizeBox* CurrencySlotBox = WidgetTree->ConstructWidget<USizeBox>(USizeBox::StaticClass());
-		if (!CurrencyWidget || !CurrencySlotBox)
-		{
-			UE_LOG(LogTemp, Error, TEXT("Failed to construct WBP_SingleImageButton/SizeBox for shop currency."));
-			continue;
-		}
-
-		UButton* InnerButton = GetSingleImageButton(CurrencyWidget);
-		if (!InnerButton)
-		{
-			continue;
-		}
-
-		// Same reasoning as the other grids: forcing the cell size on a SizeBox keeps every uniform grid
-		// cell exactly SlotSize regardless of the source texture's resolution.
-		CurrencySlotBox->SetWidthOverride(SlotSize);
-		CurrencySlotBox->SetHeightOverride(SlotSize);
-		RemoveSingleImageButtonPadding(CurrencyWidget);
-		CurrencySlotBox->AddChild(CurrencyWidget);
-
-		if (UImage* Icon = GetSingleImageButtonIcon(CurrencyWidget))
-		{
-			LoadCurrencyIcon(Icon, RowName);
-			Icon->SetDesiredSizeOverride(FVector2D(SlotSize, SlotSize));
-		}
-
-		UCurrencyButtonProxy* Proxy = NewObject<UCurrencyButtonProxy>(this);
-		Proxy->RowName = RowName;
-		Proxy->bIsShopListing = true;
-		Proxy->OwningMenu = this;
-		ShopCurrencyButtonProxies.Add(Proxy);
-		InnerButton->OnClicked.AddDynamic(Proxy, &UCurrencyButtonProxy::HandleClicked);
-		InnerButton->SetToolTip(CreateCurrencyToolTip(RowName));
-
-		ShopCurrencyUniGrid->AddChildToUniformGrid(CurrencySlotBox, Index / NumColumns, Index % NumColumns);
-
-		++Index;
-	}
-}
-
-void UCoreMenu::OnShopCurrencyButtonClicked(FName RowName)
-{
-	if (!CurrencyDataTable)
-	{
-		return;
-	}
-
-	const FCurrencyStruct* CurrencyRow = CurrencyDataTable->FindRow<FCurrencyStruct>(RowName, TEXT("CoreMenu::OnShopCurrencyButtonClicked"));
-	if (!CurrencyRow)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("No Currency_DT row found for RowName: %s"), *RowName.ToString());
-		return;
-	}
-
-	SelectedShopCurrencyId = CurrencyRow->CurrencyId.ToString();
-	UE_LOG(LogTemp, Warning, TEXT("Shop currency button clicked for CurrencyId: %s"), *SelectedShopCurrencyId);
-
-	SetActiveItemText(FString::Printf(
-		TEXT("%s\n%s\nCost: %d gold"),
-		*CurrencyRow->CurrencyName.ToString(),
-		*CurrencyRow->CurrencyDescription.ToString(),
-		BasicCurrencyShopCost));
 }
 
 void UCoreMenu::RefreshShopGrid()
@@ -1181,15 +1178,33 @@ void UCoreMenu::RemoveItemFromShop(const FString& ItemId)
 		return;
 	}
 
-	// Matches on ItemId rather than array index so a duplicate listing elsewhere in the shop isn't
-	// accidentally removed instead.
-	for (int32 Index = 0; Index < CurrentShopItems.Num(); ++Index)
+	// The bought listing is the selected one, so that's removed when it matches. Otherwise falls back to
+	// the first listing with this ItemId. Either way the listing's UUID goes with it, since the bought
+	// item now owns that UUID in the stash.
+	int32 RemoveIndex = CurrentShopItemUUIDs.IndexOfByKey(SelectedItemUUID);
+	const FBaseItemStruct* SelectedRow = CurrentShopItems.IsValidIndex(RemoveIndex)
+		? ItemDataTable->FindRow<FBaseItemStruct>(CurrentShopItems[RemoveIndex], TEXT("CoreMenu::RemoveItemFromShop"))
+		: nullptr;
+	if (!SelectedRow || !SelectedRow->ItemId.ToString().Equals(ItemId, ESearchCase::IgnoreCase))
 	{
-		const FBaseItemStruct* ItemRow = ItemDataTable->FindRow<FBaseItemStruct>(CurrentShopItems[Index], TEXT("CoreMenu::RemoveItemFromShop"));
-		if (ItemRow && ItemRow->ItemId.ToString().Equals(ItemId, ESearchCase::IgnoreCase))
+		RemoveIndex = INDEX_NONE;
+		for (int32 Index = 0; Index < CurrentShopItems.Num(); ++Index)
 		{
-			CurrentShopItems.RemoveAt(Index);
-			break;
+			const FBaseItemStruct* ItemRow = ItemDataTable->FindRow<FBaseItemStruct>(CurrentShopItems[Index], TEXT("CoreMenu::RemoveItemFromShop"));
+			if (ItemRow && ItemRow->ItemId.ToString().Equals(ItemId, ESearchCase::IgnoreCase))
+			{
+				RemoveIndex = Index;
+				break;
+			}
+		}
+	}
+
+	if (CurrentShopItems.IsValidIndex(RemoveIndex))
+	{
+		CurrentShopItems.RemoveAt(RemoveIndex);
+		if (CurrentShopItemUUIDs.IsValidIndex(RemoveIndex))
+		{
+			CurrentShopItemUUIDs.RemoveAt(RemoveIndex);
 		}
 	}
 
@@ -1200,8 +1215,7 @@ void UCoreMenu::OnShopItemButtonClicked(FString ItemId, FString ItemUUID)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Shop item button clicked for ItemId: %s (UUID: %s)"), *ItemId, *ItemUUID);
 	SelectItemData(FText::FromString(ItemId));
-	SelectedItemUUID = ItemUUID;
-	SelectedShopCurrencyId.Empty();
+	SetSelectedItemUUID(ItemUUID);
 
 	// Lets listeners (e.g. ItemHandler) cache this item's base stats and display them as the
 	// active item, matching the stat breakdown shown for a stash selection or randomize.
@@ -1248,7 +1262,7 @@ void UCoreMenu::OnResetGameButtonClicked()
 	// The previously active/selected item may no longer exist after the reset.
 	SelectedItemData = FBaseItemStruct();
 	SelectedItemId.Empty();
-	SelectedItemUUID.Empty();
+	SetSelectedItemUUID(FString());
 	bHasSelectedItemData = false;
 	SetActiveItemText(TEXT(""));
 	UpdatePanelVisibility({ ActiveItemImageHorizBox }, ESlateVisibility::Hidden);
@@ -1277,6 +1291,53 @@ void UCoreMenu::RefreshActiveItemDisplay()
 	else
 	{
 		UpdatePanelVisibility({ ActiveItemImageHorizBox }, ESlateVisibility::Hidden);
+	}
+}
+
+void UCoreMenu::SetSelectedItemUUID(const FString& ItemUUID)
+{
+	SelectedItemUUID = ItemUUID;
+	RefreshSelectionBorders();
+}
+
+// An outline-only box: the fill stays transparent so it never shows through an icon's transparent
+// pixels, and an unselected border's outline is transparent too, so Slate skips drawing it entirely.
+static FSlateBrush MakeSelectionBorderBrush(bool bSelected, float Width)
+{
+	FSlateBrush Brush;
+	Brush.DrawAs = ESlateBrushDrawType::RoundedBox;
+	Brush.TintColor = FSlateColor(FLinearColor::Transparent);
+	Brush.OutlineSettings = FSlateBrushOutlineSettings(0.f, bSelected ? FLinearColor::White : FLinearColor::Transparent, Width);
+	return Brush;
+}
+
+UBorder* UCoreMenu::WrapInSelectionBorder(UWidget* ItemWidget, const FString& ItemUUID, TMap<FString, TObjectPtr<UBorder>>& Borders)
+{
+	UBorder* SelectionBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass());
+
+	// Padding equal to the outline width keeps the icon inside the outline rather than under it.
+	SelectionBorder->SetPadding(FMargin(ItemSelectionBorderWidth));
+	SelectionBorder->SetHorizontalAlignment(HAlign_Fill);
+	SelectionBorder->SetVerticalAlignment(VAlign_Fill);
+	SelectionBorder->SetBrush(MakeSelectionBorderBrush(!SelectedItemUUID.IsEmpty() && ItemUUID == SelectedItemUUID, ItemSelectionBorderWidth));
+	SelectionBorder->SetContent(ItemWidget);
+
+	Borders.Add(ItemUUID, SelectionBorder);
+	return SelectionBorder;
+}
+
+void UCoreMenu::RefreshSelectionBorders()
+{
+	for (TMap<FString, TObjectPtr<UBorder>>* Borders : { &ShopItemSelectionBorders, &StashItemSelectionBorders })
+	{
+		for (const TPair<FString, TObjectPtr<UBorder>>& Entry : *Borders)
+		{
+			if (Entry.Value)
+			{
+				const bool bSelected = !SelectedItemUUID.IsEmpty() && Entry.Key == SelectedItemUUID;
+				Entry.Value->SetBrush(MakeSelectionBorderBrush(bSelected, ItemSelectionBorderWidth));
+			}
+		}
 	}
 }
 
@@ -1359,6 +1420,7 @@ void UCoreMenu::ValidateButton(UButton* InputButton)
 void UCoreMenu::RandomizeShopItems()
 {
 	CurrentShopItems.Empty();
+	CurrentShopItemUUIDs.Empty();
 
 	if (ItemDataTableRowCount <= 0 || ItemDataTableRowNames.Num() <= 0)
 	{
@@ -1373,6 +1435,8 @@ void UCoreMenu::RandomizeShopItems()
 		int32 RandomItemRowName = FMath::RandRange(1, ItemDataTableRowCount);
 		RandomItemRowName -= 1;
 		CurrentShopItems.Add(ItemDataTableRowNames[RandomItemRowName]);
+		// Minted now rather than when Buy is clicked, so every listing has one from the moment it's shown.
+		CurrentShopItemUUIDs.Add(FGuid::NewGuid().ToString());
 	}
 
 	FString ShopItemsLog;
@@ -1418,7 +1482,7 @@ void UCoreMenu::SetPlayerGoldText(int32 NewGoldCount)
 	}
 }
 
-void UCoreMenu::SetWarningText(const FString& NewMessage)
+void UCoreMenu::SetWarningText(const FString& NewMessage, float DisplaySeconds)
 {
 	if (!WarningsTextBox)
 	{
@@ -1426,20 +1490,31 @@ void UCoreMenu::SetWarningText(const FString& NewMessage)
 		return;
 	}
 
+	// A new warning replaces one that's mid-fade, so it starts back at full opacity on its own clock.
 	WarningsTextBox->SetText(FText::FromString(NewMessage));
-
-	GetWorld()->GetTimerManager().ClearTimer(WarningTextTimerHandle);
-	if (!NewMessage.IsEmpty())
-	{
-		GetWorld()->GetTimerManager().SetTimer(WarningTextTimerHandle, this, &UCoreMenu::ClearWarningText, 3.f, false);
-	}
+	WarningsTextBox->SetRenderOpacity(1.f);
+	WarningTextAge = 0.f;
+	WarningTextDisplaySeconds = NewMessage.IsEmpty() ? 0.f : DisplaySeconds;
 }
 
-void UCoreMenu::ClearWarningText()
+void UCoreMenu::TickWarningText(float DeltaTime)
 {
-	if (WarningsTextBox)
+	if (!WarningsTextBox || WarningTextDisplaySeconds <= 0.f)
+	{
+		return;
+	}
+
+	WarningTextAge += DeltaTime;
+	const float FadeAge = WarningTextAge - WarningTextDisplaySeconds;
+	if (FadeAge >= WarningTextFadeSeconds)
 	{
 		WarningsTextBox->SetText(FText::GetEmpty());
+		WarningsTextBox->SetRenderOpacity(1.f);
+		WarningTextDisplaySeconds = 0.f;
+	}
+	else if (FadeAge > 0.f)
+	{
+		WarningsTextBox->SetRenderOpacity(1.f - FadeAge / WarningTextFadeSeconds);
 	}
 }
 
@@ -1448,17 +1523,22 @@ void UCoreMenu::SetSelectedMinion(UPlayerMinion* Minion)
 	if (SelectedMinion)
 	{
 		SelectedMinion->OnHealthChangedEvent.RemoveDynamic(this, &UCoreMenu::OnSelectedMinionHealthChanged);
+		SelectedMinion->OnHitTakenEvent.RemoveDynamic(this, &UCoreMenu::OnSelectedMinionHitTaken);
 	}
+
+	// Numbers still fading belong to the old minion.
+	ClearDamageNumbers(MinionDamageNumbers);
 
 	SelectedMinion = Minion;
 	if (!SelectedMinion)
 	{
-		ClearHealthDisplay(MinionHPBar, MinionHPText, MinionHPBarDefaultColor);
+		ClearHealthDisplay(BattleMinionHPBar, MinionHPBarDefaultColor);
 		return;
 	}
 
 	SelectedMinion->OnHealthChangedEvent.AddDynamic(this, &UCoreMenu::OnSelectedMinionHealthChanged);
-	SetHealthDisplay(MinionHPBar, MinionHPText, MinionHPBarDefaultColor,
+	SelectedMinion->OnHitTakenEvent.AddDynamic(this, &UCoreMenu::OnSelectedMinionHitTaken);
+	SetHealthDisplay(BattleMinionHPBar, MinionHPBarDefaultColor,
 		SelectedMinion->GetCurrentHealth(), SelectedMinion->GetMaxHealth(), SelectedMinion->GetCurrentOvershield());
 }
 
@@ -1467,40 +1547,55 @@ void UCoreMenu::SetSelectedEnemy(UEnemy* Enemy)
 	if (SelectedEnemy)
 	{
 		SelectedEnemy->OnHealthChangedEvent.RemoveDynamic(this, &UCoreMenu::OnSelectedEnemyHealthChanged);
+		SelectedEnemy->OnHitTakenEvent.RemoveDynamic(this, &UCoreMenu::OnSelectedEnemyHitTaken);
 	}
+
+	// Numbers still fading belong to the old enemy.
+	ClearDamageNumbers(EnemyDamageNumbers);
 
 	SelectedEnemy = Enemy;
 	if (!SelectedEnemy)
 	{
-		ClearHealthDisplay(EnemyHPBar, EnemyHPText, EnemyHPBarDefaultColor);
+		ClearHealthDisplay(BattleEnemyHPBar, EnemyHPBarDefaultColor);
 		return;
 	}
 
 	SelectedEnemy->OnHealthChangedEvent.AddDynamic(this, &UCoreMenu::OnSelectedEnemyHealthChanged);
-	SetHealthDisplay(EnemyHPBar, EnemyHPText, EnemyHPBarDefaultColor,
+	SelectedEnemy->OnHitTakenEvent.AddDynamic(this, &UCoreMenu::OnSelectedEnemyHitTaken);
+	SetHealthDisplay(BattleEnemyHPBar, EnemyHPBarDefaultColor,
 		SelectedEnemy->GetCurrentHealth(), SelectedEnemy->GetMaxHealth(), SelectedEnemy->GetCurrentOvershield());
 }
 
 void UCoreMenu::OnSelectedMinionHealthChanged(float CurrentHealth, float MaxHealth, float CurrentOvershield)
 {
-	SetHealthDisplay(MinionHPBar, MinionHPText, MinionHPBarDefaultColor, CurrentHealth, MaxHealth, CurrentOvershield);
+	SetHealthDisplay(BattleMinionHPBar, MinionHPBarDefaultColor, CurrentHealth, MaxHealth, CurrentOvershield);
 }
 
 void UCoreMenu::OnSelectedEnemyHealthChanged(float CurrentHealth, float MaxHealth, float CurrentOvershield)
 {
-	SetHealthDisplay(EnemyHPBar, EnemyHPText, EnemyHPBarDefaultColor, CurrentHealth, MaxHealth, CurrentOvershield);
+	SetHealthDisplay(BattleEnemyHPBar, EnemyHPBarDefaultColor, CurrentHealth, MaxHealth, CurrentOvershield);
 }
 
-void UCoreMenu::SetHealthDisplay(UProgressBar* HPBar, UTextBlock* HPText, const FLinearColor& UnshieldedBarColor,
+void UCoreMenu::OnSelectedMinionHitTaken(const FCombatHitResult& HitResult)
+{
+	ShowDamageNumber(MinionDamageNumbers, HitResult);
+}
+
+void UCoreMenu::OnSelectedEnemyHitTaken(const FCombatHitResult& HitResult)
+{
+	ShowDamageNumber(EnemyDamageNumbers, HitResult);
+}
+
+void UCoreMenu::SetHealthDisplay(UProgressBar* HPBar, const FLinearColor& UnshieldedBarColor,
 	float CurrentHealth, float MaxHealth, float CurrentOvershield)
 {
 	if (MaxHealth <= 0.f)
 	{
-		ClearHealthDisplay(HPBar, HPText, UnshieldedBarColor);
+		ClearHealthDisplay(HPBar, UnshieldedBarColor);
 		return;
 	}
 
-	// Overshield is added to both sides (e.g. 25 health + 15 shield reads "40 / 40"), and the bar stays
+	// Overshield is added to both sides (e.g. 25 health + 15 shield fills the bar), and the bar stays
 	// ShieldedHPBarColor until the shield is used up and the total is back down to MaxHealth.
 	const float Overshield = FMath::Max(0.f, CurrentOvershield);
 	const float DisplayedHealth = CurrentHealth + Overshield;
@@ -1511,28 +1606,87 @@ void UCoreMenu::SetHealthDisplay(UProgressBar* HPBar, UTextBlock* HPText, const 
 		HPBar->SetPercent(FMath::Clamp(DisplayedHealth / DisplayedMaxHealth, 0.f, 1.f));
 		HPBar->SetFillColorAndOpacity(Overshield > 0.f ? ShieldedHPBarColor : UnshieldedBarColor);
 	}
-
-	if (HPText)
-	{
-		// Both rounded up, so a partly-drained shield can't read as e.g. "40 / 39", and a combatant
-		// with a sliver of health left never reads as 0.
-		HPText->SetText(FText::FromString(FString::Printf(TEXT("%d / %d"),
-			FMath::CeilToInt(DisplayedHealth), FMath::CeilToInt(DisplayedMaxHealth))));
-	}
 }
 
-void UCoreMenu::ClearHealthDisplay(UProgressBar* HPBar, UTextBlock* HPText, const FLinearColor& UnshieldedBarColor)
+void UCoreMenu::ClearHealthDisplay(UProgressBar* HPBar, const FLinearColor& UnshieldedBarColor)
 {
 	if (HPBar)
 	{
 		HPBar->SetPercent(0.f);
 		HPBar->SetFillColorAndOpacity(UnshieldedBarColor);
 	}
+}
 
-	if (HPText)
+void UCoreMenu::InitDamageNumberStack(UTextBlock* HPText, FDamageNumberStack& Stack)
+{
+	UPanelWidget* Parent = HPText ? HPText->GetParent() : nullptr;
+	if (!Parent)
 	{
-		HPText->SetText(FText::GetEmpty());
+		UE_LOG(LogTemp, Error, TEXT("%s has no parent panel to show damage numbers in."),
+			HPText ? *HPText->GetName() : TEXT("HP text"));
+		return;
 	}
+
+	UVerticalBox* Box = WidgetTree->ConstructWidget<UVerticalBox>(UVerticalBox::StaticClass());
+
+	// The box takes over HPText's index and a copy of its slot (alignment, padding, anchors, ...), so it
+	// sits exactly where the text did. Removing the text first also frees up single-child panels (SizeBox,
+	// Border, ...). InsertChildAt only reorders the UMG side, hence running before Slate is built.
+	UPanelSlot* HPTextSlot = HPText->Slot;
+	const int32 Index = Parent->GetChildIndex(HPText);
+	Parent->RemoveChildAt(Index);
+	Parent->InsertChildAt(Index, Box, HPTextSlot);
+
+	Stack.Box = Box;
+	Stack.Template = HPText;
+}
+
+void UCoreMenu::ShowDamageNumber(FDamageNumberStack& Stack, const FCombatHitResult& HitResult)
+{
+	const float Damage = HitResult.HealthDamage + HitResult.OvershieldDamage;
+	if (!Stack.Box || Damage <= 0.f)
+	{
+		return;
+	}
+
+	// Made from the HP text as a template, so it keeps the font, color, shadow and justification set in
+	// WBP_CoreMenu.
+	UTextBlock* NumberText = NewObject<UTextBlock>(WidgetTree, Stack.Template->GetClass(), NAME_None, RF_Transactional, Stack.Template);
+	// Rounded up, so a hit that only took a sliver still reads as at least 1.
+	NumberText->SetText(FText::AsNumber(FMath::CeilToInt(Damage)));
+	NumberText->SetVisibility(ESlateVisibility::HitTestInvisible);
+	NumberText->SetRenderOpacity(1.f);
+
+	// Added at the bottom, so the oldest numbers stay on top.
+	Stack.Box->AddChildToVerticalBox(NumberText);
+	Stack.Numbers.AddDefaulted_GetRef().Text = NumberText;
+}
+
+void UCoreMenu::TickDamageNumbers(FDamageNumberStack& Stack, float DeltaTime)
+{
+	for (int32 Index = Stack.Numbers.Num() - 1; Index >= 0; --Index)
+	{
+		FDamageNumber& Number = Stack.Numbers[Index];
+		Number.Age += DeltaTime;
+		if (Number.Age >= DamageNumberLifetime)
+		{
+			Number.Text->RemoveFromParent();
+			Stack.Numbers.RemoveAt(Index);
+		}
+		else
+		{
+			Number.Text->SetRenderOpacity(1.f - Number.Age / DamageNumberLifetime);
+		}
+	}
+}
+
+void UCoreMenu::ClearDamageNumbers(FDamageNumberStack& Stack)
+{
+	if (Stack.Box)
+	{
+		Stack.Box->ClearChildren();
+	}
+	Stack.Numbers.Reset();
 }
 
 

@@ -9,12 +9,20 @@
 #include "BaseArmorStruct.h"
 #include "ItemModifierStruct.h"
 #include "ItemHandler.h"
+#include "MinionInstanceManager.h"
 #include "PlayerMinion.generated.h"
 
 // Broadcast whenever health, max health or overshield changes (hits, equipment, level, restores).
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnMinionHealthChangedEvent, float, CurrentHealth, float, MaxHealth, float, CurrentOvershield);
 
+// Broadcast for every hit that reaches the minion (evaded or not) with what it did, e.g. for damage numbers.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMinionHitTakenEvent, const FCombatHitResult&, HitResult);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMinionDiedEvent);
+
+// Broadcast whenever anything SavedMinions.json keeps for this minion changes (level, attributes or equipped
+// items), so UMinionHandler can save it.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMinionSaveDataChangedEvent, FString, MinionUUID);
 
 UCLASS()
 class CHAOSRECIPE_API UPlayerMinion : public UObject, public ICombatant
@@ -22,11 +30,24 @@ class CHAOSRECIPE_API UPlayerMinion : public UObject, public ICombatant
 	GENERATED_BODY()
 
 public:
-	// Loads InMinionClass's row from MinionClass_DT, then recalculates stats at InLevel and restores the
-	// minion to full. Returns false (leaving the minion untouched) if the class has no row.
+	// Loads InMinionClass's row from MinionClass_DT, gives the minion that class's attributes at InLevel and
+	// restores it to full. A minion without a MinionUUID yet gets a new one. Returns false (leaving the minion
+	// untouched) if the class has no row.
 	UFUNCTION(BlueprintCallable, Category = "Minion")
 	bool InitializeMinion(EMinionClass InMinionClass, int32 InLevel = 1);
 
+	// Rebuilds a saved minion: its UUID, class, level and attributes come from SaveData, then each of its
+	// EquippedItemUUIDs is re-equipped from the stash (any that can't be are skipped). Returns false (leaving
+	// the minion untouched) if SaveData has no UUID or its class has no row.
+	UFUNCTION(BlueprintCallable, Category = "Minion")
+	bool InitializeFromSaveData(const FMinionSaveData& SaveData);
+
+	// Everything SavedMinions.json keeps for this minion, as it is right now.
+	UFUNCTION(BlueprintPure, Category = "Minion")
+	FMinionSaveData GetSaveData() const;
+
+	// Adds its class's AttributesPerLevel to BaseAttributes for every level gained (or takes it off for every
+	// level lost).
 	UFUNCTION(BlueprintCallable, Category = "Minion")
 	void SetLevel(int32 NewLevel);
 
@@ -83,12 +104,23 @@ public:
 	void RestoreToFull();
 
 	UFUNCTION(BlueprintPure, Category = "Minion")
+	FString GetMinionUUID() const { return MinionUUID; }
+
+	UFUNCTION(BlueprintPure, Category = "Minion")
 	EMinionClass GetMinionClass() const { return ClassData.MinionClass; }
+
+	// Its class's ClassName from MinionClass_DT.
+	UFUNCTION(BlueprintPure, Category = "Minion")
+	FText GetMinionClassName() const { return ClassData.ClassName; }
+
+	// Its class's MinionIcon from MinionClass_DT (null if the row has none).
+	UFUNCTION(BlueprintPure, Category = "Minion")
+	UTexture2D* GetMinionIcon() const { return ClassData.MinionAssetData.MinionIcon; }
 
 	UFUNCTION(BlueprintPure, Category = "Minion")
 	int32 GetLevel() const { return Level; }
 
-	// Class stats at the current level, before equipped items.
+	// Its own attributes at the current level, before equipped items.
 	UFUNCTION(BlueprintPure, Category = "Minion")
 	FCombatAttributes GetBaseAttributes() const { return BaseAttributes; }
 
@@ -115,7 +147,13 @@ public:
 	FOnMinionHealthChangedEvent OnHealthChangedEvent;
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnMinionHitTakenEvent OnHitTakenEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnMinionDiedEvent OnDiedEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnMinionSaveDataChangedEvent OnSaveDataChangedEvent;
 
 protected:
 	UFUNCTION()
@@ -124,14 +162,23 @@ protected:
 	UFUNCTION()
 	void HandleItemRandomized(int32 GoldCost, FString CurrencyId);
 
-	// Rebuilds BaseAttributes, TotalAttributes, Offense and Defense from scratch out of the class row,
-	// level and equipped items, so it's safe to call after any change to any of them.
+	// Loads InMinionClass's MinionClass_DT row into ClassData. Returns false (leaving ClassData untouched) if
+	// it has no row.
+	bool LoadClassData(EMinionClass InMinionClass);
+
+	// Rebuilds TotalAttributes, Offense and Defense from scratch out of BaseAttributes, the class row, level
+	// and equipped items, so it's safe to call after any change to any of them.
 	void RecalculateStats();
 
 	bool HasWeaponEquipped() const { return !EquippedWeapon.ItemId.IsEmpty(); }
 	void ClearEquippedWeapon();
 
 	void BroadcastHealthChanged();
+	void BroadcastSaveDataChanged();
+
+	// Identifies this minion in SavedMinions.json and to UMinionHandler. Set once and never changed.
+	UPROPERTY()
+	FString MinionUUID;
 
 	UPROPERTY()
 	FMinionClassStruct ClassData;
@@ -139,6 +186,8 @@ protected:
 	UPROPERTY()
 	int32 Level = 1;
 
+	// This minion's own attributes: seeded from its class by InitializeMinion, grown by SetLevel, and
+	// restored as-is from a save.
 	UPROPERTY()
 	FCombatAttributes BaseAttributes;
 

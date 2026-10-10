@@ -60,12 +60,6 @@ public:
 	UFUNCTION()
 	void HandleItemRandomized(int32 GoldCost, FString CurrencyId);
 
-	// Bound to CoreMenu's OnBuyCurrencyEvent: fired when Buy is clicked with a basic currency listing
-	// selected in the shop. Rejects the purchase if GoldCost is unaffordable, otherwise charges it and
-	// adds one to CurrencyId's stack.
-	UFUNCTION()
-	void HandleCurrencyBought(FString CurrencyId, int32 GoldCost);
-
 	// Single entry point for changing PlayerGoldCount (positive to add, negative to charge), so
 	// every source of a gold change (sell, buy, randomize, future shop actions, ...) persists to
 	// SavedCurrency.json and refreshes the display the same way instead of duplicating that logic.
@@ -107,8 +101,8 @@ protected:
 
 	int32 PlayerGoldCount = DefaultPlayerGoldCount;
 
-	// CurrencyId -> how many the player holds. Basic currencies are granted by buying them from the shop
-	// (HandleCurrencyBought); this starts empty unless a previous save already has stacks in it.
+	// CurrencyId -> how many the player holds. Currencies are granted by enemy drops (HandleEnemyKilled);
+	// this starts empty unless a previous save already has stacks in it.
 	TMap<FString, int32> CurrencyStackCounts;
 
 	TUniquePtr<UCurrencyManager> CurrencyManager;

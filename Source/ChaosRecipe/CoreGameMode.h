@@ -13,6 +13,7 @@ class UStoreManager;
 class UItemHandler;
 class UPlayerInventory;
 class UPlayerMinion;
+class UMinionHandler;
 class UEnemy;
 class UBattleManager;
 class UDataTable;
@@ -47,6 +48,9 @@ public:
 	TSubclassOf<UUserWidget> SingleImageButtonClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hard References")
+	TSubclassOf<UUserWidget> MinionButtonClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hard References")
 	UDataTable* BaseItemDataTable;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hard References")
@@ -64,7 +68,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hard References")
 	UDataTable* EnemyDataTable;
 
-	// The MinionClass_DT class and Enemy_DT EnemyId spawned at BeginPlay and selected in the CoreMenu HP bars.
+	// The MinionClass_DT class a new game's first minion is created with (when SavedMinions.json has no
+	// minions), and the Enemy_DT EnemyId spawned at BeginPlay. Both are selected in the CoreMenu HP bars.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	EMinionClass StartingMinionClass = EMinionClass::Warrior;
 
@@ -79,6 +84,11 @@ public:
 	UPROPERTY()
 	UPlayerInventory* PlayerInventory;
 
+	// Creates, loads and saves every minion by its MinionUUID.
+	UPROPERTY(BlueprintReadOnly, Category = "Combat")
+	UMinionHandler* MinionHandler;
+
+	// The first saved minion (or a new one), selected in the CoreMenu and sent into battle.
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	UPlayerMinion* Minion;
 

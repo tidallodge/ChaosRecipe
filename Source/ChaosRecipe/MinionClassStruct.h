@@ -14,6 +14,18 @@ enum class EMinionClass : uint8
 };
 
 USTRUCT(BlueprintType)
+struct FMinionAssetData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere)
+	UTexture2D* MinionIcon;
+
+	UPROPERTY(EditAnywhere)
+	UStaticMesh* MinionStaticMesh;
+};
+
+USTRUCT(BlueprintType)
 struct FMinionClassStruct : public FTableRowBase
 {
     GENERATED_BODY()
@@ -45,4 +57,7 @@ struct FMinionClassStruct : public FTableRowBase
     // reaches each one's RequiredLevel.
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Minion Class")
     TArray<FCombatAbilityStruct> Abilities;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+	FMinionAssetData MinionAssetData;
 };

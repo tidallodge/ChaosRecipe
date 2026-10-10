@@ -9,6 +9,7 @@
 #include "StoreManager.h"
 #include "ItemHandler.h"
 #include "PlayerMinion.h"
+#include "MinionHandler.h"
 #include "Enemy.h"
 #include "BattleManager.h"
 #include "Engine/DataTable.h"
@@ -29,6 +30,12 @@ ACoreGameMode::ACoreGameMode()
 	if (SingleImageButtonFinder.Succeeded())
 	{
 		SingleImageButtonClass = SingleImageButtonFinder.Class;
+	}
+
+	static ConstructorHelpers::FClassFinder<UUserWidget> MinionButtonFinder(TEXT("/Game/WBP_MinionButton"));
+	if (MinionButtonFinder.Succeeded())
+	{
+		MinionButtonClass = MinionButtonFinder.Class;
 	}
 
 	static ConstructorHelpers::FObjectFinder<UDataTable> BaseItemDataTableFinder(TEXT("/Game/ItemData/BaseItem_DT"));
@@ -101,10 +108,16 @@ void ACoreGameMode::BeginPlay()
 			StoreManager->BindToCoreMenuEvents(CoreMenuWidget);
 			PlayerInventory->BindToStoreManagerEvents(StoreManager);
 
-			Minion = NewObject<UPlayerMinion>(this);
-			if (Minion->InitializeMinion(StartingMinionClass))
+			MinionHandler = NewObject<UMinionHandler>(this);
+			MinionHandler->BindToCoreMenuEvents(CoreMenuWidget);
+			MinionHandler->BindToItemHandlerEvents(ItemHandler);
+
+			// Every minion in SavedMinions.json comes back with its saved level, attributes and items; with no
+			// save yet, the game starts with a new StartingMinionClass minion instead.
+			const TArray<UPlayerMinion*> SavedMinions = MinionHandler->LoadSavedMinions();
+			Minion = SavedMinions.Num() > 0 ? SavedMinions[0] : MinionHandler->CreateMinion(StartingMinionClass);
+			if (Minion)
 			{
-				Minion->BindToItemHandlerEvents(ItemHandler);
 				CoreMenuWidget->SetSelectedMinion(Minion);
 			}
 

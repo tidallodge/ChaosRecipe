@@ -25,8 +25,13 @@
 				"Y": 4
 			}
 		},
-		"AttackRate": 1,
-		"Abilities": []
+		"AttackRate": 1.5,
+		"Abilities": [],
+		"MinionAssetData":
+		{
+			"MinionIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/MinionAssets/knight-helmet-icon.knight-helmet-icon'",
+			"MinionStaticMesh": "None"
+		}
 	},
 	{
 		"Name": "Ranger",
@@ -55,7 +60,12 @@
 			}
 		},
 		"AttackRate": 0.75,
-		"Abilities": []
+		"Abilities": [],
+		"MinionAssetData":
+		{
+			"MinionIcon": "None",
+			"MinionStaticMesh": "None"
+		}
 	},
 	{
 		"Name": "Mage",
@@ -84,6 +94,11 @@
 			}
 		},
 		"AttackRate": 1,
-		"Abilities": []
+		"Abilities": [],
+		"MinionAssetData":
+		{
+			"MinionIcon": "None",
+			"MinionStaticMesh": "None"
+		}
 	}
 ]

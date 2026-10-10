@@ -1,5 +1,6 @@
 // PlayerMinion
 /** Purpose: A player-owned combatant built from a minion class (MinionClass_DT) and level
+    Identified by its own MinionUUID, under which UMinionHandler saves its level, attributes and equipped items
     Equips weapons and armor from the player's stash, which modify its stats and attacks
     Uses attacks/spells on anything that implements ICombatTarget, and takes hits through it too
 */
@@ -47,9 +48,90 @@ namespace
 
 		return FlatValue * Multiplier;
 	}
+
+	// Adds PerLevel to Attributes once for each of Levels (negative to take levels back off).
+	void AddAttributesPerLevel(FCombatAttributes& Attributes, const FCombatAttributes& PerLevel, int32 Levels)
+	{
+		Attributes.Health += PerLevel.Health * Levels;
+		Attributes.Strength += PerLevel.Strength * Levels;
+		Attributes.Intelligence += PerLevel.Intelligence * Levels;
+		Attributes.Dexterity += PerLevel.Dexterity * Levels;
+	}
 }
 
 bool UPlayerMinion::InitializeMinion(EMinionClass InMinionClass, int32 InLevel)
+{
+	if (!LoadClassData(InMinionClass))
+	{
+		return false;
+	}
+
+	if (MinionUUID.IsEmpty())
+	{
+		MinionUUID = FGuid::NewGuid().ToString();
+	}
+
+	Level = FMath::Max(1, InLevel);
+	BaseAttributes = ClassData.BaseAttributes;
+	AddAttributesPerLevel(BaseAttributes, ClassData.AttributesPerLevel, Level - 1);
+
+	RecalculateStats();
+	RestoreToFull();
+
+	UE_LOG(LogTemp, Warning, TEXT("PlayerMinion: Initialized %s %s at level %d (Health=%d, Str=%d, Int=%d, Dex=%d)"),
+		*ClassData.ClassName.ToString(), *MinionUUID, Level, TotalAttributes.Health, TotalAttributes.Strength,
+		TotalAttributes.Intelligence, TotalAttributes.Dexterity);
+	return true;
+}
+
+bool UPlayerMinion::InitializeFromSaveData(const FMinionSaveData& SaveData)
+{
+	if (SaveData.MinionUUID.IsEmpty())
+	{
+		UE_LOG(LogTemp, Error, TEXT("PlayerMinion: Can't load a saved minion without a MinionUUID."));
+		return false;
+	}
+
+	if (!LoadClassData(SaveData.MinionClass))
+	{
+		return false;
+	}
+
+	MinionUUID = SaveData.MinionUUID;
+	Level = FMath::Max(1, SaveData.Level);
+	BaseAttributes = SaveData.BaseAttributes;
+	ClearEquippedWeapon();
+	EquippedArmor.Empty();
+	RecalculateStats();
+
+	for (const FString& ItemUUID : SaveData.EquippedItemUUIDs)
+	{
+		if (!EquipItem(ItemUUID))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("PlayerMinion: %s couldn't re-equip saved item %s, so it's been skipped."), *MinionUUID, *ItemUUID);
+		}
+	}
+
+	RestoreToFull();
+
+	UE_LOG(LogTemp, Warning, TEXT("PlayerMinion: Loaded %s %s at level %d with %d item(s) equipped (Health=%d, Str=%d, Int=%d, Dex=%d)"),
+		*ClassData.ClassName.ToString(), *MinionUUID, Level, GetEquippedItemUUIDs().Num(), TotalAttributes.Health,
+		TotalAttributes.Strength, TotalAttributes.Intelligence, TotalAttributes.Dexterity);
+	return true;
+}
+
+FMinionSaveData UPlayerMinion::GetSaveData() const
+{
+	FMinionSaveData SaveData;
+	SaveData.MinionUUID = MinionUUID;
+	SaveData.MinionClass = ClassData.MinionClass;
+	SaveData.Level = Level;
+	SaveData.BaseAttributes = BaseAttributes;
+	SaveData.EquippedItemUUIDs = GetEquippedItemUUIDs();
+	return SaveData;
+}
+
+bool UPlayerMinion::LoadClassData(EMinionClass InMinionClass)
 {
 	FMinionClassStruct LoadedClassData;
 	const bool bFoundClass = DataTableHelpers::FindRow(MinionClassDataTablePath,
@@ -61,27 +143,22 @@ bool UPlayerMinion::InitializeMinion(EMinionClass InMinionClass, int32 InLevel)
 	}
 
 	ClassData = LoadedClassData;
-	Level = FMath::Max(1, InLevel);
 
 	if (ClassData.Damage.Num() == 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PlayerMinion: %s has no Damage set in MinionClass_DT, so it deals no damage without a weapon."),
 			*ClassData.ClassName.ToString());
 	}
-
-	RecalculateStats();
-	RestoreToFull();
-
-	UE_LOG(LogTemp, Warning, TEXT("PlayerMinion: Initialized %s at level %d (Health=%d, Str=%d, Int=%d, Dex=%d)"),
-		*ClassData.ClassName.ToString(), Level, TotalAttributes.Health, TotalAttributes.Strength,
-		TotalAttributes.Intelligence, TotalAttributes.Dexterity);
 	return true;
 }
 
 void UPlayerMinion::SetLevel(int32 NewLevel)
 {
-	Level = FMath::Max(1, NewLevel);
+	NewLevel = FMath::Max(1, NewLevel);
+	AddAttributesPerLevel(BaseAttributes, ClassData.AttributesPerLevel, NewLevel - Level);
+	Level = NewLevel;
 	RecalculateStats();
+	BroadcastSaveDataChanged();
 }
 
 void UPlayerMinion::BindToItemHandlerEvents(UItemHandler* ItemHandler)
@@ -175,6 +252,7 @@ bool UPlayerMinion::EquipWeapon(const FItemWeaponStatsStruct& WeaponStats)
 	EquippedWeapon = WeaponStats;
 	EquippedWeaponBase = WeaponBase;
 	RecalculateStats();
+	BroadcastSaveDataChanged();
 
 	UE_LOG(LogTemp, Warning, TEXT("PlayerMinion: Equipped weapon %s (UUID: %s)"), *ItemId, *WeaponStats.UUID.ToString());
 	return true;
@@ -201,6 +279,7 @@ bool UPlayerMinion::EquipArmor(const FItemArmorStatsStruct& ArmorStats)
 
 	EquippedArmor.Add(ArmorBase.ArmorSlot, ArmorStats);
 	RecalculateStats();
+	BroadcastSaveDataChanged();
 
 	UE_LOG(LogTemp, Warning, TEXT("PlayerMinion: Equipped %s armor %s (UUID: %s)"),
 		*UEnum::GetValueAsString(ArmorBase.ArmorSlot), *ItemId, *ArmorStats.UUID.ToString());
@@ -228,6 +307,7 @@ bool UPlayerMinion::UnequipItem(const FString& ItemUUID)
 	if (bUnequipped)
 	{
 		RecalculateStats();
+		BroadcastSaveDataChanged();
 	}
 	return bUnequipped;
 }
@@ -237,6 +317,7 @@ void UPlayerMinion::UnequipAll()
 	ClearEquippedWeapon();
 	EquippedArmor.Empty();
 	RecalculateStats();
+	BroadcastSaveDataChanged();
 }
 
 void UPlayerMinion::RefreshEquippedItems()
@@ -311,6 +392,7 @@ FCombatHitResult UPlayerMinion::ApplyHit(const FCombatHit& Hit)
 	{
 		BroadcastHealthChanged();
 	}
+	OnHitTakenEvent.Broadcast(Result);
 
 	if (Result.bKilledTarget)
 	{
@@ -349,15 +431,14 @@ void UPlayerMinion::BroadcastHealthChanged()
 	OnHealthChangedEvent.Broadcast(CurrentHealth, GetMaxHealth(), CurrentOvershield);
 }
 
+void UPlayerMinion::BroadcastSaveDataChanged()
+{
+	OnSaveDataChangedEvent.Broadcast(MinionUUID);
+}
+
 void UPlayerMinion::RecalculateStats()
 {
 	const float PreviousMaxHealth = GetMaxHealth();
-
-	const int32 LevelsGained = Level - 1;
-	BaseAttributes.Health = ClassData.BaseAttributes.Health + ClassData.AttributesPerLevel.Health * LevelsGained;
-	BaseAttributes.Strength = ClassData.BaseAttributes.Strength + ClassData.AttributesPerLevel.Strength * LevelsGained;
-	BaseAttributes.Intelligence = ClassData.BaseAttributes.Intelligence + ClassData.AttributesPerLevel.Intelligence * LevelsGained;
-	BaseAttributes.Dexterity = ClassData.BaseAttributes.Dexterity + ClassData.AttributesPerLevel.Dexterity * LevelsGained;
 
 	if (ModifierPool.Num() == 0)
 	{
