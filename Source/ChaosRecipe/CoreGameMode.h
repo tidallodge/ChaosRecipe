@@ -14,6 +14,7 @@ class UItemHandler;
 class UPlayerInventory;
 class UPlayerMinion;
 class UMinionHandler;
+class UHireShopHandler;
 class UEnemy;
 class UBattleManager;
 class UDataTable;
@@ -87,6 +88,10 @@ public:
 	// Creates, loads and saves every minion by its MinionUUID.
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	UMinionHandler* MinionHandler;
+
+	// Keeps (and saves) the minions the hire shop offers, and rerolls them for gold.
+	UPROPERTY()
+	UHireShopHandler* HireShopHandler;
 
 	// The first saved minion (or a new one), selected in the CoreMenu and sent into battle.
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")

@@ -9,6 +9,7 @@
 #include "TimerManager.h"
 #include "BaseItemStruct.h"
 #include "CombatTypes.h"
+#include "MinionClassStruct.h"
 #include "CoreMenu.generated.h"
 
 class UButton;
@@ -40,6 +41,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnShopItemSelectedEvent, FString, 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnResetGameEvent);
 // Fired when BattlePlayButton in BattleWindow is clicked, so listeners (e.g. BattleManager) can start a battle.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBattlePlayButtonClickedEvent);
+// Fired when HireShopRerollButton is clicked, so listeners (e.g. HireShopHandler) can reroll the minions the hire
+// shop offers.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHireShopRerollButtonClickedEvent);
 // Fired when StashAssignButton is clicked, so listeners (e.g. MinionHandler) can equip the stash item ItemUUID on
 // the minion MinionUUID. Expected to be handled synchronously: CoreMenu reloads the stash right after broadcasting.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAssignItemToMinionEvent, FString, MinionUUID, FString, ItemUUID);
@@ -243,6 +247,9 @@ public:
 	FOnBattlePlayButtonClickedEvent OnBattlePlayButtonClickedEvent;
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnHireShopRerollButtonClickedEvent OnHireShopRerollButtonClickedEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnAssignItemToMinionEvent OnAssignItemToMinionEvent;
 
 	// Supplies the text for each shop/stash item's hover flyout (CreateItemToolTip). Unbound, items show no flyout.
@@ -334,6 +341,11 @@ public:
 	// MinionUUID of the minion last clicked in MinionButtonsVertBox (empty if none has been yet).
 	UFUNCTION(BlueprintCallable, Category = "Minion")
 	FString GetSelectedMinionUUID() const { return SelectedMinionUUID; }
+
+	// Replaces the minion buttons in HireShopButtonsVertBox with one for each of MinionClasses, the minions the hire
+	// shop offers. Called by HireShopHandler whenever they're loaded or rerolled.
+	UFUNCTION(BlueprintCallable, Category = "Hire Shop")
+	void SetHireShopMinions(const TArray<EMinionClass>& MinionClasses);
 
 	// Shows BattleTime (seconds since the battle started) as "M:SS.s" in BattleTimerText, if the widget
 	// blueprint has one. Called by BattleManager every battle tick.
@@ -440,11 +452,16 @@ protected:
 	UPanelWidget* MinionEqiupVertBox;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* MinionEquipText;
-	// Shows HireShopVertBox, filled with a minion button for each minion the hire shop offers (OnHireShopButtonClicked)
+	// Shows the HireShop window (HireShopVertBox), whose HireShopButtonsVertBox lists a minion button for each minion
+	// the hire shop offers (PopulateHireShop), with HireShopRerollButton to reroll them
 	UPROPERTY(meta = (BindWidget))
 	UButton* HireShopButton;
 	UPROPERTY(meta = (BindWidget))
 	UPanelWidget* HireShopVertBox;
+	UPROPERTY(meta = (BindWidget))
+	UPanelWidget* HireShopButtonsVertBox;
+	UPROPERTY(meta = (BindWidget))
+	UButton* HireShopRerollButton;
 
 	// Click handler for SellButton
 	UFUNCTION()
@@ -524,14 +541,13 @@ protected:
 	// Creates a WBP_MinionButton showing MinionIcon and MinionName, for the caller to bind and add. Null if it
 	// can't be created.
 	UUserWidget* CreateMinionButtonWidget(UClass* MinionButtonClass, UTexture2D* MinionIcon, const FText& MinionName);
-	// Click handler for HireShopButton; shows the HireShop window and fills it with the hire shop's minion buttons
-	// (PopulateHireShop)
+	// Click handler for HireShopButton; shows the HireShop window
 	UFUNCTION()
 	void OnHireShopButtonClicked();
-	// Rolls HireShopMinionCount random MinionClass_DT rows (repeats allowed) into CurrentHireShopMinions, the
-	// minions the hire shop offers. Done once, in NativeConstruct, so the offers stay the same between visits.
-	void RandomizeHireShopMinions();
-	// Replaces the minion buttons in HireShopVertBox with a WBP_MinionButton for each of CurrentHireShopMinions,
+	// Click handler for HireShopRerollButton; broadcasts OnHireShopRerollButtonClickedEvent
+	UFUNCTION()
+	void OnHireShopRerollButtonClicked();
+	// Replaces the minion buttons in HireShopButtonsVertBox with a WBP_MinionButton for each of CurrentHireShopMinions,
 	// showing its class's MinionIcon and ClassName. Clicking one does nothing yet.
 	void PopulateHireShop();
 	// Sets IconImage's brush to the CurrencyIcon of the Currency_DT row named RowName
@@ -701,24 +717,9 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UPlayerMinion> EquipTextMinion;
 
-	// Shared reference to MinionClass_DT, loaded once in NativeConstruct.
+	// The class of each minion the hire shop offers, as last set by SetHireShopMinions.
 	UPROPERTY()
-	UDataTable* MinionClassDataTable;
-
-	UPROPERTY()
-	TArray<FName> MinionClassDataTableRowNames;
-
-	// How many minions the hire shop offers, each shown as a minion button in HireShopVertBox.
-	UPROPERTY(EditAnywhere, Category = "Hire Shop", meta = (ClampMin = "0"))
-	int32 HireShopMinionCount = 3;
-
-	// The MinionClass_DT row of each minion the hire shop offers. Set by RandomizeHireShopMinions.
-	UPROPERTY()
-	TArray<FName> CurrentHireShopMinions;
-
-	// The minion buttons PopulateHireShop last added to HireShopVertBox, so the next populate replaces only them.
-	UPROPERTY()
-	TArray<TObjectPtr<UUserWidget>> HireShopMinionButtons;
+	TArray<EMinionClass> CurrentHireShopMinions;
 
 	// Every window ShowWindow/HideWindow manage, filled in by RegisterWindows.
 	UPROPERTY()

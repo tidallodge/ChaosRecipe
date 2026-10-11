@@ -10,6 +10,7 @@
 #include "ItemHandler.h"
 #include "PlayerMinion.h"
 #include "MinionHandler.h"
+#include "HireShopHandler.h"
 #include "Enemy.h"
 #include "BattleManager.h"
 #include "Engine/DataTable.h"
@@ -111,6 +112,10 @@ void ACoreGameMode::BeginPlay()
 			MinionHandler = NewObject<UMinionHandler>(this);
 			MinionHandler->BindToCoreMenuEvents(CoreMenuWidget);
 			MinionHandler->BindToItemHandlerEvents(ItemHandler);
+
+			HireShopHandler = NewObject<UHireShopHandler>(this);
+			HireShopHandler->BindToPlayerInventory(PlayerInventory);
+			HireShopHandler->BindToCoreMenuEvents(CoreMenuWidget);
 
 			// Every minion in SavedMinions.json comes back with its saved level, attributes and items; with no
 			// save yet, the game starts with a new StartingMinionClass minion instead.

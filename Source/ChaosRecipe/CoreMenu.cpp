@@ -31,6 +31,7 @@
 #include "ItemInstanceManager.h"
 #include "MinionInstanceManager.h"
 #include "MinionClassStruct.h"
+#include "DataTableHelpers.h"
 #include "PlayerMinion.h"
 #include "Enemy.h"
 #include "Dom/JsonObject.h"
@@ -179,16 +180,6 @@ void UCoreMenu::NativeConstruct()
 		UE_LOG(LogTemp, Error, TEXT("Failed to load Currency_DT data table."));
 	}
 
-	MinionClassDataTable = LoadObject<UDataTable>(nullptr, TEXT("/Game/MinionData/MinionClass_DT"));
-	if (MinionClassDataTable)
-	{
-		MinionClassDataTableRowNames = MinionClassDataTable->GetRowNames();
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to load MinionClass_DT data table."));
-	}
-
 
     ValidateButton(BuyButton);
     ValidateButton(SellButton);
@@ -200,6 +191,7 @@ void UCoreMenu::NativeConstruct()
     ValidateButton(ResetGameButton);
     ValidateButton(BattlePlayButton);
     ValidateButton(HireShopButton);
+    ValidateButton(HireShopRerollButton);
 
 	BuyButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBuyButtonClicked);
 	SellButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSellButtonClicked);
@@ -211,6 +203,7 @@ void UCoreMenu::NativeConstruct()
 	ResetGameButton->OnClicked.AddDynamic(this, &UCoreMenu::OnResetGameButtonClicked);
 	BattlePlayButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBattlePlayButtonClicked);
 	HireShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnHireShopButtonClicked);
+	HireShopRerollButton->OnClicked.AddDynamic(this, &UCoreMenu::OnHireShopRerollButtonClicked);
 
 	HideWindow(ECoreMenuWindow::ShopWindow);
 
@@ -252,8 +245,6 @@ void UCoreMenu::NativeConstruct()
 
 	RandomizeShopItems();
 	PopulateShopGrid();
-
-	RandomizeHireShopMinions();
 }
 
 void UCoreMenu::OnSellButtonClicked()
@@ -1059,48 +1050,29 @@ void UCoreMenu::OnHireShopButtonClicked()
 {
 	UE_LOG(LogTemp, Warning, TEXT("HireShopButton Clicked."));
 	ShowWindow(ECoreMenuWindow::HireShop);
-	PopulateHireShop();
 }
 
-void UCoreMenu::RandomizeHireShopMinions()
+void UCoreMenu::OnHireShopRerollButtonClicked()
 {
-	CurrentHireShopMinions.Reset();
+	UE_LOG(LogTemp, Warning, TEXT("HireShopRerollButton Clicked."));
+	OnHireShopRerollButtonClickedEvent.Broadcast();
+}
 
-	if (MinionClassDataTableRowNames.Num() == 0)
-	{
-		UE_LOG(LogTemp, Error, TEXT("RandomizeHireShopMinions: MinionClass_DT has no rows loaded; skipping."));
-		return;
-	}
-
-	for (int32 Index = 0; Index < HireShopMinionCount; ++Index)
-	{
-		CurrentHireShopMinions.Add(MinionClassDataTableRowNames[FMath::RandRange(0, MinionClassDataTableRowNames.Num() - 1)]);
-	}
+void UCoreMenu::SetHireShopMinions(const TArray<EMinionClass>& MinionClasses)
+{
+	CurrentHireShopMinions = MinionClasses;
+	PopulateHireShop();
 }
 
 void UCoreMenu::PopulateHireShop()
 {
-	if (!HireShopVertBox)
+	if (!HireShopButtonsVertBox)
 	{
-		UE_LOG(LogTemp, Error, TEXT("HireShopVertBox is null or not found!"));
+		UE_LOG(LogTemp, Error, TEXT("HireShopButtonsVertBox is null or not found!"));
 		return;
 	}
 
-	// Only the buttons added last time are taken out, so anything else WBP_CoreMenu has in HireShopVertBox stays.
-	for (UUserWidget* HireShopMinionButton : HireShopMinionButtons)
-	{
-		if (HireShopMinionButton)
-		{
-			HireShopMinionButton->RemoveFromParent();
-		}
-	}
-	HireShopMinionButtons.Reset();
-
-	if (!MinionClassDataTable)
-	{
-		UE_LOG(LogTemp, Error, TEXT("MinionClass_DT data table is not loaded."));
-		return;
-	}
+	HireShopButtonsVertBox->ClearChildren();
 
 	UClass* MinionButtonClass = LoadClass<UUserWidget>(nullptr, TEXT("/Game/WBP_MinionButton.WBP_MinionButton_C"));
 	if (!MinionButtonClass)
@@ -1109,18 +1081,20 @@ void UCoreMenu::PopulateHireShop()
 		return;
 	}
 
-	for (const FName& RowName : CurrentHireShopMinions)
+	for (const EMinionClass MinionClass : CurrentHireShopMinions)
 	{
-		const FMinionClassStruct* ClassRow = MinionClassDataTable->FindRow<FMinionClassStruct>(RowName, TEXT("CoreMenu::PopulateHireShop"));
-		if (!ClassRow)
+		FMinionClassStruct ClassRow;
+		const bool bFoundClass = DataTableHelpers::FindRow(TEXT("/Game/MinionData/MinionClass_DT.MinionClass_DT"),
+			[MinionClass](const FMinionClassStruct& Row) { return Row.MinionClass == MinionClass; }, ClassRow);
+		if (!bFoundClass)
 		{
+			UE_LOG(LogTemp, Warning, TEXT("No MinionClass_DT row for %s."), *UEnum::GetValueAsString(MinionClass));
 			continue;
 		}
 
-		if (UUserWidget* MinionButtonWidget = CreateMinionButtonWidget(MinionButtonClass, ClassRow->MinionAssetData.MinionIcon, ClassRow->ClassName))
+		if (UUserWidget* MinionButtonWidget = CreateMinionButtonWidget(MinionButtonClass, ClassRow.MinionAssetData.MinionIcon, ClassRow.ClassName))
 		{
-			HireShopVertBox->AddChild(MinionButtonWidget);
-			HireShopMinionButtons.Add(MinionButtonWidget);
+			HireShopButtonsVertBox->AddChild(MinionButtonWidget);
 		}
 	}
 }
