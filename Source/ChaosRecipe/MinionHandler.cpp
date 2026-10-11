@@ -19,6 +19,7 @@ void UMinionHandler::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
 
 	BoundCoreMenu = CoreMenu;
 	CoreMenu->OnResetGameButtonClickedEvent.AddDynamic(this, &UMinionHandler::OnResetGame);
+	CoreMenu->OnAssignItemToMinionEvent.AddDynamic(this, &UMinionHandler::OnAssignItemToMinion);
 	UpdateMinionButtons();
 }
 
@@ -178,6 +179,11 @@ void UMinionHandler::OnResetGame()
 	}
 
 	UE_LOG(LogTemp, Warning, TEXT("MinionHandler: Reset - %d minion(s) back to level 1 with nothing equipped."), MinionsByUUID.Num());
+}
+
+void UMinionHandler::OnAssignItemToMinion(FString MinionUUID, FString ItemUUID)
+{
+	EquipItemOnMinion(MinionUUID, ItemUUID);
 }
 
 void UMinionHandler::HandleMinionSaveDataChanged(FString MinionUUID)

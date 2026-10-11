@@ -29,6 +29,7 @@
 #include "BaseItemStruct.h"
 #include "CurrencyStruct.h"
 #include "ItemInstanceManager.h"
+#include "MinionInstanceManager.h"
 #include "PlayerMinion.h"
 #include "Enemy.h"
 #include "Dom/JsonObject.h"
@@ -181,7 +182,8 @@ void UCoreMenu::NativeConstruct()
     ValidateButton(ShopButton);
     ValidateButton(RandomizeShopButton);
     ValidateButton(PlayerStashButton);
-    ValidateButton(StashSelectButton);
+    ValidateButton(StashCraftButton);
+    ValidateButton(StashAssignButton);
     ValidateButton(ResetGameButton);
     ValidateButton(BattlePlayButton);
 
@@ -190,7 +192,8 @@ void UCoreMenu::NativeConstruct()
 	ShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnShopButtonClicked);
 	RandomizeShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeShopButtonClicked);
 	PlayerStashButton->OnClicked.AddDynamic(this, &UCoreMenu::OnPlayerStashButtonClicked);
-	StashSelectButton->OnClicked.AddDynamic(this, &UCoreMenu::OnStashSelectButtonClicked);
+	StashCraftButton->OnClicked.AddDynamic(this, &UCoreMenu::OnStashCraftButtonClicked);
+	StashAssignButton->OnClicked.AddDynamic(this, &UCoreMenu::OnStashAssignButtonClicked);
 	ResetGameButton->OnClicked.AddDynamic(this, &UCoreMenu::OnResetGameButtonClicked);
 	BattlePlayButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBattlePlayButtonClicked);
 
@@ -249,13 +252,7 @@ void UCoreMenu::OnSellButtonClicked()
 	}
 	OnSellButtonClickedEvent.Broadcast(SelectedItemId, SelectedItemUUID);
 
-	// Unload the cached item data now that it's been sold, and clear the Load Item box's text.
-	SelectedItemData = FBaseItemStruct();
-	SelectedItemId.Empty();
-	SetSelectedItemUUID(FString());
-	bHasSelectedItemData = false;
-	SetActiveItemText(TEXT(""));
-
+	ClearSelectedItem();
 	HideActiveItemImage();
 
 	if (PlayerStashHorizBox)
@@ -282,6 +279,10 @@ void UCoreMenu::OnBuyButtonClicked()
 	// save, no shop removal) if the player can't afford it, so CoreMenu doesn't remove the listing
 	// itself - it only knows the purchase succeeded once ItemHandler calls RemoveItemFromShop back.
 	OnBuyButtonClickedEvent.Broadcast(SelectedItemId, SelectedItemUUID);
+
+	// A successful purchase has already been saved to SavedItems.json during the broadcast, so the stash is
+	// rebuilt to show it (a rejected one leaves the stash as it was).
+	PopulatePlayerStash();
 }
 
 void UCoreMenu::SelectItemData(const FText& ItemIdText)
@@ -566,9 +567,17 @@ void UCoreMenu::PopulatePlayerStash()
 	int32 Index = 0;
 
 	UItemInstanceManager StashManager;
+	// Read-only, like StashManager: MinionHandler's own instance is the only one that writes SavedMinions.json.
+	const UMinionInstanceManager SavedMinionsManager;
 
 	for (const TPair<FString, TSharedPtr<FJsonObject>>& SavedItem : StashManager.GetSavedItems())
 	{
+		// An item assigned to a minion stays in SavedItems.json, but isn't in the stash.
+		if (!SavedMinionsManager.FindMinionForItem(SavedItem.Key).IsEmpty())
+		{
+			continue;
+		}
+
 		FString ItemId;
 		if (SavedItem.Value.IsValid())
 		{
@@ -654,9 +663,13 @@ void UCoreMenu::PopulatePlayerStash()
 		++Index;
 	}
 
-	if (StashSelectButton)
+	// Nothing to craft or assign with an empty stash.
+	for (UButton* StashButton : { StashCraftButton, StashAssignButton })
 	{
-		StashSelectButton->SetVisibility(Index > 0 ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+		if (StashButton)
+		{
+			StashButton->SetVisibility(Index > 0 ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+		}
 	}
 }
 
@@ -1019,6 +1032,71 @@ void UCoreMenu::OnMinionButtonClicked(UPlayerMinion* Minion)
 	const FString Message = FString::Printf(TEXT("Selected Minion %s %s"), *Minion->GetMinionClassName().ToString(), *SelectedMinionUUID);
 	LogToScreen(Message);
 	SetWarningText(Message, 6.f);
+
+	// Unbound first even when the same minion is clicked again, since a minion can't be bound twice.
+	if (EquipTextMinion)
+	{
+		EquipTextMinion->OnSaveDataChangedEvent.RemoveDynamic(this, &UCoreMenu::OnEquipTextMinionSaveDataChanged);
+	}
+	EquipTextMinion = Minion;
+	EquipTextMinion->OnSaveDataChangedEvent.AddDynamic(this, &UCoreMenu::OnEquipTextMinionSaveDataChanged);
+	UpdateMinionEquipText();
+
+	SetPanelAndChildrenVisibility(ShopWindowBox, ESlateVisibility::Hidden);
+	HideActiveItemImage();
+	SetPanelAndChildrenVisibility(MinionEqiupVertBox, ESlateVisibility::Visible);
+}
+
+void UCoreMenu::OnEquipTextMinionSaveDataChanged(FString MinionUUID)
+{
+	UpdateMinionEquipText();
+}
+
+void UCoreMenu::UpdateMinionEquipText()
+{
+	if (!MinionEquipText)
+	{
+		return;
+	}
+
+	if (!EquipTextMinion)
+	{
+		MinionEquipText->SetText(FText::GetEmpty());
+		return;
+	}
+
+	FString Text = EquipTextMinion->GetMinionClassName().ToString();
+	bool bHasEquippedItems = false;
+
+	// NumEnums() also counts the _MAX entry UHT adds to the end.
+	const UEnum* ItemSlotEnum = StaticEnum<EItemSlot>();
+	for (int32 Index = 0; Index < ItemSlotEnum->NumEnums() - 1; ++Index)
+	{
+		const EItemSlot ItemSlot = static_cast<EItemSlot>(ItemSlotEnum->GetValueByIndex(Index));
+		const TArray<FString> SlotItemUUIDs = EquipTextMinion->GetEquippedItemUUIDsInSlot(ItemSlot);
+		if (SlotItemUUIDs.Num() == 0)
+		{
+			continue;
+		}
+
+		TArray<FString> ItemNames;
+		for (const FString& ItemUUID : SlotItemUUIDs)
+		{
+			ItemNames.Add(GetSavedItemName(ItemUUID));
+		}
+
+		// Trimmed, since some display names have a stray space (e.g. "Gloves ").
+		const FString SlotName = ItemSlotEnum->GetDisplayNameTextByIndex(Index).ToString().TrimStartAndEnd();
+		Text += FString::Printf(TEXT("\n%s: %s"), *SlotName, *FString::Join(ItemNames, TEXT(", ")));
+		bHasEquippedItems = true;
+	}
+
+	if (!bHasEquippedItems)
+	{
+		Text += TEXT("\nNo items equipped");
+	}
+
+	MinionEquipText->SetText(FText::FromString(Text));
 }
 
 void UShopItemButtonProxy::HandleClicked()
@@ -1048,6 +1126,7 @@ void UCoreMenu::OnShopButtonClicked()
 
 	if (bShouldShow)
 	{
+		SetPanelAndChildrenVisibility(MinionEqiupVertBox, ESlateVisibility::Hidden);
 		PopulateShopGrid();
 	}
 }
@@ -1237,28 +1316,131 @@ void UCoreMenu::OnPlayerStashButtonClicked()
 		return;
 	}
 
+	// The shop is left as it is, so both can be open at once.
 	SetPanelAndChildrenVisibility(PlayerStashHorizBox, ESlateVisibility::Visible);
-
-	if (ShopWindowBox)
-	{
-		SetPanelAndChildrenVisibility(ShopWindowBox, ESlateVisibility::Hidden);
-	}
 
 	HideActiveItemImage();
 
 	PopulatePlayerStash();
 }
 
-void UCoreMenu::OnStashSelectButtonClicked()
+void UCoreMenu::OnStashCraftButtonClicked()
 {
-	UE_LOG(LogTemp, Warning, TEXT("StashSelectButton Clicked."));
-	UpdatePanelVisibility({ ShopWindowBox }, ESlateVisibility::Hidden);
-
-	// Showing the active item image also hides PlayerStashHorizBox; with no item selected the stash stays open.
-	if (bHasSelectedItemData)
+	UE_LOG(LogTemp, Warning, TEXT("StashCraftButton Clicked."));
+	if (!ValidateSelectedStashItem())
 	{
-		ShowActiveItemImage();
+		return;
 	}
+
+	// Showing the active item image also hides PlayerStashHorizBox.
+	UpdatePanelVisibility({ ShopWindowBox }, ESlateVisibility::Hidden);
+	ShowActiveItemImage();
+
+	CraftStashItem(SelectedItemUUID);
+}
+
+void UCoreMenu::OnStashAssignButtonClicked()
+{
+	UE_LOG(LogTemp, Warning, TEXT("StashAssignButton Clicked."));
+	if (ValidateSelectedStashItem())
+	{
+		AssignStashItem(SelectedItemUUID);
+	}
+}
+
+bool UCoreMenu::ValidateSelectedStashItem()
+{
+	// The selection can also be a shop listing (selecting it doesn't close the stash) or nothing at all.
+	TSharedPtr<FJsonObject> ItemObject;
+	if (SelectedItemUUID.IsEmpty() || !GetSavedItemJsonByUUID(SelectedItemUUID, ItemObject))
+	{
+		SetWarningText(TEXT("Select an item in your stash first."));
+		return false;
+	}
+	return true;
+}
+
+void UCoreMenu::CraftStashItem(const FString& ItemUUID)
+{
+	UE_LOG(LogTemp, Warning, TEXT("CraftStashItem not implemented yet (UUID: %s)."), *ItemUUID);
+}
+
+void UCoreMenu::AssignStashItem(const FString& ItemUUID)
+{
+	if (SelectedMinionUUID.IsEmpty())
+	{
+		SetWarningText(TEXT("Select a minion first."));
+		return;
+	}
+
+	const FString ItemName = GetSavedItemName(ItemUUID);
+
+	// Read-only, both before and after the broadcast: comparing the minion's saved equipment tells what the
+	// assignment took off it, whether that was the item in its slot or one blocked by it (e.g. a shield by a
+	// two-handed weapon).
+	FMinionSaveData MinionBefore;
+	UMinionInstanceManager().GetSavedMinion(SelectedMinionUUID, MinionBefore);
+
+	// MinionHandler equips the item and saves the minion during the broadcast, unequipping whatever was in the
+	// item's slot. The item itself stays in SavedItems.json.
+	OnAssignItemToMinionEvent.Broadcast(SelectedMinionUUID, ItemUUID);
+
+	FMinionSaveData MinionAfter;
+	if (!UMinionInstanceManager().GetSavedMinion(SelectedMinionUUID, MinionAfter) || !MinionAfter.EquippedItemUUIDs.Contains(ItemUUID))
+	{
+		SetWarningText(FString::Printf(TEXT("Couldn't assign %s to the selected minion."), *ItemName));
+		return;
+	}
+
+	TArray<FString> RemovedItemNames;
+	for (const FString& EquippedItemUUID : MinionBefore.EquippedItemUUIDs)
+	{
+		if (!MinionAfter.EquippedItemUUIDs.Contains(EquippedItemUUID))
+		{
+			RemovedItemNames.Add(GetSavedItemName(EquippedItemUUID));
+		}
+	}
+
+	FString Message = FString::Printf(TEXT("Added %s to the selected minion."), *ItemName);
+	if (RemovedItemNames.Num() > 0)
+	{
+		Message += FString::Printf(TEXT(" Removed %s."), *FString::Join(RemovedItemNames, TEXT(", ")));
+	}
+	LogToScreen(Message);
+	SetWarningText(Message, 6.f);
+
+	// The item has left the stash, and anything it replaced is back in it.
+	ClearSelectedItem();
+	PopulatePlayerStash();
+}
+
+void UCoreMenu::ClearSelectedItem()
+{
+	SelectedItemData = FBaseItemStruct();
+	SelectedItemId.Empty();
+	SetSelectedItemUUID(FString());
+	bHasSelectedItemData = false;
+	SetActiveItemText(TEXT(""));
+}
+
+FString UCoreMenu::GetSavedItemName(const FString& ItemUUID) const
+{
+	TSharedPtr<FJsonObject> ItemObject;
+	FString ItemId;
+	if (ItemDataTable && GetSavedItemJsonByUUID(ItemUUID, ItemObject) && ItemObject->TryGetStringField(TEXT("ItemId"), ItemId))
+	{
+		for (const FName& RowName : ItemDataTable->GetRowNames())
+		{
+			const FBaseItemStruct* ItemRow = ItemDataTable->FindRow<FBaseItemStruct>(RowName, TEXT("CoreMenu::GetSavedItemName"));
+			if (ItemRow && ItemRow->ItemId.ToString().Equals(ItemId, ESearchCase::IgnoreCase))
+			{
+				return ItemRow->ItemName.ToString();
+			}
+		}
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("No saved item name found for UUID: %s"), *ItemUUID);
+	return ItemUUID;
 }
 
 void UCoreMenu::OnResetGameButtonClicked()
@@ -1270,11 +1452,7 @@ void UCoreMenu::OnResetGameButtonClicked()
 	OnResetGameButtonClickedEvent.Broadcast();
 
 	// The previously active/selected item may no longer exist after the reset.
-	SelectedItemData = FBaseItemStruct();
-	SelectedItemId.Empty();
-	SetSelectedItemUUID(FString());
-	bHasSelectedItemData = false;
-	SetActiveItemText(TEXT(""));
+	ClearSelectedItem();
 	HideActiveItemImage();
 
 	PopulatePlayerStash();
@@ -1363,6 +1541,7 @@ void UCoreMenu::ShowActiveItemImage()
 	{
 		SetPanelAndChildrenVisibility(PlayerStashHorizBox, ESlateVisibility::Hidden);
 	}
+	SetPanelAndChildrenVisibility(MinionEqiupVertBox, ESlateVisibility::Hidden);
 
 	if (!ActiveItemImage)
 	{

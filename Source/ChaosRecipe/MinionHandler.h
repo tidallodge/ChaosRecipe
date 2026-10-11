@@ -69,6 +69,11 @@ public:
 	UFUNCTION()
 	void OnResetGame();
 
+	// Bound to CoreMenu's OnAssignItemToMinionEvent: equips the stash item ItemUUID on the minion MinionUUID
+	// (EquipItemOnMinion), which unequips whatever was in that item's slot.
+	UFUNCTION()
+	void OnAssignItemToMinion(FString MinionUUID, FString ItemUUID);
+
 protected:
 	// Bound to every minion's OnSaveDataChangedEvent, so any change to its level, attributes or equipment is saved.
 	UFUNCTION()

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "CombatTypes.h"
 #include "MinionClassStruct.h"
+#include "BaseItemStruct.h"
 #include "BaseWeaponStruct.h"
 #include "BaseArmorStruct.h"
 #include "ItemModifierStruct.h"
@@ -57,9 +58,18 @@ public:
 	void BindToItemHandlerEvents(UItemHandler* ItemHandler);
 
 	// Equips a stash item by UUID, read from SavedItems.json the same way CoreMenu::PopulatePlayerStash
-	// reads the stash. Replaces whatever is already in that item's slot.
+	// reads the stash. If its ItemSlot (BaseItem_DT) is already full (GetMaxItemsInSlot), whatever is in the
+	// slot is unequipped to make room; it stays in SavedItems.json, so it shows up in the stash again.
 	UFUNCTION(BlueprintCallable, Category = "Minion|Equipment")
 	bool EquipItem(const FString& ItemUUID);
+
+	// How many items can be equipped in Slot at once: 1, unless MaxItemsPerSlot says otherwise.
+	UFUNCTION(BlueprintPure, Category = "Minion|Equipment")
+	int32 GetMaxItemsInSlot(EItemSlot Slot) const;
+
+	// UUIDs of the equipped items whose BaseItem_DT ItemSlot is Slot.
+	UFUNCTION(BlueprintPure, Category = "Minion|Equipment")
+	TArray<FString> GetEquippedItemUUIDsInSlot(EItemSlot Slot) const;
 
 	// A two-handed weapon unequips any off-hand item, and an off-hand item unequips a two-handed weapon.
 	UFUNCTION(BlueprintCallable, Category = "Minion|Equipment")
@@ -173,6 +183,10 @@ protected:
 	bool HasWeaponEquipped() const { return !EquippedWeapon.ItemId.IsEmpty(); }
 	void ClearEquippedWeapon();
 
+	// Shared by EquipItem's weapon and armor paths: unequips whatever has to go to make room in ItemId's ItemSlot,
+	// then runs Equip. If Equip fails, whatever was unequipped is put back.
+	bool EquipInItemSlot(const FString& ItemUUID, const FString& ItemId, TFunctionRef<bool()> Equip);
+
 	void BroadcastHealthChanged();
 	void BroadcastSaveDataChanged();
 
@@ -213,6 +227,12 @@ protected:
 
 	UPROPERTY()
 	TMap<EArmorSlot, FItemArmorStatsStruct> EquippedArmor;
+
+	// Placeholder for slots that will hold more than one item (e.g. two Rings): a slot listed here holds that many,
+	// and every other slot holds 1. Empty for now, so every slot holds 1. Before a weapon or armor slot can hold
+	// more, EquippedWeapon (a single weapon) and EquippedArmor (one per EArmorSlot) need room for more too.
+	UPROPERTY()
+	TMap<EItemSlot, int32> MaxItemsPerSlot;
 
 	// Every ItemModifier_DT row, loaded on first use to resolve equipped items' modifier ids.
 	TArray<FItemModifierStruct> ModifierPool;

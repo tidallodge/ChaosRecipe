@@ -14,6 +14,7 @@
 namespace
 {
 	const TCHAR* MinionClassDataTablePath = TEXT("/Game/MinionData/MinionClass_DT.MinionClass_DT");
+	const TCHAR* BaseItemDataTablePath = TEXT("/Game/ItemData/BaseItem_DT.BaseItem_DT");
 	const TCHAR* BaseWeaponDataTablePath = TEXT("/Game/ItemData/BaseWeapon_DT.BaseWeapon_DT");
 	const TCHAR* BaseArmorDataTablePath = TEXT("/Game/ItemData/BaseArmor_DT.BaseArmor_DT");
 	const TCHAR* ItemModifierDataTablePath = TEXT("/Game/ItemData/ItemModifier_DT.ItemModifier_DT");
@@ -47,6 +48,19 @@ namespace
 		}
 
 		return FlatValue * Multiplier;
+	}
+
+	// Looks up the ItemSlot ItemId takes up on a minion, from its BaseItem_DT row.
+	bool FindItemSlot(const FString& ItemId, EItemSlot& OutItemSlot)
+	{
+		FBaseItemStruct ItemRow;
+		const bool bFoundItem = DataTableHelpers::FindRow(BaseItemDataTablePath,
+			[&ItemId](const FBaseItemStruct& Row) { return Row.ItemId.ToString().Equals(ItemId, ESearchCase::IgnoreCase); }, ItemRow);
+		if (bFoundItem)
+		{
+			OutItemSlot = ItemRow.ItemSlot;
+		}
+		return bFoundItem;
 	}
 
 	// Adds PerLevel to Attributes once for each of Levels (negative to take levels back off).
@@ -212,7 +226,7 @@ bool UPlayerMinion::EquipItem(const FString& ItemUUID)
 		}
 
 		WeaponStats.UUID = FText::FromString(ItemUUID);
-		return EquipWeapon(WeaponStats);
+		return EquipInItemSlot(ItemUUID, WeaponStats.ItemId.ToString(), [this, &WeaponStats]() { return EquipWeapon(WeaponStats); });
 	}
 
 	if (ItemType == TEXT("Armor"))
@@ -225,11 +239,82 @@ bool UPlayerMinion::EquipItem(const FString& ItemUUID)
 		}
 
 		ArmorStats.UUID = FText::FromString(ItemUUID);
-		return EquipArmor(ArmorStats);
+		return EquipInItemSlot(ItemUUID, ArmorStats.ItemId.ToString(), [this, &ArmorStats]() { return EquipArmor(ArmorStats); });
 	}
 
 	UE_LOG(LogTemp, Warning, TEXT("PlayerMinion: Can't equip UUID '%s' with unsupported ItemType '%s'."), *ItemUUID, *ItemType);
 	return false;
+}
+
+bool UPlayerMinion::EquipInItemSlot(const FString& ItemUUID, const FString& ItemId, TFunctionRef<bool()> Equip)
+{
+	EItemSlot ItemSlot;
+	if (!FindItemSlot(ItemId, ItemSlot))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PlayerMinion: No BaseItem_DT row for '%s', so it has no slot to equip it in."), *ItemId);
+		return false;
+	}
+
+	// An item being re-equipped (e.g. RefreshEquippedItems after a reroll) doesn't have to make room for itself.
+	TArray<FString> SlotItemUUIDs = GetEquippedItemUUIDsInSlot(ItemSlot);
+	SlotItemUUIDs.Remove(ItemUUID);
+
+	// Unequips enough of what's in the slot to leave room for this item. With every slot holding 1, that's
+	// whatever is in it. Once a slot can hold more, this takes out the first ones found; letting the player
+	// choose which item is replaced would go here. Hand slots that block each other (a two-handed weapon and
+	// an off-hand) are still sorted out by EquipWeapon/EquipArmor.
+	const int32 NumToUnequip = SlotItemUUIDs.Num() - GetMaxItemsInSlot(ItemSlot) + 1;
+	TArray<FString> UnequippedUUIDs;
+	for (int32 Index = 0; Index < NumToUnequip; ++Index)
+	{
+		if (UnequipItem(SlotItemUUIDs[Index]))
+		{
+			UnequippedUUIDs.Add(SlotItemUUIDs[Index]);
+			UE_LOG(LogTemp, Warning, TEXT("PlayerMinion: Unequipped %s from the %s slot to make room for %s."),
+				*SlotItemUUIDs[Index], *UEnum::GetValueAsString(ItemSlot), *ItemUUID);
+		}
+	}
+
+	if (Equip())
+	{
+		return true;
+	}
+
+	for (const FString& UnequippedUUID : UnequippedUUIDs)
+	{
+		EquipItem(UnequippedUUID);
+	}
+	return false;
+}
+
+int32 UPlayerMinion::GetMaxItemsInSlot(EItemSlot Slot) const
+{
+	const int32* MaxItems = MaxItemsPerSlot.Find(Slot);
+	return MaxItems ? FMath::Max(1, *MaxItems) : 1;
+}
+
+TArray<FString> UPlayerMinion::GetEquippedItemUUIDsInSlot(EItemSlot Slot) const
+{
+	TArray<FString> ItemUUIDs;
+	auto AddIfInSlot = [&ItemUUIDs, Slot](const FText& ItemId, const FText& ItemUUID)
+	{
+		EItemSlot ItemSlot;
+		if (FindItemSlot(ItemId.ToString(), ItemSlot) && ItemSlot == Slot)
+		{
+			ItemUUIDs.Add(ItemUUID.ToString());
+		}
+	};
+
+	if (HasWeaponEquipped())
+	{
+		AddIfInSlot(EquippedWeapon.ItemId, EquippedWeapon.UUID);
+	}
+
+	for (const TPair<EArmorSlot, FItemArmorStatsStruct>& Entry : EquippedArmor)
+	{
+		AddIfInSlot(Entry.Value.ItemId, Entry.Value.UUID);
+	}
+	return ItemUUIDs;
 }
 
 bool UPlayerMinion::EquipWeapon(const FItemWeaponStatsStruct& WeaponStats)

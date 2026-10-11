@@ -42,6 +42,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnShopItemSelectedEvent, FString, 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnResetGameEvent);
 // Fired when BattlePlayButton in BattleWindow is clicked, so listeners (e.g. BattleManager) can start a battle.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBattlePlayButtonClickedEvent);
+// Fired when StashAssignButton is clicked, so listeners (e.g. MinionHandler) can equip the stash item ItemUUID on
+// the minion MinionUUID. Expected to be handled synchronously: CoreMenu reloads the stash right after broadcasting.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAssignItemToMinionEvent, FString, MinionUUID, FString, ItemUUID);
 
 class UCoreMenu;
 
@@ -191,6 +194,9 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnBattlePlayButtonClickedEvent OnBattlePlayButtonClickedEvent;
 
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnAssignItemToMinionEvent OnAssignItemToMinionEvent;
+
 	UPROPERTY()
 	int32 PlayerSwordCount;
 
@@ -332,8 +338,11 @@ protected:
 	UButton* PlayerStashButton;
 	UPROPERTY(meta = (BindWidget))
 	UHorizontalBox* PlayerStashHorizBox;
+	// Each passes the item selected in PlayerStashUniGrid on to CraftStashItem/AssignStashItem
 	UPROPERTY(meta = (BindWidget))
-	UButton* StashSelectButton;
+	UButton* StashCraftButton;
+	UPROPERTY(meta = (BindWidget))
+	UButton* StashAssignButton;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* PlayerGoldTextBox;
 	UPROPERTY(meta = (BindWidget))
@@ -371,6 +380,12 @@ protected:
 	// Filled with a WBP_MinionButton per minion by SetMinionButtons
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* MinionButtonsVertBox;
+	// Shown by OnMinionButtonClicked, with MinionEquipText listing the clicked minion's equipped items
+	// (UpdateMinionEquipText). Named to match WBP_CoreMenu, typo included.
+	UPROPERTY(meta = (BindWidget))
+	UPanelWidget* MinionEqiupVertBox;
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* MinionEquipText;
 
 	// Click handler for SellButton
 	UFUNCTION()
@@ -396,14 +411,31 @@ protected:
 	// Click handler for a dynamically created shop grid item button
 	UFUNCTION()
 	void OnShopItemButtonClicked(FString ItemId, FString ItemUUID);
-	// Click handler for the Player Stash button; toggles PlayerStashHorizBox (hiding the shop and active item
-	// display when it opens)
+	// Click handler for the Player Stash button; toggles PlayerStashHorizBox (hiding the active item display when
+	// it opens, but leaving the shop as it is)
 	UFUNCTION()
 	void OnPlayerStashButtonClicked();
-	// Click handler for the Stash Select button; hides the shop panel and shows the selected item in the active
-	// item display, which hides the stash
+	// Click handler for the Stash Craft button; hides the shop panel, shows the selected stash item in the active
+	// item display (which hides the stash) and passes its UUID on to CraftStashItem
 	UFUNCTION()
-	void OnStashSelectButtonClicked();
+	void OnStashCraftButtonClicked();
+	// Click handler for the Stash Assign button; passes the selected stash item's UUID on to AssignStashItem,
+	// leaving the stash open
+	UFUNCTION()
+	void OnStashAssignButtonClicked();
+	// Returns whether the selection is a saved stash item, warning the player if it isn't (e.g. nothing is
+	// selected, or the selection is a shop listing).
+	bool ValidateSelectedStashItem();
+	// Not implemented yet. Called by OnStashCraftButtonClicked with the selected stash item's UUID.
+	void CraftStashItem(const FString& ItemUUID);
+	// Assigns the stash item ItemUUID to the minion selected in MinionButtonsVertBox (via OnAssignItemToMinionEvent),
+	// replacing whatever that minion had in the item's slot, then reloads the stash without it. Says in
+	// WarningsTextBox which item was added and which, if any, were removed.
+	void AssignStashItem(const FString& ItemUUID);
+	// Unloads the selected item (its data, UUID and the active item text), e.g. once it's been sold or assigned.
+	void ClearSelectedItem();
+	// The BaseItem_DT ItemName of the saved item ItemUUID, or ItemUUID itself if it can't be found.
+	FString GetSavedItemName(const FString& ItemUUID) const;
 	// Click handler for the Reset Game button; wipes save data (broadcasts OnResetGameButtonClickedEvent
 	// for listeners like ItemHandler/PlayerInventory) and refreshes the stash and shop grids.
 	UFUNCTION()
@@ -414,6 +446,7 @@ protected:
 	// Clears and repopulates ShopUniGrid with an item button + icon for every row in BaseItem_DT
 	void PopulateShopGrid();
 	// Clears and repopulates PlayerStashUniGrid with a WBP_SingleImageButton for every saved item (via ItemInstanceManager)
+	// that isn't assigned to a minion (via MinionInstanceManager). Assigned items stay in SavedItems.json.
 	void PopulatePlayerStash();
 	// Clears and repopulates InscriptionUniGrid and GlyphUniGrid with a WBP_SingleImageButton for every
 	// Currency_DT row whose CurrencyName contains "Inscription" or "Glyph" respectively
@@ -423,9 +456,16 @@ protected:
 	UFUNCTION()
 	void OnCurrencyButtonClicked(FName RowName);
 	// Click handler for a dynamically created WBP_MinionButton; selects that minion's UUID and says so in
-	// WarningsTextBox
+	// WarningsTextBox, then hides the shop and active item display and shows its equipment in MinionEqiupVertBox
 	UFUNCTION()
 	void OnMinionButtonClicked(UPlayerMinion* Minion);
+	// Sets MinionEquipText to EquipTextMinion's class name, followed by a line for each ItemSlot it has an item
+	// in, naming that item.
+	void UpdateMinionEquipText();
+	// Bound to EquipTextMinion's OnSaveDataChangedEvent, so MinionEquipText keeps up as its equipment changes
+	// (e.g. an assigned item).
+	UFUNCTION()
+	void OnEquipTextMinionSaveDataChanged(FString MinionUUID);
 	// Sets IconImage's brush to the CurrencyIcon of the Currency_DT row named RowName
 	void LoadCurrencyIcon(UImage* IconImage, const FName& RowName);
 	// Builds the hover flyout for a currency button: CurrencyName on top, CurrencyDescription underneath.
@@ -438,7 +478,7 @@ protected:
 	// Sets the visibility of each given panel (and its children)
 	void UpdatePanelVisibility(const TArray<UPanelWidget*>& Panels, ESlateVisibility NewVisibility);
 	// Shows ActiveItemImageHorizBox (and its children) along with the active item's text, sets ActiveItemImage
-	// to the selected item's icon, and hides PlayerStashHorizBox
+	// to the selected item's icon, and hides PlayerStashHorizBox and MinionEqiupVertBox
 	void ShowActiveItemImage();
 	// Hides ActiveItemImageHorizBox (and its children) along with the active item's text
 	void HideActiveItemImage();
@@ -569,6 +609,10 @@ protected:
 	// MinionUUID of the minion last clicked in MinionButtonsVertBox. Set via OnMinionButtonClicked.
 	UPROPERTY()
 	FString SelectedMinionUUID;
+
+	// The minion last clicked in MinionButtonsVertBox, whose equipped items MinionEquipText lists.
+	UPROPERTY()
+	TObjectPtr<UPlayerMinion> EquipTextMinion;
 
 	// Ages the current warning by DeltaTime, fading WarningsTextBox out once its DisplaySeconds are up and
 	// clearing it once the fade is done.
