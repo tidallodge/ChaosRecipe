@@ -203,6 +203,9 @@ void UCoreMenu::NativeConstruct()
 		UE_LOG(LogTemp, Error, TEXT("ShopWindowBox is null or not found!"));
 	}
 
+	// Starts out matching however ActiveItemImageHorizBox is set up in WBP_CoreMenu.
+	SetActiveItemTextVisibility(ActiveItemImageHorizBox ? ActiveItemImageHorizBox->GetVisibility() : ESlateVisibility::Hidden);
+
 	PlayerSwordCount = 1;
 
 	UE_LOG(LogTemp, Warning, TEXT("CoreMenu initialized."));
@@ -253,7 +256,7 @@ void UCoreMenu::OnSellButtonClicked()
 	bHasSelectedItemData = false;
 	SetActiveItemText(TEXT(""));
 
-	UpdatePanelVisibility({ ActiveItemImageHorizBox }, ESlateVisibility::Hidden);
+	HideActiveItemImage();
 
 	if (PlayerStashHorizBox)
 	{
@@ -270,8 +273,6 @@ void UCoreMenu::OnBuyButtonClicked()
 	UE_LOG(LogTemp, Warning, TEXT("BuyButton Clicked. Event Dispatched"));
 	// Unlike Sell, Buy keeps ShopWindowBox open so the player can keep shopping, and leaves
 	// ActiveItemImageHorizBox alone rather than showing the purchased item there.
-	UpdatePanelVisibility({ PlayerStashHorizBox }, ESlateVisibility::Hidden);
-
 	if (!bHasSelectedItemData)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No selected item to buy."));
@@ -346,7 +347,8 @@ void UCoreMenu::OnRandomizeItemButtonClicked()
 		return;
 	}
 
-	UpdatePanelVisibility({ ShopWindowBox, PlayerStashHorizBox }, ESlateVisibility::Hidden);
+	// Showing the active item image also hides PlayerStashHorizBox.
+	UpdatePanelVisibility({ ShopWindowBox }, ESlateVisibility::Hidden);
 	ShowActiveItemImage();
 
 	OnRandomizeItemEvent.Broadcast(SelectedCurrencyId);
@@ -1042,11 +1044,6 @@ void UCoreMenu::OnShopButtonClicked()
 
 	SetPanelAndChildrenVisibility(ShopWindowBox, NewVisibility);
 
-	if (PlayerStashHorizBox)
-	{
-		SetPanelAndChildrenVisibility(PlayerStashHorizBox, ESlateVisibility::Hidden);
-	}
-
 	RefreshActiveItemDisplay();
 
 	if (bShouldShow)
@@ -1232,6 +1229,14 @@ void UCoreMenu::OnPlayerStashButtonClicked()
 		return;
 	}
 
+	// Besides showing the active item image, this is the only thing that hides the stash.
+	if (PlayerStashHorizBox->GetVisibility() == ESlateVisibility::Visible)
+	{
+		SetPanelAndChildrenVisibility(PlayerStashHorizBox, ESlateVisibility::Hidden);
+		RefreshActiveItemDisplay();
+		return;
+	}
+
 	SetPanelAndChildrenVisibility(PlayerStashHorizBox, ESlateVisibility::Visible);
 
 	if (ShopWindowBox)
@@ -1239,7 +1244,7 @@ void UCoreMenu::OnPlayerStashButtonClicked()
 		SetPanelAndChildrenVisibility(ShopWindowBox, ESlateVisibility::Hidden);
 	}
 
-	UpdatePanelVisibility({ ActiveItemImageHorizBox }, ESlateVisibility::Hidden);
+	HideActiveItemImage();
 
 	PopulatePlayerStash();
 }
@@ -1247,8 +1252,13 @@ void UCoreMenu::OnPlayerStashButtonClicked()
 void UCoreMenu::OnStashSelectButtonClicked()
 {
 	UE_LOG(LogTemp, Warning, TEXT("StashSelectButton Clicked."));
-	UpdatePanelVisibility({ ShopWindowBox, PlayerStashHorizBox }, ESlateVisibility::Hidden);
-	RefreshActiveItemDisplay();
+	UpdatePanelVisibility({ ShopWindowBox }, ESlateVisibility::Hidden);
+
+	// Showing the active item image also hides PlayerStashHorizBox; with no item selected the stash stays open.
+	if (bHasSelectedItemData)
+	{
+		ShowActiveItemImage();
+	}
 }
 
 void UCoreMenu::OnResetGameButtonClicked()
@@ -1265,7 +1275,7 @@ void UCoreMenu::OnResetGameButtonClicked()
 	SetSelectedItemUUID(FString());
 	bHasSelectedItemData = false;
 	SetActiveItemText(TEXT(""));
-	UpdatePanelVisibility({ ActiveItemImageHorizBox }, ESlateVisibility::Hidden);
+	HideActiveItemImage();
 
 	PopulatePlayerStash();
 	RandomizeShopItems();
@@ -1290,7 +1300,7 @@ void UCoreMenu::RefreshActiveItemDisplay()
 	}
 	else
 	{
-		UpdatePanelVisibility({ ActiveItemImageHorizBox }, ESlateVisibility::Hidden);
+		HideActiveItemImage();
 	}
 }
 
@@ -1347,6 +1357,12 @@ void UCoreMenu::ShowActiveItemImage()
 	{
 		SetPanelAndChildrenVisibility(ActiveItemImageHorizBox, ESlateVisibility::Visible);
 	}
+	SetActiveItemTextVisibility(ESlateVisibility::Visible);
+
+	if (PlayerStashHorizBox)
+	{
+		SetPanelAndChildrenVisibility(PlayerStashHorizBox, ESlateVisibility::Hidden);
+	}
 
 	if (!ActiveItemImage)
 	{
@@ -1360,6 +1376,25 @@ void UCoreMenu::ShowActiveItemImage()
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No selected item icon available for ActiveItemImage."));
+	}
+}
+
+void UCoreMenu::HideActiveItemImage()
+{
+	UpdatePanelVisibility({ ActiveItemImageHorizBox }, ESlateVisibility::Hidden);
+	SetActiveItemTextVisibility(ESlateVisibility::Hidden);
+}
+
+void UCoreMenu::SetActiveItemTextVisibility(ESlateVisibility NewVisibility)
+{
+	// Only the boxes themselves, not their children: a hidden box already hides everything in it, and this
+	// leaves the children's own visibility as set in WBP_CoreMenu for when the boxes come back.
+	for (UPanelWidget* TextBox : { ActiveItemTextHorizBox, ActiveItemTextVertBox })
+	{
+		if (TextBox)
+		{
+			TextBox->SetVisibility(NewVisibility);
+		}
 	}
 }
 

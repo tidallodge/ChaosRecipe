@@ -317,6 +317,11 @@ protected:
 	UHorizontalBox* ShopWindowHeader;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ActiveItemTextBox;
+	// Only shown while ActiveItemImageHorizBox is (see SetActiveItemTextVisibility)
+	UPROPERTY(meta = (BindWidget))
+	UPanelWidget* ActiveItemTextHorizBox;
+	UPROPERTY(meta = (BindWidget))
+	UPanelWidget* ActiveItemTextVertBox;
 	UPROPERTY(meta = (BindWidget))
 	UHorizontalBox* ActiveItemImageHorizBox;
 	UPROPERTY(meta = (BindWidget))
@@ -391,10 +396,12 @@ protected:
 	// Click handler for a dynamically created shop grid item button
 	UFUNCTION()
 	void OnShopItemButtonClicked(FString ItemId, FString ItemUUID);
-	// Click handler for the Player Stash button; shows PlayerStashHorizBox
+	// Click handler for the Player Stash button; toggles PlayerStashHorizBox (hiding the shop and active item
+	// display when it opens)
 	UFUNCTION()
 	void OnPlayerStashButtonClicked();
-	// Click handler for the Stash Select button; hides both the shop and stash panels
+	// Click handler for the Stash Select button; hides the shop panel and shows the selected item in the active
+	// item display, which hides the stash
 	UFUNCTION()
 	void OnStashSelectButtonClicked();
 	// Click handler for the Reset Game button; wipes save data (broadcasts OnResetGameButtonClickedEvent
@@ -430,8 +437,14 @@ protected:
 	void SetPanelAndChildrenVisibility(UPanelWidget* Panel, ESlateVisibility NewVisibility);
 	// Sets the visibility of each given panel (and its children)
 	void UpdatePanelVisibility(const TArray<UPanelWidget*>& Panels, ESlateVisibility NewVisibility);
-	// Shows ActiveItemImageHorizBox (and its children) and sets ActiveItemImage to the selected item's icon
+	// Shows ActiveItemImageHorizBox (and its children) along with the active item's text, sets ActiveItemImage
+	// to the selected item's icon, and hides PlayerStashHorizBox
 	void ShowActiveItemImage();
+	// Hides ActiveItemImageHorizBox (and its children) along with the active item's text
+	void HideActiveItemImage();
+	// Gives ActiveItemTextHorizBox and ActiveItemTextVertBox NewVisibility, so the active item's text is only
+	// up while ActiveItemImageHorizBox is
+	void SetActiveItemTextVisibility(ESlateVisibility NewVisibility);
 	// Shows the active item display when neither ShopWindowBox nor PlayerStashHorizBox is visible and an
 	// item is selected; hides it otherwise. Call after changing either panel's visibility.
 	void RefreshActiveItemDisplay();
