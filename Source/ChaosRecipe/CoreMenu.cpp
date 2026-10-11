@@ -30,6 +30,7 @@
 #include "CurrencyStruct.h"
 #include "ItemInstanceManager.h"
 #include "MinionInstanceManager.h"
+#include "MinionClassStruct.h"
 #include "PlayerMinion.h"
 #include "Enemy.h"
 #include "Dom/JsonObject.h"
@@ -131,6 +132,8 @@ void UCoreMenu::NativeOnInitialized()
 	// happens before the Slate widgets are built.
 	InitDamageNumberStack(BattleMinionHPText, MinionDamageNumbers);
 	InitDamageNumberStack(BattleEnemyHPText, EnemyDamageNumbers);
+
+	RegisterWindows();
 }
 
 void UCoreMenu::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -176,6 +179,16 @@ void UCoreMenu::NativeConstruct()
 		UE_LOG(LogTemp, Error, TEXT("Failed to load Currency_DT data table."));
 	}
 
+	MinionClassDataTable = LoadObject<UDataTable>(nullptr, TEXT("/Game/MinionData/MinionClass_DT"));
+	if (MinionClassDataTable)
+	{
+		MinionClassDataTableRowNames = MinionClassDataTable->GetRowNames();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load MinionClass_DT data table."));
+	}
+
 
     ValidateButton(BuyButton);
     ValidateButton(SellButton);
@@ -186,6 +199,7 @@ void UCoreMenu::NativeConstruct()
     ValidateButton(StashAssignButton);
     ValidateButton(ResetGameButton);
     ValidateButton(BattlePlayButton);
+    ValidateButton(HireShopButton);
 
 	BuyButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBuyButtonClicked);
 	SellButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSellButtonClicked);
@@ -196,18 +210,19 @@ void UCoreMenu::NativeConstruct()
 	StashAssignButton->OnClicked.AddDynamic(this, &UCoreMenu::OnStashAssignButtonClicked);
 	ResetGameButton->OnClicked.AddDynamic(this, &UCoreMenu::OnResetGameButtonClicked);
 	BattlePlayButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBattlePlayButtonClicked);
+	HireShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnHireShopButtonClicked);
 
-	if (ShopWindowBox)
+	HideWindow(ECoreMenuWindow::ShopWindow);
+
+	// Starts out matching however ActiveItemImageHorizBox is set up in WBP_CoreMenu.
+	if (IsWindowVisible(ECoreMenuWindow::ActiveItemImage))
 	{
-		SetPanelAndChildrenVisibility(ShopWindowBox, ESlateVisibility::Hidden);
+		ShowWindow(ECoreMenuWindow::ActiveItemText);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("ShopWindowBox is null or not found!"));
+		HideWindow(ECoreMenuWindow::ActiveItemText);
 	}
-
-	// Starts out matching however ActiveItemImageHorizBox is set up in WBP_CoreMenu.
-	SetActiveItemTextVisibility(ActiveItemImageHorizBox ? ActiveItemImageHorizBox->GetVisibility() : ESlateVisibility::Hidden);
 
 	PlayerSwordCount = 1;
 
@@ -237,6 +252,8 @@ void UCoreMenu::NativeConstruct()
 
 	RandomizeShopItems();
 	PopulateShopGrid();
+
+	RandomizeHireShopMinions();
 }
 
 void UCoreMenu::OnSellButtonClicked()
@@ -250,12 +267,8 @@ void UCoreMenu::OnSellButtonClicked()
 	OnSellButtonClickedEvent.Broadcast(SelectedItemId, SelectedItemUUID);
 
 	ClearSelectedItem();
-	HideActiveItemImage();
-
-	if (PlayerStashHorizBox)
-	{
-		SetPanelAndChildrenVisibility(PlayerStashHorizBox, ESlateVisibility::Visible);
-	}
+	HideActiveItem();
+	ShowWindow(ECoreMenuWindow::PlayerStash);
 
 	// The broadcast above already removed the sold item from SavedItems.json (synchronously, via
 	// ItemHandler::OnSellButtonClicked), so repopulate now the stash grid no longer shows it.
@@ -265,8 +278,8 @@ void UCoreMenu::OnSellButtonClicked()
 void UCoreMenu::OnBuyButtonClicked()
 {
 	UE_LOG(LogTemp, Warning, TEXT("BuyButton Clicked. Event Dispatched"));
-	// Unlike Sell, Buy keeps ShopWindowBox open so the player can keep shopping, and leaves
-	// ActiveItemImageHorizBox alone rather than showing the purchased item there.
+	// Unlike Sell, Buy keeps the ShopWindow window open so the player can keep shopping, and leaves the
+	// ActiveItemImage window alone rather than showing the purchased item there.
 	if (!bHasSelectedItemData)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No selected item to buy."));
@@ -980,45 +993,17 @@ void UCoreMenu::SetMinionButtons(const TArray<UPlayerMinion*>& Minions)
 			continue;
 		}
 
-		UUserWidget* MinionButtonWidget = CreateWidget<UUserWidget>(this, MinionButtonClass);
+		UUserWidget* MinionButtonWidget = CreateMinionButtonWidget(MinionButtonClass, Minion->GetMinionIcon(), Minion->GetMinionClassName());
 		if (!MinionButtonWidget)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Failed to construct WBP_MinionButton for minion %s."), *Minion->GetMinionUUID());
 			continue;
 		}
 
-		// Found by name rather than as Blueprint variables, since UMG only marks Buttons "Is Variable" by
-		// default, not Images or Text Blocks.
 		UButton* MinionButton = Cast<UButton>(MinionButtonWidget->GetWidgetFromName(TEXT("MinionButton")));
 		if (!MinionButton)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("MinionButton not found on WBP_MinionButton."));
 			continue;
-		}
-
-		if (UImage* MinionButtonIcon = Cast<UImage>(MinionButtonWidget->GetWidgetFromName(TEXT("MinionButtonIcon"))))
-		{
-			if (UTexture2D* MinionIcon = Minion->GetMinionIcon())
-			{
-				MinionButtonIcon->SetBrushFromTexture(MinionIcon);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("No MinionIcon set in MinionClass_DT for %s."), *Minion->GetMinionClassName().ToString());
-			}
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("MinionButtonIcon not found on WBP_MinionButton."));
-		}
-
-		if (UTextBlock* MinionButtonText = Cast<UTextBlock>(MinionButtonWidget->GetWidgetFromName(TEXT("MinionButtonText"))))
-		{
-			MinionButtonText->SetText(Minion->GetMinionClassName());
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("MinionButtonText not found on WBP_MinionButton."));
 		}
 
 		UMinionButtonProxy* Proxy = NewObject<UMinionButtonProxy>(this);
@@ -1028,6 +1013,115 @@ void UCoreMenu::SetMinionButtons(const TArray<UPlayerMinion*>& Minions)
 		MinionButton->OnClicked.AddDynamic(Proxy, &UMinionButtonProxy::HandleClicked);
 
 		MinionButtonsVertBox->AddChildToVerticalBox(MinionButtonWidget);
+	}
+}
+
+UUserWidget* UCoreMenu::CreateMinionButtonWidget(UClass* MinionButtonClass, UTexture2D* MinionIcon, const FText& MinionName)
+{
+	UUserWidget* MinionButtonWidget = CreateWidget<UUserWidget>(this, MinionButtonClass);
+	if (!MinionButtonWidget)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to construct WBP_MinionButton for %s."), *MinionName.ToString());
+		return nullptr;
+	}
+
+	// Found by name rather than as Blueprint variables, since UMG only marks Buttons "Is Variable" by
+	// default, not Images or Text Blocks.
+	if (UImage* MinionButtonIcon = Cast<UImage>(MinionButtonWidget->GetWidgetFromName(TEXT("MinionButtonIcon"))))
+	{
+		if (MinionIcon)
+		{
+			MinionButtonIcon->SetBrushFromTexture(MinionIcon);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("No MinionIcon set in MinionClass_DT for %s."), *MinionName.ToString());
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("MinionButtonIcon not found on WBP_MinionButton."));
+	}
+
+	if (UTextBlock* MinionButtonText = Cast<UTextBlock>(MinionButtonWidget->GetWidgetFromName(TEXT("MinionButtonText"))))
+	{
+		MinionButtonText->SetText(MinionName);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("MinionButtonText not found on WBP_MinionButton."));
+	}
+
+	return MinionButtonWidget;
+}
+
+void UCoreMenu::OnHireShopButtonClicked()
+{
+	UE_LOG(LogTemp, Warning, TEXT("HireShopButton Clicked."));
+	ShowWindow(ECoreMenuWindow::HireShop);
+	PopulateHireShop();
+}
+
+void UCoreMenu::RandomizeHireShopMinions()
+{
+	CurrentHireShopMinions.Reset();
+
+	if (MinionClassDataTableRowNames.Num() == 0)
+	{
+		UE_LOG(LogTemp, Error, TEXT("RandomizeHireShopMinions: MinionClass_DT has no rows loaded; skipping."));
+		return;
+	}
+
+	for (int32 Index = 0; Index < HireShopMinionCount; ++Index)
+	{
+		CurrentHireShopMinions.Add(MinionClassDataTableRowNames[FMath::RandRange(0, MinionClassDataTableRowNames.Num() - 1)]);
+	}
+}
+
+void UCoreMenu::PopulateHireShop()
+{
+	if (!HireShopVertBox)
+	{
+		UE_LOG(LogTemp, Error, TEXT("HireShopVertBox is null or not found!"));
+		return;
+	}
+
+	// Only the buttons added last time are taken out, so anything else WBP_CoreMenu has in HireShopVertBox stays.
+	for (UUserWidget* HireShopMinionButton : HireShopMinionButtons)
+	{
+		if (HireShopMinionButton)
+		{
+			HireShopMinionButton->RemoveFromParent();
+		}
+	}
+	HireShopMinionButtons.Reset();
+
+	if (!MinionClassDataTable)
+	{
+		UE_LOG(LogTemp, Error, TEXT("MinionClass_DT data table is not loaded."));
+		return;
+	}
+
+	UClass* MinionButtonClass = LoadClass<UUserWidget>(nullptr, TEXT("/Game/WBP_MinionButton.WBP_MinionButton_C"));
+	if (!MinionButtonClass)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load WBP_MinionButton class."));
+		return;
+	}
+
+	for (const FName& RowName : CurrentHireShopMinions)
+	{
+		const FMinionClassStruct* ClassRow = MinionClassDataTable->FindRow<FMinionClassStruct>(RowName, TEXT("CoreMenu::PopulateHireShop"));
+		if (!ClassRow)
+		{
+			continue;
+		}
+
+		if (UUserWidget* MinionButtonWidget = CreateMinionButtonWidget(MinionButtonClass, ClassRow->MinionAssetData.MinionIcon, ClassRow->ClassName))
+		{
+			HireShopVertBox->AddChild(MinionButtonWidget);
+			HireShopMinionButtons.Add(MinionButtonWidget);
+		}
 	}
 }
 
@@ -1061,14 +1155,7 @@ void UCoreMenu::OnMinionButtonClicked(UPlayerMinion* Minion)
 	EquipTextMinion->OnSaveDataChangedEvent.AddDynamic(this, &UCoreMenu::OnEquipTextMinionSaveDataChanged);
 	UpdateMinionEquipText();
 
-	ShowMinionEquipWindow();
-}
-
-void UCoreMenu::ShowMinionEquipWindow()
-{
-	SetPanelAndChildrenVisibility(ShopWindowBox, ESlateVisibility::Hidden);
-	HideActiveItemImage();
-	SetPanelAndChildrenVisibility(MinionEqiupVertBox, ESlateVisibility::Visible);
+	ShowWindow(ECoreMenuWindow::MinionEquip);
 }
 
 void UCoreMenu::OnEquipTextMinionSaveDataChanged(FString MinionUUID)
@@ -1135,24 +1222,15 @@ void UCoreMenu::OnShopButtonClicked()
 {
 	UE_LOG(LogTemp, Warning, TEXT("ShopButton Clicked."));
 
-	if (!ShopWindowBox)
+	if (IsWindowVisible(ECoreMenuWindow::ShopWindow))
 	{
-		UE_LOG(LogTemp, Error, TEXT("ShopWindowBox is null or not found!"));
+		HideWindow(ECoreMenuWindow::ShopWindow);
+		RefreshActiveItemDisplay();
 		return;
 	}
 
-	const bool bShouldShow = ShopWindowBox->GetVisibility() != ESlateVisibility::Visible;
-	const ESlateVisibility NewVisibility = bShouldShow ? ESlateVisibility::Visible : ESlateVisibility::Hidden;
-
-	SetPanelAndChildrenVisibility(ShopWindowBox, NewVisibility);
-
-	RefreshActiveItemDisplay();
-
-	if (bShouldShow)
-	{
-		SetPanelAndChildrenVisibility(MinionEqiupVertBox, ESlateVisibility::Hidden);
-		PopulateShopGrid();
-	}
+	ShowWindow(ECoreMenuWindow::ShopWindow);
+	PopulateShopGrid();
 }
 
 void UCoreMenu::OnRandomizeShopButtonClicked()
@@ -1328,25 +1406,14 @@ void UCoreMenu::OnPlayerStashButtonClicked()
 {
 	UE_LOG(LogTemp, Warning, TEXT("PlayerStashButton Clicked."));
 
-	if (!PlayerStashHorizBox)
+	if (IsWindowVisible(ECoreMenuWindow::PlayerStash))
 	{
-		UE_LOG(LogTemp, Error, TEXT("PlayerStashHorizBox is null or not found!"));
-		return;
-	}
-
-	// Besides showing the active item image, this is the only thing that hides the stash.
-	if (PlayerStashHorizBox->GetVisibility() == ESlateVisibility::Visible)
-	{
-		SetPanelAndChildrenVisibility(PlayerStashHorizBox, ESlateVisibility::Hidden);
+		HideWindow(ECoreMenuWindow::PlayerStash);
 		RefreshActiveItemDisplay();
 		return;
 	}
 
-	// The shop is left as it is, so both can be open at once.
-	SetPanelAndChildrenVisibility(PlayerStashHorizBox, ESlateVisibility::Visible);
-
-	HideActiveItemImage();
-
+	ShowWindow(ECoreMenuWindow::PlayerStash);
 	PopulatePlayerStash();
 }
 
@@ -1358,9 +1425,7 @@ void UCoreMenu::OnStashCraftButtonClicked()
 		return;
 	}
 
-	// Showing the active item image also hides PlayerStashHorizBox.
-	UpdatePanelVisibility({ ShopWindowBox }, ESlateVisibility::Hidden);
-	ShowActiveItemImage();
+	ShowActiveItem();
 
 	CraftStashItem(SelectedItemUUID);
 }
@@ -1372,7 +1437,7 @@ void UCoreMenu::OnStashAssignButtonClicked()
 	// Shown on every click, so the minion's equipment is up whether or not the assignment goes through (the
 	// text then keeps up with it through OnEquipTextMinionSaveDataChanged).
 	UpdateMinionEquipText();
-	ShowMinionEquipWindow();
+	ShowWindow(ECoreMenuWindow::MinionEquip);
 
 	if (ValidateSelectedStashItem())
 	{
@@ -1485,32 +1550,120 @@ void UCoreMenu::OnResetGameButtonClicked()
 
 	// The previously active/selected item may no longer exist after the reset.
 	ClearSelectedItem();
-	HideActiveItemImage();
+	HideActiveItem();
 
 	PopulatePlayerStash();
 	RandomizeShopItems();
 }
 
-void UCoreMenu::UpdatePanelVisibility(const TArray<UPanelWidget*>& Panels, ESlateVisibility NewVisibility)
+void UCoreMenu::RegisterWindows()
 {
+	RegisterWindow(ECoreMenuWindow::ShopWindow, ECoreMenuWindowBucket::MainWindows, { ShopWindowBox });
+	RegisterWindow(ECoreMenuWindow::HireShop, ECoreMenuWindowBucket::MainWindows, { HireShopVertBox });
+	RegisterWindow(ECoreMenuWindow::MinionEquip, ECoreMenuWindowBucket::MainWindows, { MinionEqiupVertBox });
+	RegisterWindow(ECoreMenuWindow::ActiveItemImage, ECoreMenuWindowBucket::MainWindows, { ActiveItemImageHorizBox });
+
+	RegisterWindow(ECoreMenuWindow::PlayerStash, ECoreMenuWindowBucket::SideWindows, { PlayerStashHorizBox });
+	// Only the boxes themselves: this leaves the text's own visibility as WBP_CoreMenu has it for when they come back.
+	RegisterWindow(ECoreMenuWindow::ActiveItemText, ECoreMenuWindowBucket::SideWindows,
+		{ ActiveItemTextHorizBox, ActiveItemTextVertBox }, /*bIncludeChildren*/ false);
+}
+
+void UCoreMenu::RegisterWindow(ECoreMenuWindow Window, ECoreMenuWindowBucket Bucket, const TArray<UPanelWidget*>& Panels, bool bIncludeChildren)
+{
+	FCoreMenuWindow& Registered = Windows.Add(Window);
+	Registered.Bucket = Bucket;
+	Registered.bIncludeChildren = bIncludeChildren;
 	for (UPanelWidget* Panel : Panels)
 	{
-		SetPanelAndChildrenVisibility(Panel, NewVisibility);
+		if (Panel)
+		{
+			Registered.Panels.Add(Panel);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("A panel for window %s is null or not found!"), *UEnum::GetValueAsString(Window));
+		}
+	}
+}
+
+void UCoreMenu::ShowWindow(ECoreMenuWindow Window)
+{
+	const FCoreMenuWindow* WindowToShow = Windows.Find(Window);
+	if (!WindowToShow)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Window %s isn't registered."), *UEnum::GetValueAsString(Window));
+		return;
+	}
+
+	for (const TPair<ECoreMenuWindow, FCoreMenuWindow>& Entry : Windows)
+	{
+		if (Entry.Key != Window && Entry.Value.Bucket == WindowToShow->Bucket)
+		{
+			SetWindowVisibility(Entry.Value, ESlateVisibility::Hidden);
+		}
+	}
+
+	SetWindowVisibility(*WindowToShow, ESlateVisibility::Visible);
+}
+
+void UCoreMenu::HideWindow(ECoreMenuWindow Window)
+{
+	if (const FCoreMenuWindow* WindowToHide = Windows.Find(Window))
+	{
+		SetWindowVisibility(*WindowToHide, ESlateVisibility::Hidden);
+	}
+}
+
+bool UCoreMenu::IsWindowVisible(ECoreMenuWindow Window) const
+{
+	const FCoreMenuWindow* Found = Windows.Find(Window);
+	return Found && Found->Panels.Num() > 0 && Found->Panels[0] && Found->Panels[0]->IsVisible();
+}
+
+bool UCoreMenu::IsAnyWindowVisible(ECoreMenuWindowBucket Bucket) const
+{
+	for (const TPair<ECoreMenuWindow, FCoreMenuWindow>& Entry : Windows)
+	{
+		if (Entry.Value.Bucket == Bucket && IsWindowVisible(Entry.Key))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+void UCoreMenu::SetWindowVisibility(const FCoreMenuWindow& Window, ESlateVisibility NewVisibility)
+{
+	for (UPanelWidget* Panel : Window.Panels)
+	{
+		if (Window.bIncludeChildren)
+		{
+			SetPanelAndChildrenVisibility(Panel, NewVisibility);
+		}
+		else if (Panel)
+		{
+			Panel->SetVisibility(NewVisibility);
+		}
 	}
 }
 
 void UCoreMenu::RefreshActiveItemDisplay()
 {
-	const bool bShopOpen = ShopWindowBox && ShopWindowBox->GetVisibility() == ESlateVisibility::Visible;
-	const bool bStashOpen = PlayerStashHorizBox && PlayerStashHorizBox->GetVisibility() == ESlateVisibility::Visible;
-
-	if (!bShopOpen && !bStashOpen && bHasSelectedItemData)
+	if (!bHasSelectedItemData)
 	{
-		ShowActiveItemImage();
+		return;
 	}
-	else
+
+	if (!IsAnyWindowVisible(ECoreMenuWindowBucket::MainWindows))
 	{
-		HideActiveItemImage();
+		UpdateActiveItemImage();
+		ShowWindow(ECoreMenuWindow::ActiveItemImage);
+	}
+
+	if (!IsAnyWindowVisible(ECoreMenuWindowBucket::SideWindows))
+	{
+		ShowWindow(ECoreMenuWindow::ActiveItemText);
 	}
 }
 
@@ -1561,20 +1714,21 @@ void UCoreMenu::RefreshSelectionBorders()
 	}
 }
 
-void UCoreMenu::ShowActiveItemImage()
+void UCoreMenu::ShowActiveItem()
 {
-	if (ActiveItemImageHorizBox)
-	{
-		SetPanelAndChildrenVisibility(ActiveItemImageHorizBox, ESlateVisibility::Visible);
-	}
-	SetActiveItemTextVisibility(ESlateVisibility::Visible);
+	UpdateActiveItemImage();
+	ShowWindow(ECoreMenuWindow::ActiveItemImage);
+	ShowWindow(ECoreMenuWindow::ActiveItemText);
+}
 
-	if (PlayerStashHorizBox)
-	{
-		SetPanelAndChildrenVisibility(PlayerStashHorizBox, ESlateVisibility::Hidden);
-	}
-	SetPanelAndChildrenVisibility(MinionEqiupVertBox, ESlateVisibility::Hidden);
+void UCoreMenu::HideActiveItem()
+{
+	HideWindow(ECoreMenuWindow::ActiveItemImage);
+	HideWindow(ECoreMenuWindow::ActiveItemText);
+}
 
+void UCoreMenu::UpdateActiveItemImage()
+{
 	if (!ActiveItemImage)
 	{
 		return;
@@ -1587,25 +1741,6 @@ void UCoreMenu::ShowActiveItemImage()
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("No selected item icon available for ActiveItemImage."));
-	}
-}
-
-void UCoreMenu::HideActiveItemImage()
-{
-	UpdatePanelVisibility({ ActiveItemImageHorizBox }, ESlateVisibility::Hidden);
-	SetActiveItemTextVisibility(ESlateVisibility::Hidden);
-}
-
-void UCoreMenu::SetActiveItemTextVisibility(ESlateVisibility NewVisibility)
-{
-	// Only the boxes themselves, not their children: a hidden box already hides everything in it, and this
-	// leaves the children's own visibility as set in WBP_CoreMenu for when the boxes come back.
-	for (UPanelWidget* TextBox : { ActiveItemTextHorizBox, ActiveItemTextVertBox })
-	{
-		if (TextBox)
-		{
-			TextBox->SetVisibility(NewVisibility);
-		}
 	}
 }
 

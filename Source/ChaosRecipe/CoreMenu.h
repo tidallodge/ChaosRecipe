@@ -24,6 +24,7 @@ class UProgressBar;
 class UPlayerMinion;
 class UEnemy;
 class UBorder;
+class UTexture2D;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBuyButtonClickedEvent, FString, ItemId, FString, ItemUUID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSellButtonClickedEvent, FString, ItemId, FString, ItemUUID);
@@ -162,6 +163,48 @@ struct FDamageNumberStack
 	// In the same order as Box's children: oldest first.
 	UPROPERTY()
 	TArray<FDamageNumber> Numbers;
+};
+
+// Every window CoreMenu shows and hides with ShowWindow/HideWindow. To add one, add it here, then register its
+// bucket and panel(s) in UCoreMenu::RegisterWindows.
+UENUM()
+enum class ECoreMenuWindow : uint8
+{
+	ShopWindow,
+	HireShop,
+	MinionEquip,
+	ActiveItemImage,
+	PlayerStash,
+	ActiveItemText,
+};
+
+// The part of the screen a window takes up. Only one window per bucket is shown at a time: showing a window hides
+// every other window in its bucket.
+UENUM()
+enum class ECoreMenuWindowBucket : uint8
+{
+	MainWindows,
+	SideWindows,
+};
+
+// One ECoreMenuWindow's registration: its bucket and the panel(s) shown and hidden for it.
+USTRUCT()
+struct FCoreMenuWindow
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	ECoreMenuWindowBucket Bucket = ECoreMenuWindowBucket::MainWindows;
+
+	// Shown and hidden together.
+	UPROPERTY()
+	TArray<TObjectPtr<UPanelWidget>> Panels;
+
+	// Sets every widget inside Panels too (SetPanelAndChildrenVisibility), so nothing nested is left at its
+	// design-time visibility. Off, only the panels themselves are set, leaving their children as WBP_CoreMenu has
+	// them for when the panels come back.
+	UPROPERTY()
+	bool bIncludeChildren = true;
 };
 
 /**
@@ -334,7 +377,7 @@ protected:
 	UHorizontalBox* ShopWindowHeader;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* ActiveItemTextBox;
-	// Only shown while ActiveItemImageHorizBox is (see SetActiveItemTextVisibility)
+	// Together, the ActiveItemText window
 	UPROPERTY(meta = (BindWidget))
 	UPanelWidget* ActiveItemTextHorizBox;
 	UPROPERTY(meta = (BindWidget))
@@ -397,6 +440,11 @@ protected:
 	UPanelWidget* MinionEqiupVertBox;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* MinionEquipText;
+	// Shows HireShopVertBox, filled with a minion button for each minion the hire shop offers (OnHireShopButtonClicked)
+	UPROPERTY(meta = (BindWidget))
+	UButton* HireShopButton;
+	UPROPERTY(meta = (BindWidget))
+	UPanelWidget* HireShopVertBox;
 
 	// Click handler for SellButton
 	UFUNCTION()
@@ -410,7 +458,7 @@ protected:
 	// Click handler for a dynamically created saved-item button
 	UFUNCTION()
 	void OnSingleLoadItemButtonClicked(FString ItemUUID);
-	// Click handler for the Shop button; populates ShopUniGrid with every item in BaseItem_DT
+	// Click handler for the Shop button; toggles the ShopWindow window, populating ShopUniGrid when it opens
 	UFUNCTION()
 	void OnShopButtonClicked();
 	// Click handler for the Randomize Shop button
@@ -419,16 +467,15 @@ protected:
 	// Click handler for a dynamically created shop grid item button
 	UFUNCTION()
 	void OnShopItemButtonClicked(FString ItemId, FString ItemUUID);
-	// Click handler for the Player Stash button; toggles PlayerStashHorizBox (hiding the active item display when
-	// it opens, but leaving the shop as it is)
+	// Click handler for the Player Stash button; toggles the PlayerStash window, populating it when it opens
 	UFUNCTION()
 	void OnPlayerStashButtonClicked();
-	// Click handler for the Stash Craft button; hides the shop panel, shows the selected stash item in the active
-	// item display (which hides the stash) and passes its UUID on to CraftStashItem
+	// Click handler for the Stash Craft button; shows the selected stash item in the active item windows
+	// (ShowActiveItem) and passes its UUID on to CraftStashItem
 	UFUNCTION()
 	void OnStashCraftButtonClicked();
-	// Click handler for the Stash Assign button; shows the minion window (ShowMinionEquipWindow) and passes the
-	// selected stash item's UUID on to AssignStashItem, leaving the stash open
+	// Click handler for the Stash Assign button; shows the MinionEquip window and passes the selected stash item's
+	// UUID on to AssignStashItem
 	UFUNCTION()
 	void OnStashAssignButtonClicked();
 	// Returns whether the selection is a saved stash item, warning the player if it isn't (e.g. nothing is
@@ -464,11 +511,9 @@ protected:
 	UFUNCTION()
 	void OnCurrencyButtonClicked(FName RowName);
 	// Click handler for a dynamically created WBP_MinionButton; selects that minion's UUID and says so in
-	// WarningsTextBox, then shows its equipment in the minion window (ShowMinionEquipWindow)
+	// WarningsTextBox, then shows its equipment in the MinionEquip window
 	UFUNCTION()
 	void OnMinionButtonClicked(UPlayerMinion* Minion);
-	// Shows MinionEqiupVertBox, hiding the shop and active item display. Leaves the stash as it is.
-	void ShowMinionEquipWindow();
 	// Sets MinionEquipText to EquipTextMinion's class name, followed by a line for each ItemSlot it has an item
 	// in, naming that item ("No minion selected" if no minion button has been clicked yet).
 	void UpdateMinionEquipText();
@@ -476,6 +521,19 @@ protected:
 	// (e.g. an assigned item).
 	UFUNCTION()
 	void OnEquipTextMinionSaveDataChanged(FString MinionUUID);
+	// Creates a WBP_MinionButton showing MinionIcon and MinionName, for the caller to bind and add. Null if it
+	// can't be created.
+	UUserWidget* CreateMinionButtonWidget(UClass* MinionButtonClass, UTexture2D* MinionIcon, const FText& MinionName);
+	// Click handler for HireShopButton; shows the HireShop window and fills it with the hire shop's minion buttons
+	// (PopulateHireShop)
+	UFUNCTION()
+	void OnHireShopButtonClicked();
+	// Rolls HireShopMinionCount random MinionClass_DT rows (repeats allowed) into CurrentHireShopMinions, the
+	// minions the hire shop offers. Done once, in NativeConstruct, so the offers stay the same between visits.
+	void RandomizeHireShopMinions();
+	// Replaces the minion buttons in HireShopVertBox with a WBP_MinionButton for each of CurrentHireShopMinions,
+	// showing its class's MinionIcon and ClassName. Clicking one does nothing yet.
+	void PopulateHireShop();
 	// Sets IconImage's brush to the CurrencyIcon of the Currency_DT row named RowName
 	void LoadCurrencyIcon(UImage* IconImage, const FName& RowName);
 	// Builds the hover flyout for a currency button: CurrencyName on top, CurrencyDescription underneath.
@@ -490,18 +548,27 @@ protected:
 	void UpdateCurrencyCountText(const FString& CurrencyId);
 	// Sets the visibility of a panel widget and all of its children, recursively
 	void SetPanelAndChildrenVisibility(UPanelWidget* Panel, ESlateVisibility NewVisibility);
-	// Sets the visibility of each given panel (and its children)
-	void UpdatePanelVisibility(const TArray<UPanelWidget*>& Panels, ESlateVisibility NewVisibility);
-	// Shows ActiveItemImageHorizBox (and its children) along with the active item's text, sets ActiveItemImage
-	// to the selected item's icon, and hides PlayerStashHorizBox and MinionEqiupVertBox
-	void ShowActiveItemImage();
-	// Hides ActiveItemImageHorizBox (and its children) along with the active item's text
-	void HideActiveItemImage();
-	// Gives ActiveItemTextHorizBox and ActiveItemTextVertBox NewVisibility, so the active item's text is only
-	// up while ActiveItemImageHorizBox is
-	void SetActiveItemTextVisibility(ESlateVisibility NewVisibility);
-	// Shows the active item display when neither ShopWindowBox nor PlayerStashHorizBox is visible and an
-	// item is selected; hides it otherwise. Call after changing either panel's visibility.
+	// Registers every ECoreMenuWindow with its bucket and panel(s), for ShowWindow/HideWindow. Called once, in
+	// NativeOnInitialized.
+	void RegisterWindows();
+	void RegisterWindow(ECoreMenuWindow Window, ECoreMenuWindowBucket Bucket, const TArray<UPanelWidget*>& Panels, bool bIncludeChildren = true);
+	// Shows Window, first hiding every other window in its bucket.
+	void ShowWindow(ECoreMenuWindow Window);
+	void HideWindow(ECoreMenuWindow Window);
+	bool IsWindowVisible(ECoreMenuWindow Window) const;
+	// Whether any window in Bucket is showing.
+	bool IsAnyWindowVisible(ECoreMenuWindowBucket Bucket) const;
+	// Sets every panel of Window (and its children, if it includes them) to NewVisibility.
+	void SetWindowVisibility(const FCoreMenuWindow& Window, ESlateVisibility NewVisibility);
+	// Shows the selected item in both active item windows: its icon in ActiveItemImage and its text in
+	// ActiveItemText (which, being windows, hide the rest of their buckets).
+	void ShowActiveItem();
+	// Hides both active item windows.
+	void HideActiveItem();
+	// Sets ActiveItemImage to the selected item's icon.
+	void UpdateActiveItemImage();
+	// Called once a window has been hidden: with an item selected, each active item window comes back in its
+	// bucket if nothing else is showing there now.
 	void RefreshActiveItemDisplay();
 	// Sets SelectedItemUUID and moves the white selection border onto that item's icon in the shop/stash grids.
 	void SetSelectedItemUUID(const FString& ItemUUID);
@@ -633,6 +700,29 @@ protected:
 	// The minion last clicked in MinionButtonsVertBox, whose equipped items MinionEquipText lists.
 	UPROPERTY()
 	TObjectPtr<UPlayerMinion> EquipTextMinion;
+
+	// Shared reference to MinionClass_DT, loaded once in NativeConstruct.
+	UPROPERTY()
+	UDataTable* MinionClassDataTable;
+
+	UPROPERTY()
+	TArray<FName> MinionClassDataTableRowNames;
+
+	// How many minions the hire shop offers, each shown as a minion button in HireShopVertBox.
+	UPROPERTY(EditAnywhere, Category = "Hire Shop", meta = (ClampMin = "0"))
+	int32 HireShopMinionCount = 3;
+
+	// The MinionClass_DT row of each minion the hire shop offers. Set by RandomizeHireShopMinions.
+	UPROPERTY()
+	TArray<FName> CurrentHireShopMinions;
+
+	// The minion buttons PopulateHireShop last added to HireShopVertBox, so the next populate replaces only them.
+	UPROPERTY()
+	TArray<TObjectPtr<UUserWidget>> HireShopMinionButtons;
+
+	// Every window ShowWindow/HideWindow manage, filled in by RegisterWindows.
+	UPROPERTY()
+	TMap<ECoreMenuWindow, FCoreMenuWindow> Windows;
 
 	// Ages the current warning by DeltaTime, fading WarningsTextBox out once its DisplaySeconds are up and
 	// clearing it once the fade is done.
