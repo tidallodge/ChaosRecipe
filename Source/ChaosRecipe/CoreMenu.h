@@ -27,9 +27,6 @@ class UBorder;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBuyButtonClickedEvent, FString, ItemId, FString, ItemUUID);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSellButtonClickedEvent, FString, ItemId, FString, ItemUUID);
-// CurrencyId is whatever SetSelectedCurrencyId last set (empty for a plain full reroll, or a
-// Currency_DT row id to modify the item's existing modifiers via that currency's rules instead).
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRandomizeItemEvent, FString, CurrencyId);
 // Fired when a saved item is loaded from the PlayerStashUniGrid, so listeners (e.g. ItemHandler) can
 // prep that existing item - identified by ItemId and its already-assigned ItemUUID - as the active item.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStashItemSelectedEvent, FString, ItemId, FString, ItemUUID);
@@ -45,6 +42,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBattlePlayButtonClickedEvent);
 // Fired when StashAssignButton is clicked, so listeners (e.g. MinionHandler) can equip the stash item ItemUUID on
 // the minion MinionUUID. Expected to be handled synchronously: CoreMenu reloads the stash right after broadcasting.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAssignItemToMinionEvent, FString, MinionUUID, FString, ItemUUID);
+// Bound by ItemHandler to supply the text a shop/stash item's hover flyout shows (the same text ActiveItemTextBox
+// shows for it), since CoreMenu doesn't build item stats itself.
+DECLARE_DELEGATE_RetVal_TwoParams(FString, FGetItemDisplayTextDelegate, const FString& /* ItemId */, const FString& /* ItemUUID */);
 
 class UCoreMenu;
 
@@ -64,6 +64,10 @@ public:
 
 	UFUNCTION()
 	void HandleClicked();
+
+	// Bound to the button's ToolTipWidgetDelegate, so the item's hover flyout is built each time it opens.
+	UFUNCTION()
+	UWidget* CreateToolTip();
 };
 
 // Carries an item's ItemId and its pre-minted ItemUUID (assigned in PopulateShopGrid) for a
@@ -86,6 +90,10 @@ public:
 
 	UFUNCTION()
 	void HandleClicked();
+
+	// Bound to the button's ToolTipWidgetDelegate, so the item's hover flyout is built each time it opens.
+	UFUNCTION()
+	UWidget* CreateToolTip();
 };
 
 // Carries a currency's Currency_DT RowName for a dynamically created currency grid button, since
@@ -180,9 +188,6 @@ public:
 	FOnSellButtonClickedEvent OnSellButtonClickedEvent;
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
-	FOnRandomizeItemEvent OnRandomizeItemEvent;
-
-	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnStashItemSelectedEvent OnStashItemSelectedEvent;
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
@@ -196,6 +201,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnAssignItemToMinionEvent OnAssignItemToMinionEvent;
+
+	// Supplies the text for each shop/stash item's hover flyout (CreateItemToolTip). Unbound, items show no flyout.
+	FGetItemDisplayTextDelegate GetItemDisplayTextDelegate;
 
 	UPROPERTY()
 	int32 PlayerSwordCount;
@@ -235,14 +243,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void ClearSelectedItemUUID() { SetSelectedItemUUID(FString()); }
 
-	// Sets which currency (a Currency_DT row id, or empty for a plain full reroll) the next Randomize
-	// click will use. Called when a currency button in InscriptionUniGrid/GlyphUniGrid is clicked;
-	// defaults to empty (full reroll) until one is.
+	// Sets which currency (a Currency_DT row id) is selected for rolling the active item. Called when a currency
+	// button in InscriptionUniGrid/GlyphUniGrid is clicked; empty until one is.
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void SetSelectedCurrencyId(const FString& CurrencyId) { SelectedCurrencyId = CurrencyId; }
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	FString GetSelectedCurrencyId() const { return SelectedCurrencyId; }
+
+	// The button inside ActiveItemRollButton, which ItemHandler binds to roll the active item with the selected
+	// currency. Null if WBP_SingleImageButton has no SingleImageButton.
+	UButton* GetActiveItemRollButton() const;
 
 	// Rebuilds ShopUniGrid from CurrentShopItems without changing which items are listed
 	// (unlike RandomizeShopItems, which rolls a new set first). Useful for refreshing the
@@ -356,8 +367,8 @@ protected:
 	UUniformGridPanel* InscriptionUniGrid;
 	UPROPERTY(meta = (BindWidget))
 	UUniformGridPanel* GlyphUniGrid;
-	// WBP_SingleImageButton showing the currently selected currency's icon; clicking it rolls the
-	// active item with that currency (OnRandomizeItemButtonClicked)
+	// WBP_SingleImageButton showing the currently selected currency's icon and flyout; clicking it rolls the active
+	// item with that currency (bound by ItemHandler, via GetActiveItemRollButton)
 	UPROPERTY(meta = (BindWidget))
 	UUserWidget* ActiveItemRollButton;
 	// Nested in BattleMinionVertBox/BattleEnemyVertBox; driven by the selected minion/enemy (SetSelectedMinion/SetSelectedEnemy).
@@ -396,9 +407,6 @@ protected:
 	// Generic item lookup helper
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void SelectItemData(const FText& ItemIdText);
-	// Click handler for ActiveItemRollButton's inner SingleImageButton
-	UFUNCTION()
-	void OnRandomizeItemButtonClicked();
 	// Click handler for a dynamically created saved-item button
 	UFUNCTION()
 	void OnSingleLoadItemButtonClicked(FString ItemUUID);
@@ -419,8 +427,8 @@ protected:
 	// item display (which hides the stash) and passes its UUID on to CraftStashItem
 	UFUNCTION()
 	void OnStashCraftButtonClicked();
-	// Click handler for the Stash Assign button; passes the selected stash item's UUID on to AssignStashItem,
-	// leaving the stash open
+	// Click handler for the Stash Assign button; shows the minion window (ShowMinionEquipWindow) and passes the
+	// selected stash item's UUID on to AssignStashItem, leaving the stash open
 	UFUNCTION()
 	void OnStashAssignButtonClicked();
 	// Returns whether the selection is a saved stash item, warning the player if it isn't (e.g. nothing is
@@ -456,11 +464,13 @@ protected:
 	UFUNCTION()
 	void OnCurrencyButtonClicked(FName RowName);
 	// Click handler for a dynamically created WBP_MinionButton; selects that minion's UUID and says so in
-	// WarningsTextBox, then hides the shop and active item display and shows its equipment in MinionEqiupVertBox
+	// WarningsTextBox, then shows its equipment in the minion window (ShowMinionEquipWindow)
 	UFUNCTION()
 	void OnMinionButtonClicked(UPlayerMinion* Minion);
+	// Shows MinionEqiupVertBox, hiding the shop and active item display. Leaves the stash as it is.
+	void ShowMinionEquipWindow();
 	// Sets MinionEquipText to EquipTextMinion's class name, followed by a line for each ItemSlot it has an item
-	// in, naming that item.
+	// in, naming that item ("No minion selected" if no minion button has been clicked yet).
 	void UpdateMinionEquipText();
 	// Bound to EquipTextMinion's OnSaveDataChangedEvent, so MinionEquipText keeps up as its equipment changes
 	// (e.g. an assigned item).
@@ -471,6 +481,11 @@ protected:
 	// Builds the hover flyout for a currency button: CurrencyName on top, CurrencyDescription underneath.
 	// Returns null if the Currency_DT row can't be found.
 	UWidget* CreateCurrencyToolTip(const FName& RowName);
+	// Builds the hover flyout for a shop/stash item: its name on top, with the rest of the text ActiveItemTextBox
+	// shows for it (from GetItemDisplayTextDelegate) underneath. Returns null if there's no text for it.
+	UWidget* CreateItemToolTip(const FString& ItemId, const FString& ItemUUID);
+	// The look shared by every hover flyout: Title in bold over Body, on a dark background.
+	UWidget* CreateTitledToolTip(const FText& Title, const FText& Body);
 	// Sets the count text over CurrencyId's icon in InscriptionUniGrid/GlyphUniGrid from CurrencyStackCounts
 	void UpdateCurrencyCountText(const FString& CurrencyId);
 	// Sets the visibility of a panel widget and all of its children, recursively
@@ -535,7 +550,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
 	TArray<FName> CurrencyDataTableRowNames;
 
-	// CurrencyId to use for the next Randomize click (empty = full reroll). Set via SetSelectedCurrencyId.
+	// The selected currency's CurrencyId (empty until one is selected). Set via SetSelectedCurrencyId.
 	UPROPERTY()
 	FString SelectedCurrencyId;
 
@@ -588,15 +603,20 @@ protected:
 	UPROPERTY()
 	int32 CurrencyCountFontSize = 12;
 
-	// Font sizes and wrap width (px) of the currency hover flyout built by CreateCurrencyToolTip.
+	// Font sizes and wrap width (px) of the currency and item hover flyouts built by CreateTitledToolTip.
 	UPROPERTY()
-	int32 CurrencyToolTipNameFontSize = 14;
+	int32 ToolTipTitleFontSize = 14;
 
 	UPROPERTY()
-	int32 CurrencyToolTipDescriptionFontSize = 11;
+	int32 ToolTipBodyFontSize = 11;
 
 	UPROPERTY()
-	float CurrencyToolTipWrapWidth = 280.f;
+	float ToolTipWrapWidth = 280.f;
+
+	// The item flyout last built by CreateItemToolTip. Only Slate holds on to a flyout built for
+	// ToolTipWidgetDelegate, so this keeps its widgets from being garbage collected while it's up.
+	UPROPERTY()
+	TObjectPtr<UWidget> ItemToolTip;
 
 	// Most minion buttons SetMinionButtons shows; minions past this many get no button.
 	UPROPERTY()

@@ -221,10 +221,7 @@ void UCoreMenu::NativeConstruct()
 	{
 		RollIcon->SetVisibility(ESlateVisibility::Hidden);
 	}
-	if (UButton* RollButton = GetSingleImageButton(ActiveItemRollButton))
-	{
-		RollButton->OnClicked.AddDynamic(this, &UCoreMenu::OnRandomizeItemButtonClicked);
-	}
+	// Clicking ActiveItemRollButton is handled by ItemHandler, which binds to it via GetActiveItemRollButton.
 
 	// Off by default, so the fill colors set in WBP_CoreMenu are kept.
 	if (bOverrideHPBarColors)
@@ -334,25 +331,9 @@ void UCoreMenu::SelectItemData(const FText& ItemIdText)
 	UE_LOG(LogTemp, Warning, TEXT("No item found for ItemId: %s"), *SearchText);
 }
 
-void UCoreMenu::OnRandomizeItemButtonClicked()
+UButton* UCoreMenu::GetActiveItemRollButton() const
 {
-	UE_LOG(LogTemp, Warning, TEXT("RandomizeItemButton Clicked."));
-
-	// Randomize edits the selected item in place, so it must already be a saved/purchased item
-	// (present in SavedItems.json) before any of the button's functionality runs.
-	TSharedPtr<FJsonObject> ItemObject;
-	if (!GetSavedItemJsonByUUID(SelectedItemUUID, ItemObject))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("RandomizeItemButton: no saved item found for UUID: %s"), *SelectedItemUUID);
-		SetWarningText(TEXT("You have not purchased this item yet."));
-		return;
-	}
-
-	// Showing the active item image also hides PlayerStashHorizBox.
-	UpdatePanelVisibility({ ShopWindowBox }, ESlateVisibility::Hidden);
-	ShowActiveItemImage();
-
-	OnRandomizeItemEvent.Broadcast(SelectedCurrencyId);
+	return GetSingleImageButton(ActiveItemRollButton);
 }
 
 static bool GetSavedItemJsonByUUID(const FString& UUID, TSharedPtr<FJsonObject>& OutItemObject)
@@ -424,7 +405,7 @@ void UCoreMenu::OnSingleLoadItemButtonClicked(FString ItemUUID)
 	FString ItemId;
 	ItemObject->TryGetStringField(TEXT("ItemId"), ItemId);
 
-	// Marks this stash item as the active item, so ActiveItemRollButton acts on it.
+	// Marks this stash item as the active item.
 	SelectItemData(FText::FromString(ItemId));
 
 	// Lets listeners (e.g. ItemHandler) load this existing saved item's stats into their
@@ -657,6 +638,8 @@ void UCoreMenu::PopulatePlayerStash()
 		Proxy->OwningMenu = this;
 		PlayerStashButtonProxies.Add(Proxy);
 		InnerButton->OnClicked.AddDynamic(Proxy, &ULoadItemButtonProxy::HandleClicked);
+		// Has to be bound before the grid builds the button's Slate widget, which is when it's picked up.
+		InnerButton->ToolTipWidgetDelegate.BindDynamic(Proxy, &ULoadItemButtonProxy::CreateToolTip);
 
 		PlayerStashUniGrid->AddChildToUniformGrid(ItemSlotBox, Index / NumColumns, Index % NumColumns);
 
@@ -848,13 +831,49 @@ UWidget* UCoreMenu::CreateCurrencyToolTip(const FName& RowName)
 		return nullptr;
 	}
 
+	return CreateTitledToolTip(CurrencyRow->CurrencyName, CurrencyRow->CurrencyDescription);
+}
+
+UWidget* ULoadItemButtonProxy::CreateToolTip()
+{
+	// A saved item's ItemId comes from its save, so its UUID is enough.
+	return OwningMenu ? OwningMenu->CreateItemToolTip(FString(), ItemUUID) : nullptr;
+}
+
+UWidget* UShopItemButtonProxy::CreateToolTip()
+{
+	return OwningMenu ? OwningMenu->CreateItemToolTip(ItemId, ItemUUID) : nullptr;
+}
+
+UWidget* UCoreMenu::CreateItemToolTip(const FString& ItemId, const FString& ItemUUID)
+{
+	const FString DisplayText = GetItemDisplayTextDelegate.IsBound() ? GetItemDisplayTextDelegate.Execute(ItemId, ItemUUID) : FString();
+	if (DisplayText.IsEmpty())
+	{
+		return nullptr;
+	}
+
+	// The display text's first line is the item's name, which becomes the flyout's title.
+	FString ItemName;
+	FString ItemStats;
+	if (!DisplayText.Split(TEXT("\n"), &ItemName, &ItemStats))
+	{
+		ItemName = DisplayText;
+	}
+
+	ItemToolTip = CreateTitledToolTip(FText::FromString(ItemName), FText::FromString(ItemStats.TrimEnd()));
+	return ItemToolTip;
+}
+
+UWidget* UCoreMenu::CreateTitledToolTip(const FText& Title, const FText& Body)
+{
 	UBorder* Background = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass());
 	UVerticalBox* Lines = WidgetTree->ConstructWidget<UVerticalBox>(UVerticalBox::StaticClass());
-	UTextBlock* NameText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
-	UTextBlock* DescriptionText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
-	if (!Background || !Lines || !NameText || !DescriptionText)
+	UTextBlock* TitleText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
+	UTextBlock* BodyText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
+	if (!Background || !Lines || !TitleText || !BodyText)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Failed to construct currency tooltip widgets."));
+		UE_LOG(LogTemp, Error, TEXT("Failed to construct tooltip widgets."));
 		return nullptr;
 	}
 
@@ -862,23 +881,23 @@ UWidget* UCoreMenu::CreateCurrencyToolTip(const FName& RowName)
 	Background->SetPadding(FMargin(8.f));
 	Background->SetContent(Lines);
 
-	FSlateFontInfo NameFont = NameText->GetFont();
-	NameFont.Size = CurrencyToolTipNameFontSize;
-	NameFont.TypefaceFontName = TEXT("Bold");
-	NameText->SetFont(NameFont);
-	NameText->SetText(CurrencyRow->CurrencyName);
-	Lines->AddChildToVerticalBox(NameText);
+	FSlateFontInfo TitleFont = TitleText->GetFont();
+	TitleFont.Size = ToolTipTitleFontSize;
+	TitleFont.TypefaceFontName = TEXT("Bold");
+	TitleText->SetFont(TitleFont);
+	TitleText->SetText(Title);
+	Lines->AddChildToVerticalBox(TitleText);
 
-	FSlateFontInfo DescriptionFont = DescriptionText->GetFont();
-	DescriptionFont.Size = CurrencyToolTipDescriptionFontSize;
-	DescriptionText->SetFont(DescriptionFont);
-	DescriptionText->SetColorAndOpacity(FSlateColor(FLinearColor(0.8f, 0.8f, 0.8f)));
-	DescriptionText->SetText(CurrencyRow->CurrencyDescription);
+	FSlateFontInfo BodyFont = BodyText->GetFont();
+	BodyFont.Size = ToolTipBodyFontSize;
+	BodyText->SetFont(BodyFont);
+	BodyText->SetColorAndOpacity(FSlateColor(FLinearColor(0.8f, 0.8f, 0.8f)));
+	BodyText->SetText(Body);
 	// A tooltip has no width constraint of its own, so wrap at a fixed width instead of auto-wrapping.
-	DescriptionText->SetWrapTextAt(CurrencyToolTipWrapWidth);
-	if (UVerticalBoxSlot* DescriptionSlot = Lines->AddChildToVerticalBox(DescriptionText))
+	BodyText->SetWrapTextAt(ToolTipWrapWidth);
+	if (UVerticalBoxSlot* BodySlot = Lines->AddChildToVerticalBox(BodyText))
 	{
-		DescriptionSlot->SetPadding(FMargin(0.f, 4.f, 0.f, 0.f));
+		BodySlot->SetPadding(FMargin(0.f, 4.f, 0.f, 0.f));
 	}
 
 	return Background;
@@ -1042,6 +1061,11 @@ void UCoreMenu::OnMinionButtonClicked(UPlayerMinion* Minion)
 	EquipTextMinion->OnSaveDataChangedEvent.AddDynamic(this, &UCoreMenu::OnEquipTextMinionSaveDataChanged);
 	UpdateMinionEquipText();
 
+	ShowMinionEquipWindow();
+}
+
+void UCoreMenu::ShowMinionEquipWindow()
+{
 	SetPanelAndChildrenVisibility(ShopWindowBox, ESlateVisibility::Hidden);
 	HideActiveItemImage();
 	SetPanelAndChildrenVisibility(MinionEqiupVertBox, ESlateVisibility::Visible);
@@ -1061,7 +1085,7 @@ void UCoreMenu::UpdateMinionEquipText()
 
 	if (!EquipTextMinion)
 	{
-		MinionEquipText->SetText(FText::GetEmpty());
+		MinionEquipText->SetText(FText::FromString(TEXT("No minion selected")));
 		return;
 	}
 
@@ -1233,6 +1257,8 @@ void UCoreMenu::PopulateShopGrid()
 		Proxy->OwningMenu = this;
 		ShopItemButtonProxies.Add(Proxy);
 		InnerButton->OnClicked.AddDynamic(Proxy, &UShopItemButtonProxy::HandleClicked);
+		// Has to be bound before the grid builds the button's Slate widget, which is when it's picked up.
+		InnerButton->ToolTipWidgetDelegate.BindDynamic(Proxy, &UShopItemButtonProxy::CreateToolTip);
 
 		ShopUniGrid->AddChildToUniformGrid(ItemSlotBox, Index / NumColumns, Index % NumColumns);
 
@@ -1342,6 +1368,12 @@ void UCoreMenu::OnStashCraftButtonClicked()
 void UCoreMenu::OnStashAssignButtonClicked()
 {
 	UE_LOG(LogTemp, Warning, TEXT("StashAssignButton Clicked."));
+
+	// Shown on every click, so the minion's equipment is up whether or not the assignment goes through (the
+	// text then keeps up with it through OnEquipTextMinionSaveDataChanged).
+	UpdateMinionEquipText();
+	ShowMinionEquipWindow();
+
 	if (ValidateSelectedStashItem())
 	{
 		AssignStashItem(SelectedItemUUID);

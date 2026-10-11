@@ -116,11 +116,7 @@ void UPlayerInventory::HandleItemBought(FString ItemId, FString ItemUUID, float 
 void UPlayerInventory::HandleItemRandomized(int32 GoldCost, FString CurrencyId)
 {
 	AdjustPlayerGoldCount(-GoldCost);
-
-	if (!CurrencyId.IsEmpty())
-	{
-		AdjustCurrencyStackCount(CurrencyId, -1);
-	}
+	AdjustCurrencyStackCount(CurrencyId, -1);
 
 	UE_LOG(LogTemp, Warning, TEXT("PlayerInventory: Randomized item for %d gold and currency '%s' (PlayerGoldCount=%d)"),
 		GoldCost, *CurrencyId, PlayerGoldCount);

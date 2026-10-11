@@ -16,8 +16,6 @@ public:
 	explicit ModifierAssigner(const TArray<FItemModifierStruct>& InModifierPool);
 	~ModifierAssigner();
 
-	int32 ModifierCount = 3;
-
 	// Replaces the current pool of every possible item modifier.
 	void SetModifierPool(const TArray<FItemModifierStruct>& InModifierPool);
 

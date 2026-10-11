@@ -15,6 +15,7 @@
 #include "BaseWeaponStruct.h"
 #include "BaseArmorStruct.h"
 #include "ItemInstanceManager.h"
+#include "JsonObjectConverter.h"
 #include "Engine/Engine.h"
 
 namespace
@@ -106,8 +107,7 @@ namespace
 	}
 
 	// Picks one entry at random from a currency's ModifiersAffectedWeightedRange (e.g. [3,4,4,5,5,6]
-	// weights 4 and 5 as twice as likely as 3 or 6, matching how the pre-currency full reroll picked its
-	// modifier count). Falls back to DefaultIfEmpty when the range is empty.
+	// weights 4 and 5 as twice as likely as 3 or 6). Falls back to DefaultIfEmpty when the range is empty.
 	int32 PickWeightedCount(const TArray<int32>& WeightedRange, int32 DefaultIfEmpty)
 	{
 		if (WeightedRange.Num() == 0)
@@ -139,11 +139,15 @@ void UItemHandler::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
 
     BoundCoreMenu = CoreMenu;
     CoreMenu->OnBuyButtonClickedEvent.AddDynamic(this, &UItemHandler::OnBuyButtonClicked);
-    CoreMenu->OnRandomizeItemEvent.AddDynamic(this, &UItemHandler::OnRandomizeItem);
+    if (UButton* RollButton = CoreMenu->GetActiveItemRollButton())
+    {
+        RollButton->OnClicked.AddDynamic(this, &UItemHandler::OnActiveItemRollButtonClicked);
+    }
     CoreMenu->OnSellButtonClickedEvent.AddDynamic(this, &UItemHandler::OnSellButtonClicked);
     CoreMenu->OnStashItemSelectedEvent.AddDynamic(this, &UItemHandler::OnStashItemSelected);
     CoreMenu->OnShopItemSelectedEvent.AddDynamic(this, &UItemHandler::OnShopItemSelected);
     CoreMenu->OnResetGameButtonClickedEvent.AddDynamic(this, &UItemHandler::OnResetGame);
+    CoreMenu->GetItemDisplayTextDelegate.BindUObject(this, &UItemHandler::GetItemDisplayText);
 }
 
 void UItemHandler::BindToPlayerInventory(UPlayerInventory* PlayerInventory)
@@ -276,9 +280,6 @@ void UItemHandler::OnItemSelected(const FString& ItemId, const FString& ItemUUID
             LocalDamageSummary = TEXT("none");
         }
 
-        const FString ModifiersText = BuildGroupedModifiersText(ItemModifierAssigner.GetModifierPool(),
-            CachedWeaponStats.ImplicitModifiers, CachedWeaponStats.PrefixModifiers, CachedWeaponStats.SuffixModifiers);
-
         Message = FString::Printf(
             TEXT("ItemHandler selected weapon stats:\nUUID:%s\nAttackRate=%.2f\nBase:%s\nLocal:%s"),
             *CachedWeaponStats.UUID.ToString(),
@@ -286,21 +287,7 @@ void UItemHandler::OnItemSelected(const FString& ItemId, const FString& ItemUUID
             *DamageSummary,
             *LocalDamageSummary);
 
-        // Matches the layout CoreMenu uses for a selected stash item: name, then a "Base Damage:"
-        // block, Attack Rate, Gold Value, then the modifiers block.
-        FString WeaponDamageText;
-        if (const FWeaponLocalDamage* ActiveLocalDamage = CachedWeaponStats.WeaponLocalDamage.Find(TEXT("LocalDamage")))
-        {
-            WeaponDamageText = BuildWeaponDamageLines(*ActiveLocalDamage);
-        }
-
-        ActiveItemText = FString::Printf(
-            TEXT("%s\nBase Damage:\n%sAttack Rate: %.2f\nGold Value: %.0f\n%s"),
-            *ItemName,
-            *WeaponDamageText,
-            CachedWeaponStats.AttackRate,
-            GetDisplayGoldValue(CachedWeaponStats),
-            *ModifiersText);
+        ActiveItemText = BuildWeaponDisplayText(ItemName, CachedWeaponStats);
     }
     else
     {
@@ -326,22 +313,12 @@ void UItemHandler::OnItemSelected(const FString& ItemId, const FString& ItemUUID
             CachedArmorStats.BaseDefense.BaseOvershield.X,
             CachedArmorStats.BaseDefense.BaseOvershield.Y);
 
-        const FString ModifiersText = BuildGroupedModifiersText(ItemModifierAssigner.GetModifierPool(),
-            CachedArmorStats.ImplicitModifiers, CachedArmorStats.PrefixModifiers, CachedArmorStats.SuffixModifiers);
-
         Message = FString::Printf(
             TEXT("ItemHandler selected armor stats:\nUUID:%s\nDefense:%s"),
             *CachedArmorStats.UUID.ToString(),
             *DefenseSummary);
 
-        // Matches the layout CoreMenu uses for a selected stash item: name, then a "Base Defense:"
-        // block, Gold Value, then the modifiers block.
-        ActiveItemText = FString::Printf(
-            TEXT("%s\nBase Defense:\n%sGold Value: %.0f\n%s"),
-            *ItemName,
-            *BuildArmorDefenseLines(CachedArmorStats.BaseDefense),
-            GetDisplayGoldValue(CachedArmorStats),
-            *ModifiersText);
+        ActiveItemText = BuildArmorDisplayText(ItemName, CachedArmorStats);
     }
 
     if (BoundCoreMenu)
@@ -351,6 +328,79 @@ void UItemHandler::OnItemSelected(const FString& ItemId, const FString& ItemUUID
     }
 
     UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
+}
+
+FString UItemHandler::BuildWeaponDisplayText(const FString& ItemName, const FItemWeaponStatsStruct& WeaponStats) const
+{
+    FString WeaponDamageText;
+    if (const FWeaponLocalDamage* LocalDamage = WeaponStats.WeaponLocalDamage.Find(TEXT("LocalDamage")))
+    {
+        WeaponDamageText = BuildWeaponDamageLines(*LocalDamage);
+    }
+
+    return FString::Printf(
+        TEXT("%s\nBase Damage:\n%sAttack Rate: %.2f\nGold Value: %.0f\n%s"),
+        *ItemName,
+        *WeaponDamageText,
+        WeaponStats.AttackRate,
+        GetDisplayGoldValue(WeaponStats),
+        *BuildGroupedModifiersText(ItemModifierAssigner.GetModifierPool(),
+            WeaponStats.ImplicitModifiers, WeaponStats.PrefixModifiers, WeaponStats.SuffixModifiers));
+}
+
+FString UItemHandler::BuildArmorDisplayText(const FString& ItemName, const FItemArmorStatsStruct& ArmorStats) const
+{
+    return FString::Printf(
+        TEXT("%s\nBase Defense:\n%sGold Value: %.0f\n%s"),
+        *ItemName,
+        *BuildArmorDefenseLines(ArmorStats.BaseDefense),
+        GetDisplayGoldValue(ArmorStats),
+        *BuildGroupedModifiersText(ItemModifierAssigner.GetModifierPool(),
+            ArmorStats.ImplicitModifiers, ArmorStats.PrefixModifiers, ArmorStats.SuffixModifiers));
+}
+
+FString UItemHandler::GetItemDisplayText(const FString& ItemId, const FString& ItemUUID)
+{
+    // A saved item's ItemId comes from its save, so the stash only needs to pass its UUID.
+    const TSharedPtr<FJsonObject> SavedItem = SavedItemsManager.GetSavedItemJson(ItemUUID);
+    FString ResolvedItemId = ItemId;
+    if (SavedItem.IsValid())
+    {
+        SavedItem->TryGetStringField(TEXT("ItemId"), ResolvedItemId);
+    }
+
+    FBaseItemStruct ItemData;
+    if (!LoadItemDataRow(ResolvedItemId, ItemData))
+    {
+        return FString();
+    }
+
+    // Randomizing is what normally loads the modifier pool, so without this a saved item's modifiers would show
+    // as raw ids until something had been randomized this session.
+    if (ItemModifierAssigner.GetModifierPoolCount() == 0)
+    {
+        TArray<FItemModifierStruct> AllItemModifiers;
+        if (LoadAllItemModifierRows(AllItemModifiers))
+        {
+            ItemModifierAssigner.SetModifierPool(AllItemModifiers);
+        }
+    }
+
+    const FString ItemName = ItemData.ItemName.ToString();
+    if (ItemData.ItemClass == EItemClass::Armor || ItemData.ItemClass == EItemClass::Shield)
+    {
+        FItemArmorStatsStruct ArmorStats;
+        const bool bHasStats = SavedItem.IsValid()
+            ? FJsonObjectConverter::JsonObjectToUStruct(SavedItem.ToSharedRef(), &ArmorStats)
+            : BuildArmorStatsForItem(ResolvedItemId, ArmorStats);
+        return bHasStats ? BuildArmorDisplayText(ItemName, ArmorStats) : FString();
+    }
+
+    FItemWeaponStatsStruct WeaponStats;
+    const bool bHasStats = SavedItem.IsValid()
+        ? FJsonObjectConverter::JsonObjectToUStruct(SavedItem.ToSharedRef(), &WeaponStats)
+        : BuildWeaponStatsForItem(ResolvedItemId, WeaponStats);
+    return bHasStats ? BuildWeaponDisplayText(ItemName, WeaponStats) : FString();
 }
 
 bool UItemHandler::BuildWeaponStatsForItem(const FString& ItemId, FItemWeaponStatsStruct& OutWeaponStats) const
@@ -531,8 +581,39 @@ void UItemHandler::OnBuyButtonClicked(FString ItemId, FString ItemUUID)
     }
 }
 
-void UItemHandler::OnRandomizeItem(FString CurrencyId)
+void UItemHandler::OnActiveItemRollButtonClicked()
 {
+    if (BoundCoreMenu)
+    {
+        RandomizeActiveItem(BoundCoreMenu->GetSelectedCurrencyId());
+    }
+}
+
+void UItemHandler::RandomizeActiveItem(const FString& CurrencyId)
+{
+    if (CurrencyId.IsEmpty())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: No currency selected to randomize with."));
+        if (BoundCoreMenu)
+        {
+            BoundCoreMenu->SetWarningText(TEXT("Select a currency first."));
+        }
+        return;
+    }
+
+    // A roll saves the active item, so one that isn't in the stash yet (e.g. a shop item that hasn't been bought)
+    // would land there for free.
+    const FText& ActiveItemUUID = LastSelectedItemClass == EItemClass::Armor ? CachedArmorStats.UUID : CachedWeaponStats.UUID;
+    if (!SavedItemsManager.HasSavedItem(ActiveItemUUID.ToString()))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Active item '%s' isn't saved, so it can't be randomized."), *ActiveItemUUID.ToString());
+        if (BoundCoreMenu)
+        {
+            BoundCoreMenu->SetWarningText(TEXT("You have not purchased this item yet."));
+        }
+        return;
+    }
+
     if (BoundPlayerInventory && !BoundPlayerInventory->CanAffordGoldCost(RandomizeItemGoldCost))
     {
         UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Player does not have enough gold to randomize (cost=%d)."), RandomizeItemGoldCost);
@@ -543,7 +624,7 @@ void UItemHandler::OnRandomizeItem(FString CurrencyId)
         return;
     }
 
-    if (BoundPlayerInventory && !CurrencyId.IsEmpty() && !BoundPlayerInventory->CanAffordCurrency(CurrencyId, 1))
+    if (BoundPlayerInventory && !BoundPlayerInventory->CanAffordCurrency(CurrencyId, 1))
     {
         UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Player does not have currency '%s' to randomize with."), *CurrencyId);
         if (BoundCoreMenu)
@@ -894,11 +975,10 @@ bool UItemHandler::RandomizeWeaponItem(const FString& CurrencyId)
         UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Failed to load modifiers from ItemModifier_DT."));
     }
 
-    // Resolve this item's class and type, then either do a full reroll (no currency) or apply the
-    // chosen currency's modifier-modification rules to whatever is already on the item.
+    // Resolve this item's class and type, then apply the chosen currency's modifier-modification rules to
+    // whatever is already on the item.
     const FString RandomizeItemId = CachedWeaponStats.ItemId.ToString();
     FString RandomizeItemName = RandomizeItemId;
-    FString ModifiersText;
     FBaseItemStruct RandomizeItemData;
     FBaseWeaponStruct RandomizeWeaponData;
     if (LoadItemDataRow(RandomizeItemId, RandomizeItemData) && LoadWeaponDataRow(RandomizeItemId, RandomizeWeaponData))
@@ -908,87 +988,27 @@ bool UItemHandler::RandomizeWeaponItem(const FString& CurrencyId)
         const FString RandomizeItemType = UEnum::GetValueAsString(RandomizeWeaponData.WeaponType)
             .RightChop(FString(TEXT("EWeaponType::")).Len());
 
-        if (CurrencyId.IsEmpty())
+        FCurrencyStruct Currency;
+        if (!CurrencyManagerInstance.LoadCurrencyDataRow(CurrencyId, Currency))
         {
-            // No currency selected: full reroll, matching the original (pre-currency) behavior - wipe
-            // back to base stats and roll an entirely new set of modifiers.
-            CachedWeaponStats = GetWeaponStatsForItem(RandomizeItemId);
-
-            // Roll how many modifiers this item gets: 3-6, weighted so 4 and 5 are the common outcomes.
-            static const int32 ModifierCountChoices[] = { 3, 4, 4, 5, 5, 6 };
-            ItemModifierAssigner.ModifierCount = ModifierCountChoices[FMath::RandRange(0, UE_ARRAY_COUNT(ModifierCountChoices) - 1)];
-            UE_LOG(LogTemp, Warning, TEXT("ItemHandler: rolled ModifierCount=%d for this randomize."), ItemModifierAssigner.ModifierCount);
-
-            const TArray<FString> AssignedModifierIds =
-                ItemModifierAssigner.AssignModifiers(RandomizeItemId, RandomizeItemClass, RandomizeItemType, ItemModifierAssigner.ModifierCount);
-
-            CachedWeaponStats.ImplicitModifiers.Empty();
-            CachedWeaponStats.PrefixModifiers.Empty();
-            CachedWeaponStats.SuffixModifiers.Empty();
-
-            for (const FString& ModifierId : AssignedModifierIds)
+            UE_LOG(LogTemp, Warning, TEXT("ItemHandler: unknown currency '%s'."), *CurrencyId);
+            if (BoundCoreMenu)
             {
-                const FItemModifierStruct* ModifierRow = ItemModifierAssigner.GetModifierPool().FindByPredicate(
-                    [&ModifierId](const FItemModifierStruct& Modifier)
-                    {
-                        return Modifier.ModifierId.ToString().Equals(ModifierId, ESearchCase::IgnoreCase);
-                    });
-
-                int32 RolledValue = 0;
-                EAffixType AffixType = EAffixType::Prefix;
-                if (ModifierRow)
-                {
-                    AffixType = ModifierRow->ModifierAffixType;
-                    if (ModifierRow->MinMaxRange.Num() >= 2)
-                    {
-                        RolledValue = FMath::RandRange(ModifierRow->MinMaxRange[0], ModifierRow->MinMaxRange[1]);
-                    }
-                    else if (ModifierRow->MinMaxRange.Num() == 1)
-                    {
-                        RolledValue = ModifierRow->MinMaxRange[0];
-                    }
-                }
-
-                switch (AffixType)
-                {
-                case EAffixType::Implicit: CachedWeaponStats.ImplicitModifiers.Add(ModifierId, RolledValue); break;
-                case EAffixType::Suffix:   CachedWeaponStats.SuffixModifiers.Add(ModifierId, RolledValue);   break;
-                case EAffixType::Prefix:
-                default:                   CachedWeaponStats.PrefixModifiers.Add(ModifierId, RolledValue);   break;
-                }
-
-                UE_LOG(LogTemp, Warning, TEXT("ItemHandler: assigned modifier %s (%s) value=%d"),
-                    *ModifierId, *UEnum::GetValueAsString(AffixType), RolledValue);
+                BoundCoreMenu->SetWarningText(TEXT("Unknown currency."));
             }
+            return false;
         }
-        else
+
+        const bool bModifiersChanged = ApplyCurrencyToItemModifiers(Currency, RandomizeItemId, RandomizeItemClass, RandomizeItemType,
+            CachedWeaponStats.ImplicitModifiers, CachedWeaponStats.PrefixModifiers, CachedWeaponStats.SuffixModifiers);
+
+        if (!bModifiersChanged)
         {
-            FCurrencyStruct Currency;
-            if (!CurrencyManagerInstance.LoadCurrencyDataRow(CurrencyId, Currency))
-            {
-                UE_LOG(LogTemp, Warning, TEXT("ItemHandler: unknown currency '%s'."), *CurrencyId);
-                if (BoundCoreMenu)
-                {
-                    BoundCoreMenu->SetWarningText(TEXT("Unknown currency."));
-                }
-                return false;
-            }
-
-            const bool bModifiersChanged = ApplyCurrencyToItemModifiers(Currency, RandomizeItemId, RandomizeItemClass, RandomizeItemType,
-                CachedWeaponStats.ImplicitModifiers, CachedWeaponStats.PrefixModifiers, CachedWeaponStats.SuffixModifiers);
-
-            if (!bModifiersChanged)
-            {
-                return false;
-            }
+            return false;
         }
 
         // ItemGoldValue is the item's base gold value scaled by every currently-assigned modifier's GoldValueModifier.
         CachedWeaponStats.ItemGoldValue = ComputeModifiedGoldValue(CachedWeaponStats.ItemBaseGoldValue,
-            CachedWeaponStats.ImplicitModifiers, CachedWeaponStats.PrefixModifiers, CachedWeaponStats.SuffixModifiers);
-
-        // List prefixes before suffixes in the summary text, regardless of roll order.
-        ModifiersText = BuildGroupedModifiersText(ItemModifierAssigner.GetModifierPool(),
             CachedWeaponStats.ImplicitModifiers, CachedWeaponStats.PrefixModifiers, CachedWeaponStats.SuffixModifiers);
 
         // Fold the rolled damage/attack-rate modifiers into the item's local damage and attack rate.
@@ -1056,26 +1076,7 @@ bool UItemHandler::RandomizeWeaponItem(const FString& CurrencyId)
         *DamageSummary,
         *LocalDamageSummary);
 
-    if (ModifiersText.IsEmpty())
-    {
-        ModifiersText = TEXT("Modifiers: none\n");
-    }
-
-    // Matches the layout CoreMenu uses for a selected stash item: name, then a "Base Damage:"
-    // block, Attack Rate, Gold Value, then the modifiers block.
-    FString WeaponDamageText;
-    if (const FWeaponLocalDamage* ActiveLocalDamage = CachedWeaponStats.WeaponLocalDamage.Find(TEXT("LocalDamage")))
-    {
-        WeaponDamageText = BuildWeaponDamageLines(*ActiveLocalDamage);
-    }
-
-    const FString ActiveItemText = FString::Printf(
-        TEXT("%s\nBase Damage:\n%sAttack Rate: %.2f\nGold Value: %.0f\n%s"),
-        *RandomizeItemName,
-        *WeaponDamageText,
-        CachedWeaponStats.AttackRate,
-        GetDisplayGoldValue(CachedWeaponStats),
-        *ModifiersText);
+    const FString ActiveItemText = BuildWeaponDisplayText(RandomizeItemName, CachedWeaponStats);
 
     if (BoundCoreMenu)
     {
@@ -1107,11 +1108,10 @@ bool UItemHandler::RandomizeArmorItem(const FString& CurrencyId)
         UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Failed to load modifiers from ItemModifier_DT."));
     }
 
-    // Resolve this item's class and type, then either do a full reroll (no currency) or apply the
-    // chosen currency's modifier-modification rules to whatever is already on the item.
+    // Resolve this item's class and type, then apply the chosen currency's modifier-modification rules to
+    // whatever is already on the item.
     const FString RandomizeItemId = CachedArmorStats.ItemId.ToString();
     FString RandomizeItemName = RandomizeItemId;
-    FString ModifiersText;
     FBaseItemStruct RandomizeItemData;
     FBaseArmorStruct RandomizeArmorData;
     if (LoadItemDataRow(RandomizeItemId, RandomizeItemData) && LoadArmorDataRow(RandomizeItemId, RandomizeArmorData))
@@ -1121,87 +1121,27 @@ bool UItemHandler::RandomizeArmorItem(const FString& CurrencyId)
         const FString RandomizeItemType = UEnum::GetValueAsString(RandomizeArmorData.ArmorType)
             .RightChop(FString(TEXT("EArmorType::")).Len());
 
-        if (CurrencyId.IsEmpty())
+        FCurrencyStruct Currency;
+        if (!CurrencyManagerInstance.LoadCurrencyDataRow(CurrencyId, Currency))
         {
-            // No currency selected: full reroll, matching the original (pre-currency) behavior - wipe
-            // back to base stats and roll an entirely new set of modifiers.
-            CachedArmorStats = GetArmorStatsForItem(RandomizeItemId);
-
-            // Roll how many modifiers this item gets: 3-6, weighted so 4 and 5 are the common outcomes.
-            static const int32 ModifierCountChoices[] = { 3, 4, 4, 5, 5, 6 };
-            ItemModifierAssigner.ModifierCount = ModifierCountChoices[FMath::RandRange(0, UE_ARRAY_COUNT(ModifierCountChoices) - 1)];
-            UE_LOG(LogTemp, Warning, TEXT("ItemHandler: rolled ModifierCount=%d for this randomize."), ItemModifierAssigner.ModifierCount);
-
-            const TArray<FString> AssignedModifierIds =
-                ItemModifierAssigner.AssignModifiers(RandomizeItemId, RandomizeItemClass, RandomizeItemType, ItemModifierAssigner.ModifierCount);
-
-            CachedArmorStats.ImplicitModifiers.Empty();
-            CachedArmorStats.PrefixModifiers.Empty();
-            CachedArmorStats.SuffixModifiers.Empty();
-
-            for (const FString& ModifierId : AssignedModifierIds)
+            UE_LOG(LogTemp, Warning, TEXT("ItemHandler: unknown currency '%s'."), *CurrencyId);
+            if (BoundCoreMenu)
             {
-                const FItemModifierStruct* ModifierRow = ItemModifierAssigner.GetModifierPool().FindByPredicate(
-                    [&ModifierId](const FItemModifierStruct& Modifier)
-                    {
-                        return Modifier.ModifierId.ToString().Equals(ModifierId, ESearchCase::IgnoreCase);
-                    });
-
-                int32 RolledValue = 0;
-                EAffixType AffixType = EAffixType::Prefix;
-                if (ModifierRow)
-                {
-                    AffixType = ModifierRow->ModifierAffixType;
-                    if (ModifierRow->MinMaxRange.Num() >= 2)
-                    {
-                        RolledValue = FMath::RandRange(ModifierRow->MinMaxRange[0], ModifierRow->MinMaxRange[1]);
-                    }
-                    else if (ModifierRow->MinMaxRange.Num() == 1)
-                    {
-                        RolledValue = ModifierRow->MinMaxRange[0];
-                    }
-                }
-
-                switch (AffixType)
-                {
-                case EAffixType::Implicit: CachedArmorStats.ImplicitModifiers.Add(ModifierId, RolledValue); break;
-                case EAffixType::Suffix:   CachedArmorStats.SuffixModifiers.Add(ModifierId, RolledValue);   break;
-                case EAffixType::Prefix:
-                default:                   CachedArmorStats.PrefixModifiers.Add(ModifierId, RolledValue);   break;
-                }
-
-                UE_LOG(LogTemp, Warning, TEXT("ItemHandler: assigned modifier %s (%s) value=%d"),
-                    *ModifierId, *UEnum::GetValueAsString(AffixType), RolledValue);
+                BoundCoreMenu->SetWarningText(TEXT("Unknown currency."));
             }
+            return false;
         }
-        else
+
+        const bool bModifiersChanged = ApplyCurrencyToItemModifiers(Currency, RandomizeItemId, RandomizeItemClass, RandomizeItemType,
+            CachedArmorStats.ImplicitModifiers, CachedArmorStats.PrefixModifiers, CachedArmorStats.SuffixModifiers);
+
+        if (!bModifiersChanged)
         {
-            FCurrencyStruct Currency;
-            if (!CurrencyManagerInstance.LoadCurrencyDataRow(CurrencyId, Currency))
-            {
-                UE_LOG(LogTemp, Warning, TEXT("ItemHandler: unknown currency '%s'."), *CurrencyId);
-                if (BoundCoreMenu)
-                {
-                    BoundCoreMenu->SetWarningText(TEXT("Unknown currency."));
-                }
-                return false;
-            }
-
-            const bool bModifiersChanged = ApplyCurrencyToItemModifiers(Currency, RandomizeItemId, RandomizeItemClass, RandomizeItemType,
-                CachedArmorStats.ImplicitModifiers, CachedArmorStats.PrefixModifiers, CachedArmorStats.SuffixModifiers);
-
-            if (!bModifiersChanged)
-            {
-                return false;
-            }
+            return false;
         }
 
         // ItemGoldValue is the item's base gold value scaled by every currently-assigned modifier's GoldValueModifier.
         CachedArmorStats.ItemGoldValue = ComputeModifiedGoldValue(CachedArmorStats.ItemBaseGoldValue,
-            CachedArmorStats.ImplicitModifiers, CachedArmorStats.PrefixModifiers, CachedArmorStats.SuffixModifiers);
-
-        // List prefixes before suffixes in the summary text, regardless of roll order.
-        ModifiersText = BuildGroupedModifiersText(ItemModifierAssigner.GetModifierPool(),
             CachedArmorStats.ImplicitModifiers, CachedArmorStats.PrefixModifiers, CachedArmorStats.SuffixModifiers);
 
         // Fold the rolled defense modifiers into the item's defense values.
@@ -1228,19 +1168,7 @@ bool UItemHandler::RandomizeArmorItem(const FString& CurrencyId)
         *CachedArmorStats.UUID.ToString(),
         *DefenseSummary);
 
-    if (ModifiersText.IsEmpty())
-    {
-        ModifiersText = TEXT("Modifiers: none\n");
-    }
-
-    // Matches the layout CoreMenu uses for a selected stash item: name, then a "Base Defense:"
-    // block, Gold Value, then the modifiers block.
-    const FString ActiveItemText = FString::Printf(
-        TEXT("%s\nBase Defense:\n%sGold Value: %.0f\n%s"),
-        *RandomizeItemName,
-        *BuildArmorDefenseLines(CachedArmorStats.BaseDefense),
-        GetDisplayGoldValue(CachedArmorStats),
-        *ModifiersText);
+    const FString ActiveItemText = BuildArmorDisplayText(RandomizeItemName, CachedArmorStats);
 
     if (BoundCoreMenu)
     {
@@ -1292,7 +1220,7 @@ void UItemHandler::RecalculateWeaponLocalDamage()
 
     // AttackRate is derived from scratch here (base rate scaled by every currently-assigned
     // WeaponAttackRate modifier) rather than accumulated incrementally at roll time, so it stays correct
-    // across partial modifier changes (currency add/remove/reroll), not just a full reroll from base.
+    // across partial modifier changes (currency add/remove/reroll).
     float BaseAttackRate = 0.f;
     FBaseWeaponStruct WeaponData;
     if (LoadWeaponDataRow(CachedWeaponStats.ItemId.ToString(), WeaponData))
