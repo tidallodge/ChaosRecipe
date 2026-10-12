@@ -20,6 +20,48 @@ namespace
 
 	// A battle where neither side can finish the other off (e.g. an enemy with no Damage) ends as a loss here.
 	constexpr float MaxBattleDuration = 300.f;
+
+	// Up to one decimal place, so whole amounts read as "17" and scaled ones as "17.5".
+	FString FormatDamage(float Damage)
+	{
+		static const FNumberFormattingOptions Options = FNumberFormattingOptions().SetUseGrouping(false).SetMaximumFractionalDigits(1);
+		return FText::AsNumber(Damage, &Options).ToString();
+	}
+
+	// "<Attacker> <Ability> -> <Target>: Physical rolled 17 (13-21), dealt 15.2 | Fire rolled 4 (3-5), dealt 4 | Total 19.2",
+	// with an entry per damage type: its roll, the range it was rolled from, and the damage that got through the target's
+	// defenses (after attribute scaling, crit and mitigation/resistance).
+	FString BuildHitMessage(const FString& AttackerName, const FString& AbilityName, const FString& TargetName, const FCombatHitResult& Result)
+	{
+		TArray<FString> Entries;
+		float TotalDamage = 0.f;
+		for (const TPair<EDamageType, FCombatDamageRoll>& Entry : Result.Rolls)
+		{
+			FString Text = FString::Printf(TEXT("%s rolled %s (%s-%s)"), *UEnum::GetDisplayValueAsText(Entry.Key).ToString(),
+				*FormatDamage(Entry.Value.Roll), *FormatDamage(Entry.Value.Min), *FormatDamage(Entry.Value.Max));
+			if (!Result.bEvaded)
+			{
+				const float DamageTaken = Result.DamageTaken.FindRef(Entry.Key);
+				Text += FString::Printf(TEXT(", dealt %s"), *FormatDamage(DamageTaken));
+				TotalDamage += DamageTaken;
+			}
+			Entries.Add(Text);
+		}
+
+		FString Message = FString::Printf(TEXT("%s %s -> %s: %s"), *AttackerName, *AbilityName, *TargetName,
+			Entries.Num() > 0 ? *FString::Join(Entries, TEXT(" | ")) : TEXT("no damage"));
+		if (Result.bEvaded)
+		{
+			return Message + TEXT(" | Evaded");
+		}
+
+		Message += FString::Printf(TEXT(" | Total %s"), *FormatDamage(TotalDamage));
+		if (Result.bIsCritical)
+		{
+			Message += TEXT(" (critical)");
+		}
+		return Message;
+	}
 }
 
 void UBattleManager::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
@@ -274,6 +316,12 @@ void UBattleManager::TakeAction(FBattleCombatant& Actor)
 		BattleTime, *Actor.Combatant->GetCombatantName(), *Ability.AbilityName.ToString(), *Actor.Target->GetCombatantName(),
 		Result.HealthDamage + Result.OvershieldDamage, Result.bIsCritical ? TEXT(", critical") : TEXT(""),
 		Result.bEvaded ? TEXT(", evaded") : TEXT(""), Actor.NextActionTime);
+
+	if (Result.bResolved)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BattleManager: [%.2fs] %s"), BattleTime, *BuildHitMessage(Actor.Combatant->GetCombatantName(),
+			Ability.AbilityName.ToString(), Actor.Target->GetCombatantName(), Result));
+	}
 }
 
 ICombatant* UBattleManager::PickTarget(const FBattleCombatant& Actor) const

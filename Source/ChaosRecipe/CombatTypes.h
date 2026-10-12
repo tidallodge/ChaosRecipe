@@ -76,6 +76,24 @@ struct FCombatDefense
     TMap<EDamageType, float> Resistances;
 };
 
+// One damage type's roll within a hit: the range it could have rolled and what it did roll, after the ability's
+// weapon effectiveness but before attribute scaling, crit and the target's defenses. A type rolled from more than
+// one source (weapon damage and the ability's own BaseDamage) adds them up.
+USTRUCT(BlueprintType)
+struct FCombatDamageRoll
+{
+    GENERATED_BODY()
+
+    UPROPERTY(BlueprintReadOnly, Category = "Combat")
+    float Min = 0.f;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Combat")
+    float Max = 0.f;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Combat")
+    float Roll = 0.f;
+};
+
 // One outgoing hit, after the attacker's scaling and crit but before the target's defenses.
 USTRUCT(BlueprintType)
 struct FCombatHit
@@ -84,6 +102,10 @@ struct FCombatHit
 
     UPROPERTY(BlueprintReadWrite, Category = "Combat")
     TMap<EDamageType, float> Damage;
+
+    // How each type in Damage was rolled, for showing the roll behind the damage.
+    UPROPERTY(BlueprintReadWrite, Category = "Combat")
+    TMap<EDamageType, FCombatDamageRoll> Rolls;
 
     UPROPERTY(BlueprintReadWrite, Category = "Combat")
     bool bIsCritical = false;
@@ -114,6 +136,10 @@ struct FCombatHitResult
     // Post-mitigation damage per type, i.e. what got through the target's defenses.
     UPROPERTY(BlueprintReadOnly, Category = "Combat")
     TMap<EDamageType, float> DamageTaken;
+
+    // The hit's FCombatHit::Rolls, kept even when it was evaded.
+    UPROPERTY(BlueprintReadOnly, Category = "Combat")
+    TMap<EDamageType, FCombatDamageRoll> Rolls;
 
     UPROPERTY(BlueprintReadOnly, Category = "Combat")
     float OvershieldDamage = 0.f;

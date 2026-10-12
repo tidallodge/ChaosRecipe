@@ -72,7 +72,7 @@ namespace
 	}
 }
 
-bool UPlayerMinion::InitializeMinion(EMinionClass InMinionClass, int32 InLevel)
+bool UPlayerMinion::InitializeMinion(EMinionClass InMinionClass, int32 InLevel, const FString& InMinionUUID)
 {
 	if (!LoadClassData(InMinionClass))
 	{
@@ -81,7 +81,7 @@ bool UPlayerMinion::InitializeMinion(EMinionClass InMinionClass, int32 InLevel)
 
 	if (MinionUUID.IsEmpty())
 	{
-		MinionUUID = FGuid::NewGuid().ToString();
+		MinionUUID = InMinionUUID.IsEmpty() ? FGuid::NewGuid().ToString() : InMinionUUID;
 	}
 
 	Level = FMath::Max(1, InLevel);

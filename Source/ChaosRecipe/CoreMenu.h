@@ -44,6 +44,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBattlePlayButtonClickedEvent);
 // Fired when HireShopRerollButton is clicked, so listeners (e.g. HireShopHandler) can reroll the minions the hire
 // shop offers.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnHireShopRerollButtonClickedEvent);
+// Fired when HireShopHireButton is clicked with a hire shop minion selected, so listeners (e.g. HireShopHandler) can
+// hire the listing MinionUUID.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHireShopHireButtonClickedEvent, FString, MinionUUID);
 // Fired when StashAssignButton is clicked, so listeners (e.g. MinionHandler) can equip the stash item ItemUUID on
 // the minion MinionUUID. Expected to be handled synchronously: CoreMenu reloads the stash right after broadcasting.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAssignItemToMinionEvent, FString, MinionUUID, FString, ItemUUID);
@@ -292,6 +295,9 @@ public:
 	FOnHireShopRerollButtonClickedEvent OnHireShopRerollButtonClickedEvent;
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnHireShopHireButtonClickedEvent OnHireShopHireButtonClickedEvent;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnAssignItemToMinionEvent OnAssignItemToMinionEvent;
 
 	// Supplies the text for each shop/stash item's hover flyout (CreateItemToolTip). Unbound, items show no flyout.
@@ -394,7 +400,7 @@ public:
 
 	// Replaces the minion buttons in HireShopButtonsVertBox with one for each of MinionClasses, the minions the hire
 	// shop offers, with MinionUUIDs holding each one's UUID (same index). Called by HireShopHandler whenever they're
-	// loaded or rerolled.
+	// loaded, rerolled or one is hired. A selected listing that's no longer offered is deselected.
 	UFUNCTION(BlueprintCallable, Category = "Hire Shop")
 	void SetHireShopMinions(const TArray<EMinionClass>& MinionClasses, const TArray<FString>& MinionUUIDs);
 
@@ -512,7 +518,8 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* MinionEquipText;
 	// Shows the HireShop window (HireShopVertBox), whose HireShopButtonsVertBox lists a minion button for each minion
-	// the hire shop offers (PopulateHireShop), with HireShopRerollButton to reroll them
+	// the hire shop offers (PopulateHireShop), with HireShopRerollButton to reroll them and HireShopHireButton to hire
+	// the selected one
 	UPROPERTY(meta = (BindWidget))
 	UButton* HireShopButton;
 	UPROPERTY(meta = (BindWidget))
@@ -521,6 +528,8 @@ protected:
 	UPanelWidget* HireShopButtonsVertBox;
 	UPROPERTY(meta = (BindWidget))
 	UButton* HireShopRerollButton;
+	UPROPERTY(meta = (BindWidget))
+	UButton* HireShopHireButton;
 
 	// Click handler for SellButton
 	UFUNCTION()
@@ -620,6 +629,10 @@ protected:
 	// Click handler for HireShopRerollButton; broadcasts OnHireShopRerollButtonClickedEvent
 	UFUNCTION()
 	void OnHireShopRerollButtonClicked();
+	// Click handler for HireShopHireButton; broadcasts OnHireShopHireButtonClickedEvent with SelectedHireShopMinionUUID,
+	// or warns the player if no hire shop minion is selected
+	UFUNCTION()
+	void OnHireShopHireButtonClicked();
 	// Replaces the minion buttons in HireShopButtonsVertBox with a WBP_MinionButton for each of CurrentHireShopMinions,
 	// showing its class's MinionIcon and ClassName, wrapped in a selection border. Clicking one selects it
 	// (OnHireShopMinionButtonClicked).

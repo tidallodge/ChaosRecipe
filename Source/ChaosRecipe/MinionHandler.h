@@ -26,10 +26,12 @@ public:
 	UFUNCTION()
 	void BindToItemHandlerEvents(UItemHandler* ItemHandler);
 
-	// Creates a brand-new minion of InMinionClass at InLevel with a new MinionUUID, and saves it. Returns null
-	// if the class has no MinionClass_DT row.
+	// Creates a brand-new minion of InMinionClass at InLevel, in the active party or the minion stash, and saves it.
+	// It's saved under MinionUUID (e.g. a hire shop listing's), or a new one if that's empty. Returns null if the
+	// class has no MinionClass_DT row, or a minion already has MinionUUID.
 	UFUNCTION(BlueprintCallable, Category = "Minion")
-	UPlayerMinion* CreateMinion(EMinionClass InMinionClass, int32 InLevel = 1);
+	UPlayerMinion* CreateMinion(EMinionClass InMinionClass, int32 InLevel = 1, bool bActivePartyMember = true,
+		const FString& MinionUUID = TEXT(""));
 
 	// Rebuilds the minion saved under MinionUUID, re-equipping its saved items from the stash. Returns the
 	// minion as-is if it's already loaded, or null if there's no such saved minion.

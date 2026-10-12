@@ -8,6 +8,7 @@
 
 class UCoreMenu;
 class UPlayerInventory;
+class UMinionHandler;
 
 // Everything SavedHireShop.json keeps: the minions the hire shop offers.
 USTRUCT()
@@ -31,18 +32,29 @@ class CHAOSRECIPE_API UHireShopHandler : public UObject
 
 public:
 	// Loads the minions on offer from SavedHireShop.json (rolling a first set if nothing's saved yet) and shows them
-	// in CoreMenu's hire shop, then rerolls them whenever its HireShopRerollButton is clicked.
+	// in CoreMenu's hire shop, then rerolls them whenever its HireShopRerollButton is clicked and hires the selected
+	// one whenever its HireShopHireButton is.
 	UFUNCTION()
 	void BindToCoreMenuEvents(UCoreMenu* CoreMenu);
 
-	// Lets a reroll check for, and charge, RerollGoldCost.
+	// Lets a reroll or hire check for, and charge, RerollGoldCost or HireGoldCost.
 	UFUNCTION()
 	void BindToPlayerInventory(UPlayerInventory* PlayerInventory);
+
+	// Lets a hire create the hired minion.
+	UFUNCTION()
+	void BindToMinionHandler(UMinionHandler* MinionHandler);
 
 	// Bound to CoreMenu's OnHireShopRerollButtonClickedEvent: replaces every minion on offer with a new random set of
 	// MaxHireShopMinions, for RerollGoldCost. Rejected if the player can't afford it.
 	UFUNCTION()
 	void OnRerollHireShop();
+
+	// Bound to CoreMenu's OnHireShopHireButtonClickedEvent: for HireGoldCost, adds the minion on offer as MinionUUID to
+	// the player's minion stash (not the active party), under that same UUID, and takes it out of the hire shop,
+	// leaving the rest on offer as they were. Rejected if it's no longer on offer or the player can't afford it.
+	UFUNCTION()
+	void OnHireMinion(FString MinionUUID);
 
 	// Bound to CoreMenu's OnResetGameButtonClickedEvent: rolls a fresh set for free, replacing the saved one.
 	UFUNCTION()
@@ -55,6 +67,10 @@ public:
 	// Gold charged for each reroll.
 	UPROPERTY(EditAnywhere, Category = "Economy")
 	int32 RerollGoldCost = 100;
+
+	// Gold charged for each minion hired.
+	UPROPERTY(EditAnywhere, Category = "Economy")
+	int32 HireGoldCost = 250;
 
 protected:
 	// Replaces HireShopMinions with MaxHireShopMinions random MinionClass_DT classes (repeats allowed), each with a newly
@@ -83,4 +99,7 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<UPlayerInventory> BoundPlayerInventory = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<UMinionHandler> BoundMinionHandler = nullptr;
 };

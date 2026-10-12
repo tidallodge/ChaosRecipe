@@ -32,10 +32,10 @@ class CHAOSRECIPE_API UPlayerMinion : public UObject, public ICombatant
 
 public:
 	// Loads InMinionClass's row from MinionClass_DT, gives the minion that class's attributes at InLevel and
-	// restores it to full, forgetting any RemovedItemUUIDs. A minion without a MinionUUID yet gets a new one.
-	// Returns false (leaving the minion untouched) if the class has no row.
+	// restores it to full, forgetting any RemovedItemUUIDs. A minion without a MinionUUID yet gets InMinionUUID, or a
+	// new one if that's empty too. Returns false (leaving the minion untouched) if the class has no row.
 	UFUNCTION(BlueprintCallable, Category = "Minion")
-	bool InitializeMinion(EMinionClass InMinionClass, int32 InLevel = 1);
+	bool InitializeMinion(EMinionClass InMinionClass, int32 InLevel = 1, const FString& InMinionUUID = TEXT(""));
 
 	// Rebuilds a saved minion: its UUID, class, level, attributes, party state and RemovedItemUUIDs come from
 	// SaveData, then each of its EquippedItemUUIDs is re-equipped from the stash (any that can't be are skipped).

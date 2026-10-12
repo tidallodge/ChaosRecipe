@@ -208,6 +208,7 @@ void UCoreMenu::NativeConstruct()
     ValidateButton(BattlePlayButton);
     ValidateButton(HireShopButton);
     ValidateButton(HireShopRerollButton);
+    ValidateButton(HireShopHireButton);
     ValidateButton(ReserveMinionButton);
 
 	BuyButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBuyButtonClicked);
@@ -221,6 +222,7 @@ void UCoreMenu::NativeConstruct()
 	BattlePlayButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBattlePlayButtonClicked);
 	HireShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnHireShopButtonClicked);
 	HireShopRerollButton->OnClicked.AddDynamic(this, &UCoreMenu::OnHireShopRerollButtonClicked);
+	HireShopHireButton->OnClicked.AddDynamic(this, &UCoreMenu::OnHireShopHireButtonClicked);
 	ReserveMinionButton->OnClicked.AddDynamic(this, &UCoreMenu::OnReserveMinionButtonClicked);
 
 	HideWindow(ECoreMenuWindow::ShopWindow);
@@ -1132,10 +1134,26 @@ void UCoreMenu::OnHireShopRerollButtonClicked()
 	OnHireShopRerollButtonClickedEvent.Broadcast();
 }
 
+void UCoreMenu::OnHireShopHireButtonClicked()
+{
+	UE_LOG(LogTemp, Warning, TEXT("HireShopHireButton Clicked."));
+	if (SelectedHireShopMinionUUID.IsEmpty())
+	{
+		SetWarningText(TEXT("Select a minion in the hire shop first."));
+		return;
+	}
+
+	OnHireShopHireButtonClickedEvent.Broadcast(SelectedHireShopMinionUUID);
+}
+
 void UCoreMenu::SetHireShopMinions(const TArray<EMinionClass>& MinionClasses, const TArray<FString>& MinionUUIDs)
 {
 	CurrentHireShopMinions = MinionClasses;
 	CurrentHireShopMinionUUIDs = MinionUUIDs;
+	if (!CurrentHireShopMinionUUIDs.Contains(SelectedHireShopMinionUUID))
+	{
+		SelectedHireShopMinionUUID.Empty();
+	}
 	PopulateHireShop();
 }
 

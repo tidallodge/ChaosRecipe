@@ -38,14 +38,22 @@ void UMinionHandler::BindToItemHandlerEvents(UItemHandler* ItemHandler)
 	}
 }
 
-UPlayerMinion* UMinionHandler::CreateMinion(EMinionClass InMinionClass, int32 InLevel)
+UPlayerMinion* UMinionHandler::CreateMinion(EMinionClass InMinionClass, int32 InLevel, bool bActivePartyMember, const FString& MinionUUID)
 {
+	if (!MinionUUID.IsEmpty() && (FindMinion(MinionUUID) || SavedMinionsManager.HasSavedMinion(MinionUUID)))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("MinionHandler: A minion with UUID '%s' already exists, so another can't be created with it."), *MinionUUID);
+		return nullptr;
+	}
+
 	UPlayerMinion* Minion = NewObject<UPlayerMinion>(this);
-	if (!Minion->InitializeMinion(InMinionClass, InLevel))
+	if (!Minion->InitializeMinion(InMinionClass, InLevel, MinionUUID))
 	{
 		return nullptr;
 	}
 
+	// Set before RegisterMinion, so it's saved and shown in the right place from the start.
+	Minion->SetActivePartyMember(bActivePartyMember);
 	RegisterMinion(Minion);
 	UE_LOG(LogTemp, Warning, TEXT("MinionHandler: Created minion %s."), *Minion->GetMinionUUID());
 	return Minion;

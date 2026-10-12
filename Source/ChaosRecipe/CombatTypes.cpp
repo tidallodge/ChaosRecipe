@@ -69,7 +69,13 @@ FCombatHit CombatMath::BuildHit(const FCombatAbilityStruct& Ability, const FComb
             return;
         }
 
-        Hit.Damage.FindOrAdd(DamageType) += RollRange(Range) * Scale;
+        const float Roll = RollRange(Range) * Scale;
+        Hit.Damage.FindOrAdd(DamageType) += Roll;
+
+        FCombatDamageRoll& DamageRoll = Hit.Rolls.FindOrAdd(DamageType);
+        DamageRoll.Min += FMath::Min(Range.X, Range.Y) * Scale;
+        DamageRoll.Max += FMath::Max(Range.X, Range.Y) * Scale;
+        DamageRoll.Roll += Roll;
     };
 
     if (bIsAttack)
@@ -107,6 +113,7 @@ FCombatHitResult CombatMath::ResolveHit(const FCombatHit& Hit, const FCombatDefe
     FCombatHitResult Result;
     Result.bResolved = true;
     Result.bIsCritical = Hit.bIsCritical;
+    Result.Rolls = Hit.Rolls;
 
     if (Hit.bCanBeEvaded)
     {

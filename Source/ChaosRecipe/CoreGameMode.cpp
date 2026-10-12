@@ -115,6 +115,7 @@ void ACoreGameMode::BeginPlay()
 
 			HireShopHandler = NewObject<UHireShopHandler>(this);
 			HireShopHandler->BindToPlayerInventory(PlayerInventory);
+			HireShopHandler->BindToMinionHandler(MinionHandler);
 			HireShopHandler->BindToCoreMenuEvents(CoreMenuWidget);
 
 			// Every minion in SavedMinions.json comes back with its saved level, attributes, items and party state;

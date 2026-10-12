@@ -1,11 +1,14 @@
 // HireShopHandler
 /** Purpose: Keep the list of minions the hire shop offers, saved between sessions in SavedHireShop.json
     Reroll that list for gold when CoreMenu's HireShopRerollButton is clicked
+    Hire the selected minion for gold into the player's minion stash when its HireShopHireButton is clicked
 */
 
 #include "HireShopHandler.h"
 #include "CoreMenu.h"
 #include "PlayerInventory.h"
+#include "MinionHandler.h"
+#include "PlayerMinion.h"
 #include "DataTableHelpers.h"
 #include "JsonObjectConverter.h"
 #include "Misc/FileHelper.h"
@@ -26,6 +29,7 @@ void UHireShopHandler::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
 
 	BoundCoreMenu = CoreMenu;
 	CoreMenu->OnHireShopRerollButtonClickedEvent.AddDynamic(this, &UHireShopHandler::OnRerollHireShop);
+	CoreMenu->OnHireShopHireButtonClickedEvent.AddDynamic(this, &UHireShopHandler::OnHireMinion);
 	CoreMenu->OnResetGameButtonClickedEvent.AddDynamic(this, &UHireShopHandler::OnResetGame);
 
 	// Nothing is saved yet in a first session, so it starts with a free roll.
@@ -45,6 +49,17 @@ void UHireShopHandler::BindToPlayerInventory(UPlayerInventory* PlayerInventory)
 	}
 
 	BoundPlayerInventory = PlayerInventory;
+}
+
+void UHireShopHandler::BindToMinionHandler(UMinionHandler* MinionHandler)
+{
+	if (!MinionHandler)
+	{
+		UE_LOG(LogTemp, Error, TEXT("no MinionHandler for HireShopHandler"));
+		return;
+	}
+
+	BoundMinionHandler = MinionHandler;
 }
 
 void UHireShopHandler::OnRerollHireShop()
@@ -71,6 +86,64 @@ void UHireShopHandler::OnRerollHireShop()
 
 	SaveHireShopMinions();
 	UpdateHireShopDisplay();
+}
+
+void UHireShopHandler::OnHireMinion(FString MinionUUID)
+{
+	const int32 ListingIndex = HireShopMinionUUIDs.IndexOfByKey(MinionUUID);
+	if (!HireShopMinions.IsValidIndex(ListingIndex))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("HireShopHandler: No minion with UUID '%s' on offer to hire."), *MinionUUID);
+		if (BoundCoreMenu)
+		{
+			BoundCoreMenu->SetWarningText(TEXT("That minion isn't in the hire shop anymore."));
+		}
+		return;
+	}
+
+	if (BoundPlayerInventory && !BoundPlayerInventory->CanAffordGoldCost(HireGoldCost))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("HireShopHandler: Player does not have enough gold to hire a minion (cost=%d)."), HireGoldCost);
+		if (BoundCoreMenu)
+		{
+			BoundCoreMenu->SetWarningText(TEXT("Not enough gold to complete action!"));
+		}
+		return;
+	}
+
+	if (!BoundMinionHandler)
+	{
+		UE_LOG(LogTemp, Error, TEXT("HireShopHandler: No MinionHandler to hire a minion with."));
+		return;
+	}
+
+	// Hired under its listing's UUID, so it keeps the UUID the player saw while it was on offer.
+	const UPlayerMinion* Minion = BoundMinionHandler->CreateMinion(HireShopMinions[ListingIndex], 1, /*bActivePartyMember*/ false, MinionUUID);
+	if (!Minion)
+	{
+		if (BoundCoreMenu)
+		{
+			BoundCoreMenu->SetWarningText(TEXT("Couldn't hire that minion."));
+		}
+		return;
+	}
+
+	if (BoundPlayerInventory)
+	{
+		BoundPlayerInventory->AdjustPlayerGoldCount(-HireGoldCost);
+	}
+
+	// Only this listing goes; the rest stay on offer as they were, without a reroll.
+	HireShopMinions.RemoveAt(ListingIndex);
+	HireShopMinionUUIDs.RemoveAt(ListingIndex);
+	SaveHireShopMinions();
+	UpdateHireShopDisplay();
+
+	if (BoundCoreMenu)
+	{
+		BoundCoreMenu->SetWarningText(FString::Printf(TEXT("Hired %s for %d gold. It's waiting in your minion stash."),
+			*Minion->GetMinionClassName().ToString(), HireGoldCost));
+	}
 }
 
 void UHireShopHandler::OnResetGame()
