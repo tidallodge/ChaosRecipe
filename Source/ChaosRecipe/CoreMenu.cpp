@@ -76,6 +76,22 @@ static UButton* GetSingleImageButton(UUserWidget* SingleImageButtonWidget)
 	return Button;
 }
 
+// Resolves the MinionButton button inside a WBP_MinionButton instance (null if missing).
+static UButton* GetMinionButton(UUserWidget* MinionButtonWidget)
+{
+	if (!MinionButtonWidget)
+	{
+		return nullptr;
+	}
+
+	UButton* Button = Cast<UButton>(MinionButtonWidget->GetWidgetFromName(TEXT("MinionButton")));
+	if (!Button)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("MinionButton not found on WBP_MinionButton."));
+	}
+	return Button;
+}
+
 // Strips all padding around the icon in a WBP_SingleImageButton instance: the button style's
 // normal/pressed padding, plus the slot padding of the icon and every panel between it and the button.
 static void RemoveSingleImageButtonPadding(UUserWidget* SingleImageButtonWidget)
@@ -192,6 +208,7 @@ void UCoreMenu::NativeConstruct()
     ValidateButton(BattlePlayButton);
     ValidateButton(HireShopButton);
     ValidateButton(HireShopRerollButton);
+    ValidateButton(ReserveMinionButton);
 
 	BuyButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBuyButtonClicked);
 	SellButton->OnClicked.AddDynamic(this, &UCoreMenu::OnSellButtonClicked);
@@ -204,8 +221,10 @@ void UCoreMenu::NativeConstruct()
 	BattlePlayButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBattlePlayButtonClicked);
 	HireShopButton->OnClicked.AddDynamic(this, &UCoreMenu::OnHireShopButtonClicked);
 	HireShopRerollButton->OnClicked.AddDynamic(this, &UCoreMenu::OnHireShopRerollButtonClicked);
+	ReserveMinionButton->OnClicked.AddDynamic(this, &UCoreMenu::OnReserveMinionButtonClicked);
 
 	HideWindow(ECoreMenuWindow::ShopWindow);
+	HideWindow(ECoreMenuWindow::MinionStash);
 
 	// Starts out matching however ActiveItemImageHorizBox is set up in WBP_CoreMenu.
 	if (IsWindowVisible(ECoreMenuWindow::ActiveItemImage))
@@ -957,6 +976,8 @@ void UCoreMenu::UpdateCurrencyCountText(const FString& CurrencyId)
 
 void UCoreMenu::SetMinionButtons(const TArray<UPlayerMinion*>& Minions)
 {
+	PopulateMinionStash(Minions);
+
 	if (!MinionButtonsVertBox)
 	{
 		UE_LOG(LogTemp, Error, TEXT("MinionButtonsVertBox is null or not found!"));
@@ -985,15 +1006,9 @@ void UCoreMenu::SetMinionButtons(const TArray<UPlayerMinion*>& Minions)
 		}
 
 		UUserWidget* MinionButtonWidget = CreateMinionButtonWidget(MinionButtonClass, Minion->GetMinionIcon(), Minion->GetMinionClassName());
-		if (!MinionButtonWidget)
-		{
-			continue;
-		}
-
-		UButton* MinionButton = Cast<UButton>(MinionButtonWidget->GetWidgetFromName(TEXT("MinionButton")));
+		UButton* MinionButton = GetMinionButton(MinionButtonWidget);
 		if (!MinionButton)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("MinionButton not found on WBP_MinionButton."));
 			continue;
 		}
 
@@ -1005,6 +1020,63 @@ void UCoreMenu::SetMinionButtons(const TArray<UPlayerMinion*>& Minions)
 
 		MinionButtonsVertBox->AddChildToVerticalBox(MinionButtonWidget);
 	}
+}
+
+void UCoreMenu::PopulateMinionStash(const TArray<UPlayerMinion*>& Minions)
+{
+	if (!MinionStashButtonsVertBox)
+	{
+		UE_LOG(LogTemp, Error, TEXT("MinionStashButtonsVertBox is null or not found!"));
+		return;
+	}
+
+	MinionStashButtonsVertBox->ClearChildren();
+	MinionStashButtonProxies.Empty();
+	MinionStashSelectionBorders.Empty();
+
+	UClass* MinionButtonClass = LoadClass<UUserWidget>(nullptr, TEXT("/Game/WBP_MinionButton.WBP_MinionButton_C"));
+	if (!MinionButtonClass)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load WBP_MinionButton class."));
+		return;
+	}
+
+	for (UPlayerMinion* Minion : Minions)
+	{
+		if (!Minion)
+		{
+			continue;
+		}
+
+		UUserWidget* MinionButtonWidget = CreateMinionButtonWidget(MinionButtonClass, Minion->GetMinionIcon(), Minion->GetMinionClassName());
+		UButton* MinionButton = GetMinionButton(MinionButtonWidget);
+		if (!MinionButton)
+		{
+			continue;
+		}
+
+		UMinionStashButtonProxy* Proxy = NewObject<UMinionStashButtonProxy>(this);
+		Proxy->Minion = Minion;
+		Proxy->OwningMenu = this;
+		MinionStashButtonProxies.Add(Proxy);
+		MinionButton->OnClicked.AddDynamic(Proxy, &UMinionStashButtonProxy::HandleClicked);
+
+		MinionStashButtonsVertBox->AddChild(WrapInSelectionBorder(MinionButtonWidget, Minion->GetMinionUUID(), SelectedMinionUUID, MinionStashSelectionBorders));
+	}
+}
+
+void UCoreMenu::OnReserveMinionButtonClicked()
+{
+	UE_LOG(LogTemp, Warning, TEXT("ReserveMinionButton Clicked."));
+
+	if (IsWindowVisible(ECoreMenuWindow::MinionStash))
+	{
+		HideWindow(ECoreMenuWindow::MinionStash);
+		RefreshActiveItemDisplay();
+		return;
+	}
+
+	ShowWindow(ECoreMenuWindow::MinionStash);
 }
 
 UUserWidget* UCoreMenu::CreateMinionButtonWidget(UClass* MinionButtonClass, UTexture2D* MinionIcon, const FText& MinionName)
@@ -1094,7 +1166,7 @@ void UCoreMenu::PopulateHireShop()
 		const FString& ListingUUID = CurrentHireShopMinionUUIDs[ListingIndex];
 
 		FMinionClassStruct ClassRow;
-		const bool bFoundClass = DataTableHelpers::FindRow(TEXT("/Game/MinionData/MinionClass_DT.MinionClass_DT"),
+		const bool bFoundClass = DataTableHelpers::FindRow(MinionClassDataTablePath,
 			[MinionClass](const FMinionClassStruct& Row) { return Row.MinionClass == MinionClass; }, ClassRow);
 		if (!bFoundClass)
 		{
@@ -1103,15 +1175,9 @@ void UCoreMenu::PopulateHireShop()
 		}
 
 		UUserWidget* MinionButtonWidget = CreateMinionButtonWidget(MinionButtonClass, ClassRow.MinionAssetData.MinionIcon, ClassRow.ClassName);
-		if (!MinionButtonWidget)
-		{
-			continue;
-		}
-
-		UButton* MinionButton = Cast<UButton>(MinionButtonWidget->GetWidgetFromName(TEXT("MinionButton")));
+		UButton* MinionButton = GetMinionButton(MinionButtonWidget);
 		if (!MinionButton)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("MinionButton not found on WBP_MinionButton."));
 			continue;
 		}
 
@@ -1159,11 +1225,34 @@ void UCoreMenu::OnMinionButtonClicked(UPlayerMinion* Minion)
 		return;
 	}
 
+	SelectMinion(Minion, 6.f);
+	ShowWindow(ECoreMenuWindow::MinionEquip);
+}
+
+void UMinionStashButtonProxy::HandleClicked()
+{
+	if (OwningMenu)
+	{
+		OwningMenu->OnMinionStashButtonClicked(Minion);
+	}
+}
+
+void UCoreMenu::OnMinionStashButtonClicked(UPlayerMinion* Minion)
+{
+	if (Minion)
+	{
+		SelectMinion(Minion, 3.f);
+	}
+}
+
+void UCoreMenu::SelectMinion(UPlayerMinion* Minion, float WarningDisplaySeconds)
+{
 	SelectedMinionUUID = Minion->GetMinionUUID();
+	RefreshSelectionBorders(MinionStashSelectionBorders, SelectedMinionUUID);
 
 	const FString Message = FString::Printf(TEXT("Selected Minion %s %s"), *Minion->GetMinionClassName().ToString(), *SelectedMinionUUID);
 	LogToScreen(Message);
-	SetWarningText(Message, 6.f);
+	SetWarningText(Message, WarningDisplaySeconds);
 
 	// Unbound first even when the same minion is clicked again, since a minion can't be bound twice.
 	if (EquipTextMinion)
@@ -1173,8 +1262,6 @@ void UCoreMenu::OnMinionButtonClicked(UPlayerMinion* Minion)
 	EquipTextMinion = Minion;
 	EquipTextMinion->OnSaveDataChangedEvent.AddDynamic(this, &UCoreMenu::OnEquipTextMinionSaveDataChanged);
 	UpdateMinionEquipText();
-
-	ShowWindow(ECoreMenuWindow::MinionEquip);
 }
 
 void UCoreMenu::OnEquipTextMinionSaveDataChanged(FString MinionUUID)
@@ -1583,6 +1670,7 @@ void UCoreMenu::RegisterWindows()
 	RegisterWindow(ECoreMenuWindow::ActiveItemImage, ECoreMenuWindowBucket::MainWindows, { ActiveItemImageHorizBox });
 
 	RegisterWindow(ECoreMenuWindow::PlayerStash, ECoreMenuWindowBucket::SideWindows, { PlayerStashHorizBox });
+	RegisterWindow(ECoreMenuWindow::MinionStash, ECoreMenuWindowBucket::SideWindows, { MinionStashVertBox });
 	// Only the boxes themselves: this leaves the text's own visibility as WBP_CoreMenu has it for when they come back.
 	RegisterWindow(ECoreMenuWindow::ActiveItemText, ECoreMenuWindowBucket::SideWindows,
 		{ ActiveItemTextHorizBox, ActiveItemTextVertBox }, /*bIncludeChildren*/ false);

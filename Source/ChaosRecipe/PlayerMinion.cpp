@@ -13,7 +13,6 @@
 
 namespace
 {
-	const TCHAR* MinionClassDataTablePath = TEXT("/Game/MinionData/MinionClass_DT.MinionClass_DT");
 	const TCHAR* BaseItemDataTablePath = TEXT("/Game/ItemData/BaseItem_DT.BaseItem_DT");
 	const TCHAR* BaseWeaponDataTablePath = TEXT("/Game/ItemData/BaseWeapon_DT.BaseWeapon_DT");
 	const TCHAR* BaseArmorDataTablePath = TEXT("/Game/ItemData/BaseArmor_DT.BaseArmor_DT");

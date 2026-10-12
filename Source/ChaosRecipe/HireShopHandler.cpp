@@ -13,7 +13,6 @@
 
 namespace
 {
-	const TCHAR* MinionClassDataTablePath = TEXT("/Game/MinionData/MinionClass_DT.MinionClass_DT");
 	const FString SavedHireShopFileName = TEXT("SavedHireShop.json");
 }
 

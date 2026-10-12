@@ -61,3 +61,7 @@ struct FMinionClassStruct : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 	FMinionAssetData MinionAssetData;
 };
+
+// MinionClass_DT, the data table of FMinionClassStruct rows. Shared here rather than defined per .cpp, where unity
+// builds would merge the copies into one redefinition.
+inline constexpr const TCHAR* MinionClassDataTablePath = TEXT("/Game/MinionData/MinionClass_DT.MinionClass_DT");

@@ -137,6 +137,24 @@ public:
 	void HandleClicked();
 };
 
+// Carries the minion a dynamically created WBP_MinionButton in MinionStashButtonsVertBox stands for, since
+// UButton::OnClicked takes no parameters and can't otherwise identify its sender.
+UCLASS()
+class UMinionStashButtonProxy : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY()
+	TObjectPtr<UPlayerMinion> Minion;
+
+	UPROPERTY()
+	TObjectPtr<UCoreMenu> OwningMenu;
+
+	UFUNCTION()
+	void HandleClicked();
+};
+
 // Carries the hire shop listing a dynamically created WBP_MinionButton in HireShopButtonsVertBox stands for, since
 // UButton::OnClicked takes no parameters and can't otherwise identify its sender.
 UCLASS()
@@ -200,6 +218,7 @@ enum class ECoreMenuWindow : uint8
 	MinionEquip,
 	ActiveItemImage,
 	PlayerStash,
+	MinionStash,
 	ActiveItemText,
 };
 
@@ -244,6 +263,7 @@ class CHAOSRECIPE_API UCoreMenu : public UUserWidget
 	friend class UShopItemButtonProxy;
 	friend class UCurrencyButtonProxy;
 	friend class UMinionButtonProxy;
+	friend class UMinionStashButtonProxy;
 	friend class UHireShopMinionButtonProxy;
 
 public:
@@ -356,11 +376,13 @@ public:
 	UEnemy* GetSelectedEnemy() const { return SelectedEnemy; }
 
 	// Rebuilds MinionButtonsVertBox with a WBP_MinionButton for each of Minions, up to MaxMinionButtons, showing
-	// its class's MinionIcon and ClassName. Called by MinionHandler whenever a minion is created or loaded.
+	// its class's MinionIcon and ClassName, and the minion stash with one for every minion (PopulateMinionStash).
+	// Called by MinionHandler whenever a minion is created or loaded.
 	UFUNCTION(BlueprintCallable, Category = "Minion")
 	void SetMinionButtons(const TArray<UPlayerMinion*>& Minions);
 
-	// MinionUUID of the minion last clicked in MinionButtonsVertBox (empty if none has been yet).
+	// MinionUUID of the minion last clicked in MinionButtonsVertBox or MinionStashButtonsVertBox (empty if none has
+	// been yet).
 	UFUNCTION(BlueprintCallable, Category = "Minion")
 	FString GetSelectedMinionUUID() const { return SelectedMinionUUID; }
 
@@ -469,6 +491,14 @@ protected:
 	// Filled with a WBP_MinionButton per minion by SetMinionButtons
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* MinionButtonsVertBox;
+	// Toggles the MinionStash window (MinionStashVertBox), whose MinionStashButtonsVertBox lists a WBP_MinionButton for
+	// every minion (PopulateMinionStash)
+	UPROPERTY(meta = (BindWidget))
+	UButton* ReserveMinionButton;
+	UPROPERTY(meta = (BindWidget))
+	UPanelWidget* MinionStashVertBox;
+	UPROPERTY(meta = (BindWidget))
+	UPanelWidget* MinionStashButtonsVertBox;
 	// Shown by OnMinionButtonClicked, with MinionEquipText listing the clicked minion's equipped items
 	// (UpdateMinionEquipText). Named to match WBP_CoreMenu, typo included.
 	UPROPERTY(meta = (BindWidget))
@@ -523,7 +553,7 @@ protected:
 	bool ValidateSelectedStashItem();
 	// Not implemented yet. Called by OnStashCraftButtonClicked with the selected stash item's UUID.
 	void CraftStashItem(const FString& ItemUUID);
-	// Assigns the stash item ItemUUID to the minion selected in MinionButtonsVertBox (via OnAssignItemToMinionEvent),
+	// Assigns the stash item ItemUUID to the selected minion (SelectedMinionUUID, via OnAssignItemToMinionEvent),
 	// replacing whatever that minion had in the item's slot, then reloads the stash without it. Says in
 	// WarningsTextBox which item was added and which, if any, were removed.
 	void AssignStashItem(const FString& ItemUUID);
@@ -550,10 +580,24 @@ protected:
 	// its icon on ActiveItemRollButton
 	UFUNCTION()
 	void OnCurrencyButtonClicked(FName RowName);
-	// Click handler for a dynamically created WBP_MinionButton; selects that minion's UUID and says so in
-	// WarningsTextBox, then shows its equipment in the MinionEquip window
+	// Click handler for a dynamically created WBP_MinionButton in MinionButtonsVertBox; selects that minion
+	// (SelectMinion), then shows its equipment in the MinionEquip window
 	UFUNCTION()
 	void OnMinionButtonClicked(UPlayerMinion* Minion);
+	// Click handler for a dynamically created WBP_MinionButton in MinionStashButtonsVertBox; selects that minion
+	// (SelectMinion)
+	UFUNCTION()
+	void OnMinionStashButtonClicked(UPlayerMinion* Minion);
+	// Makes Minion the selected minion: StashAssignButton assigns to it, MinionEquipText lists its equipment, and its
+	// button in MinionStashButtonsVertBox gets the white selection border. Says so in WarningsTextBox for
+	// WarningDisplaySeconds.
+	void SelectMinion(UPlayerMinion* Minion, float WarningDisplaySeconds);
+	// Click handler for ReserveMinionButton; toggles the MinionStash window
+	UFUNCTION()
+	void OnReserveMinionButtonClicked();
+	// Replaces the minion buttons in MinionStashButtonsVertBox with a WBP_MinionButton for each of Minions, showing
+	// its class's MinionIcon and ClassName, wrapped in a selection border.
+	void PopulateMinionStash(const TArray<UPlayerMinion*>& Minions);
 	// Sets MinionEquipText to EquipTextMinion's class name, followed by a line for each ItemSlot it has an item
 	// in, naming that item ("No minion selected" if no minion button has been clicked yet).
 	void UpdateMinionEquipText();
@@ -737,11 +781,20 @@ protected:
 	UPROPERTY()
 	TArray<TObjectPtr<UMinionButtonProxy>> MinionButtonProxies;
 
-	// MinionUUID of the minion last clicked in MinionButtonsVertBox. Set via OnMinionButtonClicked.
+	// Keeps the per-button proxies alive (and their click bindings valid) between minion stash repopulations.
+	UPROPERTY()
+	TArray<TObjectPtr<UMinionStashButtonProxy>> MinionStashButtonProxies;
+
+	// MinionUUID -> the selection border around that minion's button in MinionStashButtonsVertBox, rebuilt with the
+	// minion stash.
+	UPROPERTY()
+	TMap<FString, TObjectPtr<UBorder>> MinionStashSelectionBorders;
+
+	// MinionUUID of the minion last clicked in MinionButtonsVertBox or MinionStashButtonsVertBox. Set via SelectMinion.
 	UPROPERTY()
 	FString SelectedMinionUUID;
 
-	// The minion last clicked in MinionButtonsVertBox, whose equipped items MinionEquipText lists.
+	// The selected minion, whose equipped items MinionEquipText lists. Set via SelectMinion.
 	UPROPERTY()
 	TObjectPtr<UPlayerMinion> EquipTextMinion;
 
