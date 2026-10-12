@@ -1000,7 +1000,8 @@ void UCoreMenu::SetMinionButtons(const TArray<UPlayerMinion*>& Minions)
 		{
 			break;
 		}
-		if (!Minion)
+		// The rest are in the minion stash.
+		if (!Minion || !Minion->IsActivePartyMember())
 		{
 			continue;
 		}
@@ -1043,7 +1044,8 @@ void UCoreMenu::PopulateMinionStash(const TArray<UPlayerMinion*>& Minions)
 
 	for (UPlayerMinion* Minion : Minions)
 	{
-		if (!Minion)
+		// The active party is in MinionButtonsVertBox instead.
+		if (!Minion || Minion->IsActivePartyMember())
 		{
 			continue;
 		}
@@ -1455,6 +1457,11 @@ void UCoreMenu::RefreshShopGrid()
 	PopulateShopGrid();
 }
 
+void UCoreMenu::RefreshPlayerStash()
+{
+	PopulatePlayerStash();
+}
+
 void UCoreMenu::RemoveItemFromShop(const FString& ItemId)
 {
 	// Called by ItemHandler once a purchase has actually succeeded, so a rejected (unaffordable)
@@ -1583,6 +1590,11 @@ void UCoreMenu::AssignStashItem(const FString& ItemUUID)
 	// two-handed weapon).
 	FMinionSaveData MinionBefore;
 	UMinionInstanceManager().GetSavedMinion(SelectedMinionUUID, MinionBefore);
+	if (!MinionBefore.bActivePartyMember)
+	{
+		SetWarningText(TEXT("Minions in the minion stash can't hold items. Select one in your active party."));
+		return;
+	}
 
 	// MinionHandler equips the item and saves the minion during the broadcast, unequipping whatever was in the
 	// item's slot. The item itself stays in SavedItems.json.

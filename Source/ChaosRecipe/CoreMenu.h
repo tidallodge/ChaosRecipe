@@ -359,6 +359,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Shop")
 	void RemoveItemFromShop(const FString& ItemId);
 
+	// Rebuilds PlayerStashUniGrid from SavedItems.json (PopulatePlayerStash), e.g. once a minion leaving the active
+	// party has given its items back.
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void RefreshPlayerStash();
+
 	// Shows Minion's health in BattleMinionHPBar and keeps it updated as it changes (hits, equipment, level,
 	// restores), and shows the damage of every hit it takes as a number where BattleMinionHPText was, until
 	// another minion is selected. Pass null to clear the display.
@@ -375,9 +380,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	UEnemy* GetSelectedEnemy() const { return SelectedEnemy; }
 
-	// Rebuilds MinionButtonsVertBox with a WBP_MinionButton for each of Minions, up to MaxMinionButtons, showing
-	// its class's MinionIcon and ClassName, and the minion stash with one for every minion (PopulateMinionStash).
-	// Called by MinionHandler whenever a minion is created or loaded.
+	// Rebuilds MinionButtonsVertBox with a WBP_MinionButton for each of Minions in the active party, up to
+	// MaxMinionButtons, showing its class's MinionIcon and ClassName, and the minion stash with one for each of the
+	// rest (PopulateMinionStash). Called by MinionHandler whenever a minion is created, loaded, or joins or leaves
+	// the active party.
 	UFUNCTION(BlueprintCallable, Category = "Minion")
 	void SetMinionButtons(const TArray<UPlayerMinion*>& Minions);
 
@@ -492,7 +498,7 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* MinionButtonsVertBox;
 	// Toggles the MinionStash window (MinionStashVertBox), whose MinionStashButtonsVertBox lists a WBP_MinionButton for
-	// every minion (PopulateMinionStash)
+	// every minion that isn't in the active party (PopulateMinionStash)
 	UPROPERTY(meta = (BindWidget))
 	UButton* ReserveMinionButton;
 	UPROPERTY(meta = (BindWidget))
@@ -595,8 +601,8 @@ protected:
 	// Click handler for ReserveMinionButton; toggles the MinionStash window
 	UFUNCTION()
 	void OnReserveMinionButtonClicked();
-	// Replaces the minion buttons in MinionStashButtonsVertBox with a WBP_MinionButton for each of Minions, showing
-	// its class's MinionIcon and ClassName, wrapped in a selection border.
+	// Replaces the minion buttons in MinionStashButtonsVertBox with a WBP_MinionButton for each of Minions that isn't
+	// in the active party, showing its class's MinionIcon and ClassName, wrapped in a selection border.
 	void PopulateMinionStash(const TArray<UPlayerMinion*>& Minions);
 	// Sets MinionEquipText to EquipTextMinion's class name, followed by a line for each ItemSlot it has an item
 	// in, naming that item ("No minion selected" if no minion button has been clicked yet).

@@ -1,6 +1,7 @@
 // MinionInstanceManager
 /** Purpose: Save and Load minions between sessions
-    Each minion is keyed by its MinionUUID and keeps its class, level, attributes and the UUIDs of its equipped items
+    Each minion is keyed by its MinionUUID and keeps its class, level, attributes, the UUIDs of its equipped items,
+    whether it's in the active party, and the UUIDs of the items it gave back when it last left the party
 */
 
 #include "MinionInstanceManager.h"

@@ -47,6 +47,16 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Minion")
 	TArray<UPlayerMinion*> GetMinions() const;
 
+	// The minions created or loaded this session that are in the active party, the ones sent into battle.
+	UFUNCTION(BlueprintPure, Category = "Minion")
+	TArray<UPlayerMinion*> GetActivePartyMinions() const;
+
+	// Moves the minion with MinionUUID into the active party or out of it into the minion stash
+	// (UPlayerMinion::SetActivePartyMember), and updates CoreMenu's minion buttons, minion stash and player stash to
+	// match. Returns false if there's no such loaded minion.
+	UFUNCTION(BlueprintCallable, Category = "Minion")
+	bool SetMinionActivePartyMember(const FString& MinionUUID, bool bActivePartyMember);
+
 	// Equips a stash item on the minion with MinionUUID, then takes it off whichever other minion had it, since
 	// an item can only be equipped by one minion at a time.
 	UFUNCTION(BlueprintCallable, Category = "Minion|Equipment")
@@ -64,8 +74,8 @@ public:
 	bool SetMinionLevel(const FString& MinionUUID, int32 NewLevel);
 
 	// Bound to CoreMenu's OnResetGameButtonClickedEvent: wipes SavedMinions.json, then puts every loaded minion
-	// back to level 1 of its class with nothing equipped (the stash is wiped too) and saves it again under the
-	// same MinionUUID.
+	// back to level 1 of its class with nothing equipped and no RemovedItemUUIDs (the stash is wiped too) and saves
+	// it again under the same MinionUUID, in or out of the active party as it was.
 	UFUNCTION()
 	void OnResetGame();
 
@@ -84,7 +94,7 @@ protected:
 
 	void SaveMinion(const UPlayerMinion* Minion);
 
-	// Pushes every loaded minion to the bound CoreMenu's minion buttons, if a CoreMenu has been bound.
+	// Pushes every loaded minion to the bound CoreMenu's minion buttons and minion stash, if a CoreMenu has been bound.
 	void UpdateMinionButtons() const;
 
 	// The only instance that writes SavedMinions.json, so saving one minion can't clobber another's save.

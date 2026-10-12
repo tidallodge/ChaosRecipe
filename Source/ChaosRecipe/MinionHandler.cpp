@@ -111,6 +111,40 @@ TArray<UPlayerMinion*> UMinionHandler::GetMinions() const
 	return Minions;
 }
 
+TArray<UPlayerMinion*> UMinionHandler::GetActivePartyMinions() const
+{
+	TArray<UPlayerMinion*> ActivePartyMinions = GetMinions();
+	ActivePartyMinions.RemoveAll([](const UPlayerMinion* Minion) { return !Minion->IsActivePartyMember(); });
+	return ActivePartyMinions;
+}
+
+bool UMinionHandler::SetMinionActivePartyMember(const FString& MinionUUID, bool bActivePartyMember)
+{
+	UPlayerMinion* Minion = FindMinion(MinionUUID);
+	if (!Minion)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("MinionHandler: No loaded minion with UUID '%s' to move %s."), *MinionUUID,
+			bActivePartyMember ? TEXT("into the active party") : TEXT("to the minion stash"));
+		return false;
+	}
+
+	if (Minion->IsActivePartyMember() == bActivePartyMember)
+	{
+		return true;
+	}
+
+	// Saved through HandleMinionSaveDataChanged before this returns.
+	Minion->SetActivePartyMember(bActivePartyMember);
+	UpdateMinionButtons();
+
+	// Leaving the party gave its items back to the player's stash.
+	if (!bActivePartyMember && BoundCoreMenu)
+	{
+		BoundCoreMenu->RefreshPlayerStash();
+	}
+	return true;
+}
+
 bool UMinionHandler::EquipItemOnMinion(const FString& MinionUUID, const FString& ItemUUID)
 {
 	UPlayerMinion* Minion = FindMinion(MinionUUID);

@@ -7,6 +7,7 @@
 #include "BattleManager.h"
 #include "CoreMenu.h"
 #include "PlayerMinion.h"
+#include "MinionHandler.h"
 #include "Enemy.h"
 #include "CurrencyManager.h"
 #include "Engine/World.h"
@@ -33,17 +34,19 @@ void UBattleManager::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
 	CoreMenu->OnBattlePlayButtonClickedEvent.AddDynamic(this, &UBattleManager::HandleBattlePlayButtonClicked);
 }
 
-void UBattleManager::SetCombatants(const TArray<UPlayerMinion*>& InMinions, const TArray<UEnemy*>& InEnemies)
+void UBattleManager::BindToMinionHandler(UMinionHandler* MinionHandler)
 {
-	Minions.Reset();
-	for (UPlayerMinion* Minion : InMinions)
+	if (!MinionHandler)
 	{
-		if (Minion)
-		{
-			Minions.Add(Minion);
-		}
+		UE_LOG(LogTemp, Error, TEXT("no MinionHandler for BattleManager"));
+		return;
 	}
 
+	BoundMinionHandler = MinionHandler;
+}
+
+void UBattleManager::SetEnemies(const TArray<UEnemy*>& InEnemies)
+{
 	Enemies.Reset();
 	for (UEnemy* Enemy : InEnemies)
 	{
@@ -75,6 +78,13 @@ void UBattleManager::StartBattle()
 	{
 		UE_LOG(LogTemp, Error, TEXT("BattleManager: No world to run a battle in."));
 		return;
+	}
+
+	// Read now rather than kept up to date, since minions can join or leave the active party between battles.
+	Minions.Reset();
+	if (BoundMinionHandler)
+	{
+		Minions.Append(BoundMinionHandler->GetActivePartyMinions());
 	}
 
 	// Every battle starts fresh, so damage taken in the last one doesn't carry over.

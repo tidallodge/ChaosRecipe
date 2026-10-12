@@ -21,8 +21,8 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMinionHitTakenEvent, const FComba
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMinionDiedEvent);
 
-// Broadcast whenever anything SavedMinions.json keeps for this minion changes (level, attributes or equipped
-// items), so UMinionHandler can save it.
+// Broadcast whenever anything SavedMinions.json keeps for this minion changes (level, attributes, equipped items or
+// party state), so UMinionHandler can save it.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMinionSaveDataChangedEvent, FString, MinionUUID);
 
 UCLASS()
@@ -32,14 +32,14 @@ class CHAOSRECIPE_API UPlayerMinion : public UObject, public ICombatant
 
 public:
 	// Loads InMinionClass's row from MinionClass_DT, gives the minion that class's attributes at InLevel and
-	// restores it to full. A minion without a MinionUUID yet gets a new one. Returns false (leaving the minion
-	// untouched) if the class has no row.
+	// restores it to full, forgetting any RemovedItemUUIDs. A minion without a MinionUUID yet gets a new one.
+	// Returns false (leaving the minion untouched) if the class has no row.
 	UFUNCTION(BlueprintCallable, Category = "Minion")
 	bool InitializeMinion(EMinionClass InMinionClass, int32 InLevel = 1);
 
-	// Rebuilds a saved minion: its UUID, class, level and attributes come from SaveData, then each of its
-	// EquippedItemUUIDs is re-equipped from the stash (any that can't be are skipped). Returns false (leaving
-	// the minion untouched) if SaveData has no UUID or its class has no row.
+	// Rebuilds a saved minion: its UUID, class, level, attributes, party state and RemovedItemUUIDs come from
+	// SaveData, then each of its EquippedItemUUIDs is re-equipped from the stash (any that can't be are skipped).
+	// Returns false (leaving the minion untouched) if SaveData has no UUID or its class has no row.
 	UFUNCTION(BlueprintCallable, Category = "Minion")
 	bool InitializeFromSaveData(const FMinionSaveData& SaveData);
 
@@ -57,9 +57,24 @@ public:
 	UFUNCTION()
 	void BindToItemHandlerEvents(UItemHandler* ItemHandler);
 
+	// Moves the minion into the active party (shown in CoreMenu's MinionButtonsVertBox, sent into battle) or out of
+	// it into the minion stash. Leaving the party unequips everything, which returns those items to the player's
+	// stash, and remembers their UUIDs in RemovedItemUUIDs. Joining it leaves RemovedItemUUIDs as they are.
+	UFUNCTION(BlueprintCallable, Category = "Minion")
+	void SetActivePartyMember(bool bNewActivePartyMember);
+
+	UFUNCTION(BlueprintPure, Category = "Minion")
+	bool IsActivePartyMember() const { return bActivePartyMember; }
+
+	// UUIDs of the items it had equipped when it last left the active party. Each may since have been equipped on
+	// another minion or sold.
+	UFUNCTION(BlueprintPure, Category = "Minion|Equipment")
+	TArray<FString> GetRemovedItemUUIDs() const { return RemovedItemUUIDs; }
+
 	// Equips a stash item by UUID, read from SavedItems.json the same way CoreMenu::PopulatePlayerStash
 	// reads the stash. If its ItemSlot (BaseItem_DT) is already full (GetMaxItemsInSlot), whatever is in the
-	// slot is unequipped to make room; it stays in SavedItems.json, so it shows up in the stash again.
+	// slot is unequipped to make room; it stays in SavedItems.json, so it shows up in the stash again. Fails for a
+	// minion that isn't in the active party, since only the party holds items.
 	UFUNCTION(BlueprintCallable, Category = "Minion|Equipment")
 	bool EquipItem(const FString& ItemUUID);
 
@@ -199,6 +214,13 @@ protected:
 
 	UPROPERTY()
 	int32 Level = 1;
+
+	// See FMinionSaveData::bActivePartyMember and RemovedItemUUIDs. Set via SetActivePartyMember.
+	UPROPERTY()
+	bool bActivePartyMember = true;
+
+	UPROPERTY()
+	TArray<FString> RemovedItemUUIDs;
 
 	// This minion's own attributes: seeded from its class by InitializeMinion, grown by SetLevel, and
 	// restored as-is from a save.

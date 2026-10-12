@@ -117,10 +117,14 @@ void ACoreGameMode::BeginPlay()
 			HireShopHandler->BindToPlayerInventory(PlayerInventory);
 			HireShopHandler->BindToCoreMenuEvents(CoreMenuWidget);
 
-			// Every minion in SavedMinions.json comes back with its saved level, attributes and items; with no
-			// save yet, the game starts with a new StartingMinionClass minion instead.
-			const TArray<UPlayerMinion*> SavedMinions = MinionHandler->LoadSavedMinions();
-			Minion = SavedMinions.Num() > 0 ? SavedMinions[0] : MinionHandler->CreateMinion(StartingMinionClass);
+			// Every minion in SavedMinions.json comes back with its saved level, attributes, items and party state;
+			// with no save yet, the game starts with a new StartingMinionClass minion (in the active party) instead.
+			if (MinionHandler->LoadSavedMinions().Num() == 0)
+			{
+				MinionHandler->CreateMinion(StartingMinionClass);
+			}
+			const TArray<UPlayerMinion*> ActivePartyMinions = MinionHandler->GetActivePartyMinions();
+			Minion = ActivePartyMinions.Num() > 0 ? ActivePartyMinions[0] : nullptr;
 			if (Minion)
 			{
 				CoreMenuWidget->SetSelectedMinion(Minion);
@@ -135,7 +139,8 @@ void ACoreGameMode::BeginPlay()
 
 			BattleManager = NewObject<UBattleManager>(this);
 			BattleManager->BindToCoreMenuEvents(CoreMenuWidget);
-			BattleManager->SetCombatants({ Minion }, { Enemy });
+			BattleManager->BindToMinionHandler(MinionHandler);
+			BattleManager->SetEnemies({ Enemy });
 
 			UE_LOG(LogTemp, Warning, TEXT("CoreMenu widget loaded and displayed"));
 		}

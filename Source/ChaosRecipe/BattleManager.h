@@ -9,6 +9,7 @@
 #include "BattleManager.generated.h"
 
 class UCoreMenu;
+class UMinionHandler;
 class UPlayerMinion;
 class UEnemy;
 
@@ -25,11 +26,15 @@ public:
 	UFUNCTION()
 	void BindToCoreMenuEvents(UCoreMenu* CoreMenu);
 
-	// Who fights in every battle from now on. Takes effect at the next StartBattle.
-	void SetCombatants(const TArray<UPlayerMinion*>& InMinions, const TArray<UEnemy*>& InEnemies);
+	// Every battle from now on is fought by MinionHandler's active party, as it stands when the battle starts.
+	UFUNCTION()
+	void BindToMinionHandler(UMinionHandler* MinionHandler);
 
-	// Restores every combatant to full, resets the battle timer to 0 and starts simulating. Ignored
-	// while a battle is already running.
+	// Who the active party fights in every battle from now on. Takes effect at the next StartBattle.
+	void SetEnemies(const TArray<UEnemy*>& InEnemies);
+
+	// Sends the active party in against the enemies, restoring every combatant to full, resetting the battle timer
+	// to 0 and starting to simulate. Ignored while a battle is already running.
 	UFUNCTION(BlueprintCallable, Category = "Battle")
 	void StartBattle();
 
@@ -98,6 +103,7 @@ protected:
 
 	void EndBattle(bool bMinionsWon);
 
+	// The active party as it stood when the current (or last) battle started.
 	UPROPERTY()
 	TArray<TObjectPtr<UPlayerMinion>> Minions;
 
@@ -112,6 +118,9 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<UCoreMenu> BoundCoreMenu = nullptr;
+
+	UPROPERTY()
+	TObjectPtr<UMinionHandler> BoundMinionHandler = nullptr;
 
 	FTimerHandle BattleTickHandle;
 

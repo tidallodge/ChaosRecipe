@@ -29,6 +29,16 @@ struct FMinionSaveData
     // SavedItems.json UUIDs of every item it has equipped, re-equipped from the stash when it's loaded.
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Minion")
     TArray<FString> EquippedItemUUIDs;
+
+    // In the active party: shown in CoreMenu's MinionButtonsVertBox and sent into battle. Otherwise it's in the minion
+    // stash, and only there, with nothing equipped. Saves from before this existed load as active.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Minion")
+    bool bActivePartyMember = true;
+
+    // SavedItems.json UUIDs of the items it had equipped when it last left the active party, which went back to the
+    // player's stash then. Each may since have been equipped on another minion or sold, so check before using one.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Minion")
+    TArray<FString> RemovedItemUUIDs;
 };
 
 // Saves/loads minions to/from SavedMinions.json in the project's Saved directory, keyed by MinionUUID, the

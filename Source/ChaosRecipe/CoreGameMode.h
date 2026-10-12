@@ -93,14 +93,14 @@ public:
 	UPROPERTY()
 	UHireShopHandler* HireShopHandler;
 
-	// The first saved minion (or a new one), selected in the CoreMenu and sent into battle.
+	// The first minion in the active party when the game started, selected in the CoreMenu's HP bar.
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	UPlayerMinion* Minion;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	UEnemy* Enemy;
 
-	// Runs a battle between Minion and Enemy each time CoreMenu's BattlePlayButton is clicked.
+	// Runs a battle between MinionHandler's active party and Enemy each time CoreMenu's BattlePlayButton is clicked.
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	UBattleManager* BattleManager;
 };

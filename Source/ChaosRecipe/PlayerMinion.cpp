@@ -87,6 +87,7 @@ bool UPlayerMinion::InitializeMinion(EMinionClass InMinionClass, int32 InLevel)
 	Level = FMath::Max(1, InLevel);
 	BaseAttributes = ClassData.BaseAttributes;
 	AddAttributesPerLevel(BaseAttributes, ClassData.AttributesPerLevel, Level - 1);
+	RemovedItemUUIDs.Reset();
 
 	RecalculateStats();
 	RestoreToFull();
@@ -113,6 +114,9 @@ bool UPlayerMinion::InitializeFromSaveData(const FMinionSaveData& SaveData)
 	MinionUUID = SaveData.MinionUUID;
 	Level = FMath::Max(1, SaveData.Level);
 	BaseAttributes = SaveData.BaseAttributes;
+	// Set before re-equipping, which a minion in the minion stash can't do.
+	bActivePartyMember = SaveData.bActivePartyMember;
+	RemovedItemUUIDs = SaveData.RemovedItemUUIDs;
 	ClearEquippedWeapon();
 	EquippedArmor.Empty();
 	RecalculateStats();
@@ -141,7 +145,29 @@ FMinionSaveData UPlayerMinion::GetSaveData() const
 	SaveData.Level = Level;
 	SaveData.BaseAttributes = BaseAttributes;
 	SaveData.EquippedItemUUIDs = GetEquippedItemUUIDs();
+	SaveData.bActivePartyMember = bActivePartyMember;
+	SaveData.RemovedItemUUIDs = RemovedItemUUIDs;
 	return SaveData;
+}
+
+void UPlayerMinion::SetActivePartyMember(bool bNewActivePartyMember)
+{
+	if (bActivePartyMember == bNewActivePartyMember)
+	{
+		return;
+	}
+
+	bActivePartyMember = bNewActivePartyMember;
+	if (bActivePartyMember)
+	{
+		BroadcastSaveDataChanged();
+		return;
+	}
+
+	// The player's stash is every saved item no minion has equipped, so unequipping is all it takes to return them.
+	// UnequipAll saves the new party state along with it.
+	RemovedItemUUIDs = GetEquippedItemUUIDs();
+	UnequipAll();
 }
 
 bool UPlayerMinion::LoadClassData(EMinionClass InMinionClass)
@@ -203,6 +229,12 @@ void UPlayerMinion::HandleItemRandomized(int32 GoldCost, FString CurrencyId)
 
 bool UPlayerMinion::EquipItem(const FString& ItemUUID)
 {
+	if (!bActivePartyMember)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PlayerMinion: %s is in the minion stash, so it can't equip %s."), *MinionUUID, *ItemUUID);
+		return false;
+	}
+
 	// Read-only: this instance never saves, so it can't clobber ItemHandler's own UItemInstanceManager.
 	UItemInstanceManager StashManager;
 	const TSharedPtr<FJsonObject> ItemJson = StashManager.GetSavedItemJson(ItemUUID);
