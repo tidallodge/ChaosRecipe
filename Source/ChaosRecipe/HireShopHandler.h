@@ -18,6 +18,10 @@ struct FHireShopSaveData
 	// The class of each minion on offer, in the order CoreMenu lists them.
 	UPROPERTY()
 	TArray<EMinionClass> MinionClasses;
+
+	// Each minion on offer's UUID (same index as MinionClasses).
+	UPROPERTY()
+	TArray<FString> MinionUUIDs;
 };
 
 UCLASS()
@@ -53,11 +57,12 @@ public:
 	int32 RerollGoldCost = 100;
 
 protected:
-	// Replaces HireShopMinions with MaxHireShopMinions random MinionClass_DT classes (repeats allowed). Returns false,
-	// leaving them as they were, if MinionClass_DT has no rows.
+	// Replaces HireShopMinions with MaxHireShopMinions random MinionClass_DT classes (repeats allowed), each with a newly
+	// minted UUID. Returns false, leaving them as they were, if MinionClass_DT has no rows.
 	bool RollHireShopMinions();
 
-	// Loads HireShopMinions from SavedHireShop.json. Returns false if there's no save (or it can't be read).
+	// Loads HireShopMinions from SavedHireShop.json. Returns false if there's no save (or it can't be read). A save from
+	// before listings had UUIDs gets them minted and saved.
 	bool LoadHireShopMinions();
 	void SaveHireShopMinions() const;
 
@@ -67,6 +72,11 @@ protected:
 	// The class of each minion the hire shop offers.
 	UPROPERTY()
 	TArray<EMinionClass> HireShopMinions;
+
+	// Each HireShopMinions listing's UUID (same index), minted when it's rolled so a listing keeps its UUID, and its
+	// selection, across sessions and display rebuilds.
+	UPROPERTY()
+	TArray<FString> HireShopMinionUUIDs;
 
 	UPROPERTY()
 	TObjectPtr<UCoreMenu> BoundCoreMenu = nullptr;

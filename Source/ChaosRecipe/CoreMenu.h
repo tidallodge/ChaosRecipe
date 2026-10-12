@@ -137,6 +137,27 @@ public:
 	void HandleClicked();
 };
 
+// Carries the hire shop listing a dynamically created WBP_MinionButton in HireShopButtonsVertBox stands for, since
+// UButton::OnClicked takes no parameters and can't otherwise identify its sender.
+UCLASS()
+class UHireShopMinionButtonProxy : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY()
+	FString MinionUUID;
+
+	UPROPERTY()
+	FText MinionName;
+
+	UPROPERTY()
+	TObjectPtr<UCoreMenu> OwningMenu;
+
+	UFUNCTION()
+	void HandleClicked();
+};
+
 // One damage number shown in a FDamageNumberStack.
 USTRUCT()
 struct FDamageNumber
@@ -223,6 +244,7 @@ class CHAOSRECIPE_API UCoreMenu : public UUserWidget
 	friend class UShopItemButtonProxy;
 	friend class UCurrencyButtonProxy;
 	friend class UMinionButtonProxy;
+	friend class UHireShopMinionButtonProxy;
 
 public:
 
@@ -343,9 +365,10 @@ public:
 	FString GetSelectedMinionUUID() const { return SelectedMinionUUID; }
 
 	// Replaces the minion buttons in HireShopButtonsVertBox with one for each of MinionClasses, the minions the hire
-	// shop offers. Called by HireShopHandler whenever they're loaded or rerolled.
+	// shop offers, with MinionUUIDs holding each one's UUID (same index). Called by HireShopHandler whenever they're
+	// loaded or rerolled.
 	UFUNCTION(BlueprintCallable, Category = "Hire Shop")
-	void SetHireShopMinions(const TArray<EMinionClass>& MinionClasses);
+	void SetHireShopMinions(const TArray<EMinionClass>& MinionClasses, const TArray<FString>& MinionUUIDs);
 
 	// Shows BattleTime (seconds since the battle started) as "M:SS.s" in BattleTimerText, if the widget
 	// blueprint has one. Called by BattleManager every battle tick.
@@ -548,8 +571,13 @@ protected:
 	UFUNCTION()
 	void OnHireShopRerollButtonClicked();
 	// Replaces the minion buttons in HireShopButtonsVertBox with a WBP_MinionButton for each of CurrentHireShopMinions,
-	// showing its class's MinionIcon and ClassName. Clicking one does nothing yet.
+	// showing its class's MinionIcon and ClassName, wrapped in a selection border. Clicking one selects it
+	// (OnHireShopMinionButtonClicked).
 	void PopulateHireShop();
+	// Click handler for a hire shop WBP_MinionButton; moves the white selection border onto it and says its MinionName
+	// and MinionUUID in WarningsTextBox
+	UFUNCTION()
+	void OnHireShopMinionButtonClicked(FString MinionUUID, FText MinionName);
 	// Sets IconImage's brush to the CurrencyIcon of the Currency_DT row named RowName
 	void LoadCurrencyIcon(UImage* IconImage, const FName& RowName);
 	// Builds the hover flyout for a currency button: CurrencyName on top, CurrencyDescription underneath.
@@ -588,11 +616,11 @@ protected:
 	void RefreshActiveItemDisplay();
 	// Sets SelectedItemUUID and moves the white selection border onto that item's icon in the shop/stash grids.
 	void SetSelectedItemUUID(const FString& ItemUUID);
-	// Wraps a shop/stash grid item widget in a border (added to Borders under ItemUUID) that shows white
-	// while ItemUUID is the selected item. Returns the border, to add to the grid in the item's place.
-	UBorder* WrapInSelectionBorder(UWidget* ItemWidget, const FString& ItemUUID, TMap<FString, TObjectPtr<UBorder>>& Borders);
-	// Shows the selection border on whichever grid item matches SelectedItemUUID and hides it on the rest.
-	void RefreshSelectionBorders();
+	// Wraps Widget (a shop/stash grid item or hire shop minion button) in a border (added to Borders under UUID) that
+	// shows white while UUID is SelectedUUID. Returns the border, to add in Widget's place.
+	UBorder* WrapInSelectionBorder(UWidget* Widget, const FString& UUID, const FString& SelectedUUID, TMap<FString, TObjectPtr<UBorder>>& Borders);
+	// Shows the selection border in Borders whose UUID matches SelectedUUID and hides the rest.
+	void RefreshSelectionBorders(const TMap<FString, TObjectPtr<UBorder>>& Borders, const FString& SelectedUUID);
 
 	UFUNCTION()
 	void ValidateButton(UButton* InputButton);
@@ -665,7 +693,7 @@ protected:
 	UPROPERTY()
 	TMap<FString, TObjectPtr<UBorder>> StashItemSelectionBorders;
 
-	// Width (px) of the white border drawn around the selected item's icon.
+	// Width (px) of the white border drawn around the selected item's icon (and the selected hire shop minion's button).
 	UPROPERTY()
 	float ItemSelectionBorderWidth = 3.f;
 
@@ -720,6 +748,23 @@ protected:
 	// The class of each minion the hire shop offers, as last set by SetHireShopMinions.
 	UPROPERTY()
 	TArray<EMinionClass> CurrentHireShopMinions;
+
+	// Each CurrentHireShopMinions listing's UUID (same index), as last set by SetHireShopMinions.
+	UPROPERTY()
+	TArray<FString> CurrentHireShopMinionUUIDs;
+
+	// Keeps the per-button proxies alive (and their click bindings valid) between hire shop repopulations.
+	UPROPERTY()
+	TArray<TObjectPtr<UHireShopMinionButtonProxy>> HireShopMinionButtonProxies;
+
+	// MinionUUID -> the selection border around that listing's button, rebuilt with the hire shop.
+	UPROPERTY()
+	TMap<FString, TObjectPtr<UBorder>> HireShopMinionSelectionBorders;
+
+	// MinionUUID of the hire shop listing last clicked (empty if none has been yet). Set via
+	// OnHireShopMinionButtonClicked.
+	UPROPERTY()
+	FString SelectedHireShopMinionUUID;
 
 	// Every window ShowWindow/HideWindow manage, filled in by RegisterWindows.
 	UPROPERTY()

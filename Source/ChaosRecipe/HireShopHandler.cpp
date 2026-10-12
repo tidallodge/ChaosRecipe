@@ -91,9 +91,11 @@ bool UHireShopHandler::RollHireShopMinions()
 	}
 
 	HireShopMinions.Reset();
+	HireShopMinionUUIDs.Reset();
 	for (int32 Index = 0; Index < MaxHireShopMinions; ++Index)
 	{
 		HireShopMinions.Add(MinionClassRows[FMath::RandRange(0, MinionClassRows.Num() - 1)].MinionClass);
+		HireShopMinionUUIDs.Add(FGuid::NewGuid().ToString());
 	}
 	return true;
 }
@@ -114,6 +116,21 @@ bool UHireShopHandler::LoadHireShopMinions()
 	}
 
 	HireShopMinions = SaveData.MinionClasses;
+	HireShopMinionUUIDs = SaveData.MinionUUIDs;
+
+	// A save from before listings had UUIDs has none, so the listings missing one get one now, saved so they keep it.
+	if (HireShopMinionUUIDs.Num() != HireShopMinions.Num())
+	{
+		HireShopMinionUUIDs.SetNum(HireShopMinions.Num());
+		for (FString& MinionUUID : HireShopMinionUUIDs)
+		{
+			if (MinionUUID.IsEmpty())
+			{
+				MinionUUID = FGuid::NewGuid().ToString();
+			}
+		}
+		SaveHireShopMinions();
+	}
 	return true;
 }
 
@@ -121,6 +138,7 @@ void UHireShopHandler::SaveHireShopMinions() const
 {
 	FHireShopSaveData SaveData;
 	SaveData.MinionClasses = HireShopMinions;
+	SaveData.MinionUUIDs = HireShopMinionUUIDs;
 
 	FString SaveString;
 	if (FJsonObjectConverter::UStructToJsonObjectString(SaveData, SaveString))
@@ -133,6 +151,6 @@ void UHireShopHandler::UpdateHireShopDisplay() const
 {
 	if (BoundCoreMenu)
 	{
-		BoundCoreMenu->SetHireShopMinions(HireShopMinions);
+		BoundCoreMenu->SetHireShopMinions(HireShopMinions, HireShopMinionUUIDs);
 	}
 }

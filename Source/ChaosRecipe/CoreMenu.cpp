@@ -635,7 +635,7 @@ void UCoreMenu::PopulatePlayerStash()
 		}
 
 		RemoveSingleImageButtonPadding(StashItemWidget);
-		ItemSlotBox->AddChild(WrapInSelectionBorder(StashItemWidget, SavedItem.Key, StashItemSelectionBorders));
+		ItemSlotBox->AddChild(WrapInSelectionBorder(StashItemWidget, SavedItem.Key, SelectedItemUUID, StashItemSelectionBorders));
 
 		ULoadItemButtonProxy* Proxy = NewObject<ULoadItemButtonProxy>(this);
 		Proxy->ItemUUID = SavedItem.Key;
@@ -1058,9 +1058,10 @@ void UCoreMenu::OnHireShopRerollButtonClicked()
 	OnHireShopRerollButtonClickedEvent.Broadcast();
 }
 
-void UCoreMenu::SetHireShopMinions(const TArray<EMinionClass>& MinionClasses)
+void UCoreMenu::SetHireShopMinions(const TArray<EMinionClass>& MinionClasses, const TArray<FString>& MinionUUIDs)
 {
 	CurrentHireShopMinions = MinionClasses;
+	CurrentHireShopMinionUUIDs = MinionUUIDs;
 	PopulateHireShop();
 }
 
@@ -1073,6 +1074,8 @@ void UCoreMenu::PopulateHireShop()
 	}
 
 	HireShopButtonsVertBox->ClearChildren();
+	HireShopMinionButtonProxies.Empty();
+	HireShopMinionSelectionBorders.Empty();
 
 	UClass* MinionButtonClass = LoadClass<UUserWidget>(nullptr, TEXT("/Game/WBP_MinionButton.WBP_MinionButton_C"));
 	if (!MinionButtonClass)
@@ -1081,8 +1084,15 @@ void UCoreMenu::PopulateHireShop()
 		return;
 	}
 
-	for (const EMinionClass MinionClass : CurrentHireShopMinions)
+	for (int32 ListingIndex = 0; ListingIndex < CurrentHireShopMinions.Num(); ++ListingIndex)
 	{
+		if (!CurrentHireShopMinionUUIDs.IsValidIndex(ListingIndex))
+		{
+			continue;
+		}
+		const EMinionClass MinionClass = CurrentHireShopMinions[ListingIndex];
+		const FString& ListingUUID = CurrentHireShopMinionUUIDs[ListingIndex];
+
 		FMinionClassStruct ClassRow;
 		const bool bFoundClass = DataTableHelpers::FindRow(TEXT("/Game/MinionData/MinionClass_DT.MinionClass_DT"),
 			[MinionClass](const FMinionClassStruct& Row) { return Row.MinionClass == MinionClass; }, ClassRow);
@@ -1092,11 +1102,46 @@ void UCoreMenu::PopulateHireShop()
 			continue;
 		}
 
-		if (UUserWidget* MinionButtonWidget = CreateMinionButtonWidget(MinionButtonClass, ClassRow.MinionAssetData.MinionIcon, ClassRow.ClassName))
+		UUserWidget* MinionButtonWidget = CreateMinionButtonWidget(MinionButtonClass, ClassRow.MinionAssetData.MinionIcon, ClassRow.ClassName);
+		if (!MinionButtonWidget)
 		{
-			HireShopButtonsVertBox->AddChild(MinionButtonWidget);
+			continue;
 		}
+
+		UButton* MinionButton = Cast<UButton>(MinionButtonWidget->GetWidgetFromName(TEXT("MinionButton")));
+		if (!MinionButton)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("MinionButton not found on WBP_MinionButton."));
+			continue;
+		}
+
+		UHireShopMinionButtonProxy* Proxy = NewObject<UHireShopMinionButtonProxy>(this);
+		Proxy->MinionUUID = ListingUUID;
+		Proxy->MinionName = ClassRow.ClassName;
+		Proxy->OwningMenu = this;
+		HireShopMinionButtonProxies.Add(Proxy);
+		MinionButton->OnClicked.AddDynamic(Proxy, &UHireShopMinionButtonProxy::HandleClicked);
+
+		HireShopButtonsVertBox->AddChild(WrapInSelectionBorder(MinionButtonWidget, ListingUUID, SelectedHireShopMinionUUID, HireShopMinionSelectionBorders));
 	}
+}
+
+void UHireShopMinionButtonProxy::HandleClicked()
+{
+	if (OwningMenu)
+	{
+		OwningMenu->OnHireShopMinionButtonClicked(MinionUUID, MinionName);
+	}
+}
+
+void UCoreMenu::OnHireShopMinionButtonClicked(FString MinionUUID, FText MinionName)
+{
+	SelectedHireShopMinionUUID = MinionUUID;
+	RefreshSelectionBorders(HireShopMinionSelectionBorders, SelectedHireShopMinionUUID);
+
+	const FString Message = FString::Printf(TEXT("Selected Hire Shop Minion %s %s"), *MinionName.ToString(), *MinionUUID);
+	LogToScreen(Message);
+	SetWarningText(Message, 3.f);
 }
 
 void UMinionButtonProxy::HandleClicked()
@@ -1301,7 +1346,7 @@ void UCoreMenu::PopulateShopGrid()
 		}
 
 		RemoveSingleImageButtonPadding(ShopItemWidget);
-		ItemSlotBox->AddChild(WrapInSelectionBorder(ShopItemWidget, ListingUUID, ShopItemSelectionBorders));
+		ItemSlotBox->AddChild(WrapInSelectionBorder(ShopItemWidget, ListingUUID, SelectedItemUUID, ShopItemSelectionBorders));
 
 		UShopItemButtonProxy* Proxy = NewObject<UShopItemButtonProxy>(this);
 		Proxy->ItemId = ItemRow->ItemId.ToString();
@@ -1644,7 +1689,8 @@ void UCoreMenu::RefreshActiveItemDisplay()
 void UCoreMenu::SetSelectedItemUUID(const FString& ItemUUID)
 {
 	SelectedItemUUID = ItemUUID;
-	RefreshSelectionBorders();
+	RefreshSelectionBorders(ShopItemSelectionBorders, SelectedItemUUID);
+	RefreshSelectionBorders(StashItemSelectionBorders, SelectedItemUUID);
 }
 
 // An outline-only box: the fill stays transparent so it never shows through an icon's transparent
@@ -1658,32 +1704,29 @@ static FSlateBrush MakeSelectionBorderBrush(bool bSelected, float Width)
 	return Brush;
 }
 
-UBorder* UCoreMenu::WrapInSelectionBorder(UWidget* ItemWidget, const FString& ItemUUID, TMap<FString, TObjectPtr<UBorder>>& Borders)
+UBorder* UCoreMenu::WrapInSelectionBorder(UWidget* Widget, const FString& UUID, const FString& SelectedUUID, TMap<FString, TObjectPtr<UBorder>>& Borders)
 {
 	UBorder* SelectionBorder = WidgetTree->ConstructWidget<UBorder>(UBorder::StaticClass());
 
-	// Padding equal to the outline width keeps the icon inside the outline rather than under it.
+	// Padding equal to the outline width keeps the widget inside the outline rather than under it.
 	SelectionBorder->SetPadding(FMargin(ItemSelectionBorderWidth));
 	SelectionBorder->SetHorizontalAlignment(HAlign_Fill);
 	SelectionBorder->SetVerticalAlignment(VAlign_Fill);
-	SelectionBorder->SetBrush(MakeSelectionBorderBrush(!SelectedItemUUID.IsEmpty() && ItemUUID == SelectedItemUUID, ItemSelectionBorderWidth));
-	SelectionBorder->SetContent(ItemWidget);
+	SelectionBorder->SetBrush(MakeSelectionBorderBrush(!SelectedUUID.IsEmpty() && UUID == SelectedUUID, ItemSelectionBorderWidth));
+	SelectionBorder->SetContent(Widget);
 
-	Borders.Add(ItemUUID, SelectionBorder);
+	Borders.Add(UUID, SelectionBorder);
 	return SelectionBorder;
 }
 
-void UCoreMenu::RefreshSelectionBorders()
+void UCoreMenu::RefreshSelectionBorders(const TMap<FString, TObjectPtr<UBorder>>& Borders, const FString& SelectedUUID)
 {
-	for (TMap<FString, TObjectPtr<UBorder>>* Borders : { &ShopItemSelectionBorders, &StashItemSelectionBorders })
+	for (const TPair<FString, TObjectPtr<UBorder>>& Entry : Borders)
 	{
-		for (const TPair<FString, TObjectPtr<UBorder>>& Entry : *Borders)
+		if (Entry.Value)
 		{
-			if (Entry.Value)
-			{
-				const bool bSelected = !SelectedItemUUID.IsEmpty() && Entry.Key == SelectedItemUUID;
-				Entry.Value->SetBrush(MakeSelectionBorderBrush(bSelected, ItemSelectionBorderWidth));
-			}
+			const bool bSelected = !SelectedUUID.IsEmpty() && Entry.Key == SelectedUUID;
+			Entry.Value->SetBrush(MakeSelectionBorderBrush(bSelected, ItemSelectionBorderWidth));
 		}
 	}
 }
