@@ -186,6 +186,20 @@ TArray<FString> UEnemy::GetCurrencyIdOptions()
 	return CurrencyIds;
 }
 
+TArray<FString> UEnemy::GetEnemyIdOptions()
+{
+	TArray<FString> EnemyIds;
+	TArray<FEnemyStruct> Enemies;
+	if (DataTableHelpers::LoadAllRows(EnemyDataTablePath, Enemies))
+	{
+		for (const FEnemyStruct& Enemy : Enemies)
+		{
+			EnemyIds.Add(Enemy.EnemyId.ToString());
+		}
+	}
+	return EnemyIds;
+}
+
 void UEnemy::BroadcastHealthChanged()
 {
 	OnHealthChangedEvent.Broadcast(CurrentHealth, GetMaxHealth(), CurrentOvershield);

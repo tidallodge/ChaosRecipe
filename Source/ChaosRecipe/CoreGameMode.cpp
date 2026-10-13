@@ -11,7 +11,6 @@
 #include "PlayerMinion.h"
 #include "MinionHandler.h"
 #include "HireShopHandler.h"
-#include "Enemy.h"
 #include "BattleManager.h"
 #include "Engine/DataTable.h"
 #include "UObject/ConstructorHelpers.h"
@@ -37,6 +36,12 @@ ACoreGameMode::ACoreGameMode()
 	if (MinionButtonFinder.Succeeded())
 	{
 		MinionButtonClass = MinionButtonFinder.Class;
+	}
+
+	static ConstructorHelpers::FClassFinder<UUserWidget> SingleButtonFinder(TEXT("/Game/WBP_SingleButton"));
+	if (SingleButtonFinder.Succeeded())
+	{
+		SingleButtonClass = SingleButtonFinder.Class;
 	}
 
 	static ConstructorHelpers::FObjectFinder<UDataTable> BaseItemDataTableFinder(TEXT("/Game/ItemData/BaseItem_DT"));
@@ -73,6 +78,12 @@ ACoreGameMode::ACoreGameMode()
 	if (EnemyDataTableFinder.Succeeded())
 	{
 		EnemyDataTable = EnemyDataTableFinder.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UDataTable> ZoneDataTableFinder(TEXT("/Game/ZoneData/Zone_DT"));
+	if (ZoneDataTableFinder.Succeeded())
+	{
+		ZoneDataTable = ZoneDataTableFinder.Object;
 	}
 }
 
@@ -131,17 +142,11 @@ void ACoreGameMode::BeginPlay()
 				CoreMenuWidget->SetSelectedMinion(Minion);
 			}
 
-			Enemy = NewObject<UEnemy>(this);
-			if (Enemy->InitializeEnemy(StartingEnemyId))
-			{
-				PlayerInventory->BindToEnemyEvents(Enemy);
-				CoreMenuWidget->SetSelectedEnemy(Enemy);
-			}
-
+			// Enemies are spawned by BattleManager, a group per stage of the zone picked on the map.
 			BattleManager = NewObject<UBattleManager>(this);
 			BattleManager->BindToCoreMenuEvents(CoreMenuWidget);
 			BattleManager->BindToMinionHandler(MinionHandler);
-			BattleManager->SetEnemies({ Enemy });
+			BattleManager->BindToPlayerInventory(PlayerInventory);
 
 			UE_LOG(LogTemp, Warning, TEXT("CoreMenu widget loaded and displayed"));
 		}

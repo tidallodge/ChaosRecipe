@@ -31,6 +31,7 @@
 #include "ItemInstanceManager.h"
 #include "MinionInstanceManager.h"
 #include "MinionClassStruct.h"
+#include "ZoneStruct.h"
 #include "DataTableHelpers.h"
 #include "PlayerMinion.h"
 #include "Enemy.h"
@@ -149,8 +150,10 @@ void UCoreMenu::NativeOnInitialized()
 	// happens before the Slate widgets are built.
 	InitDamageNumberStack(BattleMinionHPText, MinionDamageNumbers);
 	InitDamageNumberStack(BattleEnemyHPText, EnemyDamageNumbers);
+	EnemyHPBarsBox = SwapForVerticalBox(BattleEnemyHPBar);
 
 	RegisterWindows();
+	PopulateMap();
 }
 
 void UCoreMenu::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -209,6 +212,7 @@ void UCoreMenu::NativeConstruct()
     ValidateButton(HireShopButton);
     ValidateButton(HireShopRerollButton);
     ValidateButton(HireShopHireButton);
+    ValidateButton(MapButton);
     ValidateButton(ReserveMinionButton);
 
 	BuyButton->OnClicked.AddDynamic(this, &UCoreMenu::OnBuyButtonClicked);
@@ -224,9 +228,11 @@ void UCoreMenu::NativeConstruct()
 	HireShopRerollButton->OnClicked.AddDynamic(this, &UCoreMenu::OnHireShopRerollButtonClicked);
 	HireShopHireButton->OnClicked.AddDynamic(this, &UCoreMenu::OnHireShopHireButtonClicked);
 	ReserveMinionButton->OnClicked.AddDynamic(this, &UCoreMenu::OnReserveMinionButtonClicked);
+	MapButton->OnClicked.AddDynamic(this, &UCoreMenu::OnMapButtonClicked);
 
 	HideWindow(ECoreMenuWindow::ShopWindow);
 	HideWindow(ECoreMenuWindow::MinionStash);
+	HideWindow(ECoreMenuWindow::Map);
 
 	// Starts out matching however ActiveItemImageHorizBox is set up in WBP_CoreMenu.
 	if (IsWindowVisible(ECoreMenuWindow::ActiveItemImage))
@@ -1230,6 +1236,90 @@ void UCoreMenu::OnHireShopMinionButtonClicked(FString MinionUUID, FText MinionNa
 	SetWarningText(Message, 3.f);
 }
 
+void UCoreMenu::OnMapButtonClicked()
+{
+	UE_LOG(LogTemp, Warning, TEXT("MapButton Clicked."));
+
+	if (IsWindowVisible(ECoreMenuWindow::Map))
+	{
+		HideWindow(ECoreMenuWindow::Map);
+		RefreshActiveItemDisplay();
+		return;
+	}
+
+	ShowWindow(ECoreMenuWindow::Map);
+}
+
+void UCoreMenu::PopulateMap()
+{
+	if (!MapVertBox)
+	{
+		UE_LOG(LogTemp, Error, TEXT("MapVertBox is null or not found!"));
+		return;
+	}
+
+	UClass* SingleButtonClass = LoadClass<UUserWidget>(nullptr, TEXT("/Game/WBP_SingleButton.WBP_SingleButton_C"));
+	if (!SingleButtonClass)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Failed to load WBP_SingleButton class."));
+		return;
+	}
+
+	TArray<FZoneStruct> Zones;
+	if (!DataTableHelpers::LoadAllRows(ZoneDataTablePath, Zones))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Zone_DT has no zones to show on the map."));
+		return;
+	}
+
+	for (const FZoneStruct& Zone : Zones)
+	{
+		UUserWidget* ZoneButtonWidget = CreateWidget<UUserWidget>(this, SingleButtonClass);
+		UButton* ZoneButton = ZoneButtonWidget ? Cast<UButton>(ZoneButtonWidget->GetWidgetFromName(TEXT("SingleButton"))) : nullptr;
+		if (!ZoneButton)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SingleButton not found on WBP_SingleButton."));
+			continue;
+		}
+
+		// Found by name rather than as a Blueprint variable, since UMG only marks Buttons "Is Variable" by default.
+		if (UTextBlock* ZoneButtonText = Cast<UTextBlock>(ZoneButtonWidget->GetWidgetFromName(TEXT("SingleButtonText"))))
+		{
+			ZoneButtonText->SetText(Zone.ZoneName.IsEmpty() ? Zone.ZoneId : Zone.ZoneName);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("SingleButtonText not found on WBP_SingleButton."));
+		}
+
+		UZoneButtonProxy* Proxy = NewObject<UZoneButtonProxy>(this);
+		Proxy->ZoneId = Zone.ZoneId.ToString();
+		Proxy->ZoneName = Zone.ZoneName;
+		Proxy->OwningMenu = this;
+		ZoneButtonProxies.Add(Proxy);
+		ZoneButton->OnClicked.AddDynamic(Proxy, &UZoneButtonProxy::HandleClicked);
+
+		MapVertBox->AddChild(ZoneButtonWidget);
+	}
+}
+
+void UZoneButtonProxy::HandleClicked()
+{
+	if (OwningMenu)
+	{
+		OwningMenu->OnZoneButtonClicked(ZoneId, ZoneName);
+	}
+}
+
+void UCoreMenu::OnZoneButtonClicked(FString ZoneId, FText ZoneName)
+{
+	ActiveZoneId = ZoneId;
+
+	const FString Message = FString::Printf(TEXT("Zone changed to %s (%s)"), *ZoneName.ToString(), *ZoneId);
+	LogToScreen(Message);
+	SetWarningText(Message);
+}
+
 void UMinionButtonProxy::HandleClicked()
 {
 	if (OwningMenu)
@@ -1704,6 +1794,8 @@ void UCoreMenu::RegisterWindows()
 	// Only the boxes themselves: this leaves the text's own visibility as WBP_CoreMenu has it for when they come back.
 	RegisterWindow(ECoreMenuWindow::ActiveItemText, ECoreMenuWindowBucket::SideWindows,
 		{ ActiveItemTextHorizBox, ActiveItemTextVertBox }, /*bIncludeChildren*/ false);
+
+	RegisterWindow(ECoreMenuWindow::Map, ECoreMenuWindowBucket::FullScreen, { MapVertBox });
 }
 
 void UCoreMenu::RegisterWindow(ECoreMenuWindow Window, ECoreMenuWindowBucket Bucket, const TArray<UPanelWidget*>& Panels, bool bIncludeChildren)
@@ -1733,9 +1825,13 @@ void UCoreMenu::ShowWindow(ECoreMenuWindow Window)
 		return;
 	}
 
+	// A FullScreen window shares the screen with no other window, so it hides, and is hidden by, all of them.
+	const bool bShowingFullScreen = WindowToShow->Bucket == ECoreMenuWindowBucket::FullScreen;
 	for (const TPair<ECoreMenuWindow, FCoreMenuWindow>& Entry : Windows)
 	{
-		if (Entry.Key != Window && Entry.Value.Bucket == WindowToShow->Bucket)
+		const bool bSharesScreenSpace = bShowingFullScreen || Entry.Value.Bucket == WindowToShow->Bucket
+			|| Entry.Value.Bucket == ECoreMenuWindowBucket::FullScreen;
+		if (Entry.Key != Window && bSharesScreenSpace)
 		{
 			SetWindowVisibility(Entry.Value, ESlateVisibility::Hidden);
 		}
@@ -1787,7 +1883,8 @@ void UCoreMenu::SetWindowVisibility(const FCoreMenuWindow& Window, ESlateVisibil
 
 void UCoreMenu::RefreshActiveItemDisplay()
 {
-	if (!bHasSelectedItemData)
+	// Shown now, the active item windows would close the FullScreen window instead of waiting behind it.
+	if (!bHasSelectedItemData || IsAnyWindowVisible(ECoreMenuWindowBucket::FullScreen))
 	{
 		return;
 	}
@@ -2058,28 +2155,69 @@ void UCoreMenu::SetSelectedMinion(UPlayerMinion* Minion)
 		SelectedMinion->GetCurrentHealth(), SelectedMinion->GetMaxHealth(), SelectedMinion->GetCurrentOvershield());
 }
 
-void UCoreMenu::SetSelectedEnemy(UEnemy* Enemy)
+void UCoreMenu::SetBattleEnemies(const TArray<UEnemy*>& Enemies)
 {
-	if (SelectedEnemy)
+	// The previous group's bars go, along with their bindings and any of their damage numbers still fading.
+	for (UEnemyHPBarProxy* Proxy : EnemyHPBarProxies)
 	{
-		SelectedEnemy->OnHealthChangedEvent.RemoveDynamic(this, &UCoreMenu::OnSelectedEnemyHealthChanged);
-		SelectedEnemy->OnHitTakenEvent.RemoveDynamic(this, &UCoreMenu::OnSelectedEnemyHitTaken);
+		if (Proxy && Proxy->Enemy)
+		{
+			Proxy->Enemy->OnHealthChangedEvent.RemoveDynamic(Proxy, &UEnemyHPBarProxy::HandleHealthChanged);
+			Proxy->Enemy->OnHitTakenEvent.RemoveDynamic(this, &UCoreMenu::OnBattleEnemyHitTaken);
+		}
 	}
-
-	// Numbers still fading belong to the old enemy.
+	EnemyHPBarProxies.Reset();
 	ClearDamageNumbers(EnemyDamageNumbers);
 
-	SelectedEnemy = Enemy;
-	if (!SelectedEnemy)
+	if (!EnemyHPBarsBox || !BattleEnemyHPBar)
 	{
-		ClearHealthDisplay(BattleEnemyHPBar, EnemyHPBarDefaultColor);
+		UE_LOG(LogTemp, Error, TEXT("No EnemyHPBarsBox/BattleEnemyHPBar to show enemy health in."));
 		return;
 	}
+	EnemyHPBarsBox->ClearChildren();
 
-	SelectedEnemy->OnHealthChangedEvent.AddDynamic(this, &UCoreMenu::OnSelectedEnemyHealthChanged);
-	SelectedEnemy->OnHitTakenEvent.AddDynamic(this, &UCoreMenu::OnSelectedEnemyHitTaken);
-	SetHealthDisplay(BattleEnemyHPBar, EnemyHPBarDefaultColor,
-		SelectedEnemy->GetCurrentHealth(), SelectedEnemy->GetMaxHealth(), SelectedEnemy->GetCurrentOvershield());
+	// Each bar takes the size and alignment BattleEnemyHPBar had in its own slot, which the box took over (so bars
+	// that filled their space share it between them).
+	const UVerticalBoxSlot* TemplateSlot = Cast<UVerticalBoxSlot>(EnemyHPBarsBox->Slot);
+
+	for (UEnemy* Enemy : Enemies)
+	{
+		if (!Enemy)
+		{
+			continue;
+		}
+
+		// Made from BattleEnemyHPBar as a template, so it keeps the style and fill color set in WBP_CoreMenu.
+		UProgressBar* HPBar = NewObject<UProgressBar>(WidgetTree, BattleEnemyHPBar->GetClass(), NAME_None, RF_Transactional, BattleEnemyHPBar);
+		if (UVerticalBoxSlot* BarSlot = EnemyHPBarsBox->AddChildToVerticalBox(HPBar))
+		{
+			if (TemplateSlot)
+			{
+				BarSlot->SetSize(TemplateSlot->GetSize());
+				BarSlot->SetHorizontalAlignment(TemplateSlot->GetHorizontalAlignment());
+				BarSlot->SetVerticalAlignment(TemplateSlot->GetVerticalAlignment());
+			}
+			BarSlot->SetPadding(FMargin(0.f, EnemyHPBarProxies.Num() > 0 ? EnemyHPBarSpacing : 0.f, 0.f, 0.f));
+		}
+
+		UEnemyHPBarProxy* Proxy = NewObject<UEnemyHPBarProxy>(this);
+		Proxy->Enemy = Enemy;
+		Proxy->HPBar = HPBar;
+		Proxy->OwningMenu = this;
+		EnemyHPBarProxies.Add(Proxy);
+
+		Enemy->OnHealthChangedEvent.AddDynamic(Proxy, &UEnemyHPBarProxy::HandleHealthChanged);
+		Enemy->OnHitTakenEvent.AddDynamic(this, &UCoreMenu::OnBattleEnemyHitTaken);
+		SetHealthDisplay(HPBar, EnemyHPBarDefaultColor, Enemy->GetCurrentHealth(), Enemy->GetMaxHealth(), Enemy->GetCurrentOvershield());
+	}
+}
+
+void UEnemyHPBarProxy::HandleHealthChanged(float CurrentHealth, float MaxHealth, float CurrentOvershield)
+{
+	if (OwningMenu)
+	{
+		OwningMenu->SetHealthDisplay(HPBar, OwningMenu->EnemyHPBarDefaultColor, CurrentHealth, MaxHealth, CurrentOvershield);
+	}
 }
 
 void UCoreMenu::OnSelectedMinionHealthChanged(float CurrentHealth, float MaxHealth, float CurrentOvershield)
@@ -2087,17 +2225,12 @@ void UCoreMenu::OnSelectedMinionHealthChanged(float CurrentHealth, float MaxHeal
 	SetHealthDisplay(BattleMinionHPBar, MinionHPBarDefaultColor, CurrentHealth, MaxHealth, CurrentOvershield);
 }
 
-void UCoreMenu::OnSelectedEnemyHealthChanged(float CurrentHealth, float MaxHealth, float CurrentOvershield)
-{
-	SetHealthDisplay(BattleEnemyHPBar, EnemyHPBarDefaultColor, CurrentHealth, MaxHealth, CurrentOvershield);
-}
-
 void UCoreMenu::OnSelectedMinionHitTaken(const FCombatHitResult& HitResult)
 {
 	ShowDamageNumber(MinionDamageNumbers, HitResult);
 }
 
-void UCoreMenu::OnSelectedEnemyHitTaken(const FCombatHitResult& HitResult)
+void UCoreMenu::OnBattleEnemyHitTaken(const FCombatHitResult& HitResult)
 {
 	ShowDamageNumber(EnemyDamageNumbers, HitResult);
 }
@@ -2133,27 +2266,30 @@ void UCoreMenu::ClearHealthDisplay(UProgressBar* HPBar, const FLinearColor& Unsh
 	}
 }
 
-void UCoreMenu::InitDamageNumberStack(UTextBlock* HPText, FDamageNumberStack& Stack)
+UVerticalBox* UCoreMenu::SwapForVerticalBox(UWidget* Widget)
 {
-	UPanelWidget* Parent = HPText ? HPText->GetParent() : nullptr;
+	UPanelWidget* Parent = Widget ? Widget->GetParent() : nullptr;
 	if (!Parent)
 	{
-		UE_LOG(LogTemp, Error, TEXT("%s has no parent panel to show damage numbers in."),
-			HPText ? *HPText->GetName() : TEXT("HP text"));
-		return;
+		UE_LOG(LogTemp, Error, TEXT("%s has no parent panel to swap a vertical box into."), Widget ? *Widget->GetName() : TEXT("Widget"));
+		return nullptr;
 	}
 
 	UVerticalBox* Box = WidgetTree->ConstructWidget<UVerticalBox>(UVerticalBox::StaticClass());
 
-	// The box takes over HPText's index and a copy of its slot (alignment, padding, anchors, ...), so it
-	// sits exactly where the text did. Removing the text first also frees up single-child panels (SizeBox,
-	// Border, ...). InsertChildAt only reorders the UMG side, hence running before Slate is built.
-	UPanelSlot* HPTextSlot = HPText->Slot;
-	const int32 Index = Parent->GetChildIndex(HPText);
+	// The box takes over Widget's index and a copy of its slot (alignment, padding, anchors, ...), so it sits
+	// exactly where Widget did. Removing Widget first also frees up single-child panels (SizeBox, Border, ...).
+	// InsertChildAt only reorders the UMG side, hence running before Slate is built.
+	UPanelSlot* WidgetSlot = Widget->Slot;
+	const int32 Index = Parent->GetChildIndex(Widget);
 	Parent->RemoveChildAt(Index);
-	Parent->InsertChildAt(Index, Box, HPTextSlot);
+	Parent->InsertChildAt(Index, Box, WidgetSlot);
+	return Box;
+}
 
-	Stack.Box = Box;
+void UCoreMenu::InitDamageNumberStack(UTextBlock* HPText, FDamageNumberStack& Stack)
+{
+	Stack.Box = SwapForVerticalBox(HPText);
 	Stack.Template = HPText;
 }
 

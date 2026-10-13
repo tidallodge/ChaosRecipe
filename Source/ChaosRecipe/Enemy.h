@@ -85,6 +85,10 @@ public:
 	UFUNCTION()
 	static TArray<FString> GetCurrencyIdOptions();
 
+	// Feeds the EnemyId dropdown on FZoneEnemySpawn in the Zone_DT editor (GetOptions metadata): every Enemy_DT EnemyId.
+	UFUNCTION()
+	static TArray<FString> GetEnemyIdOptions();
+
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnEnemyHealthChangedEvent OnHealthChangedEvent;
 

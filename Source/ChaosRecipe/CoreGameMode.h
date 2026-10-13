@@ -15,7 +15,6 @@ class UPlayerInventory;
 class UPlayerMinion;
 class UMinionHandler;
 class UHireShopHandler;
-class UEnemy;
 class UBattleManager;
 class UDataTable;
 
@@ -52,6 +51,9 @@ public:
 	TSubclassOf<UUserWidget> MinionButtonClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hard References")
+	TSubclassOf<UUserWidget> SingleButtonClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hard References")
 	UDataTable* BaseItemDataTable;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hard References")
@@ -69,13 +71,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hard References")
 	UDataTable* EnemyDataTable;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hard References")
+	UDataTable* ZoneDataTable;
+
 	// The MinionClass_DT class a new game's first minion is created with (when SavedMinions.json has no
-	// minions), and the Enemy_DT EnemyId spawned at BeginPlay. Both are selected in the CoreMenu HP bars.
+	// minions). It's selected in the CoreMenu's minion HP bar.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
 	EMinionClass StartingMinionClass = EMinionClass::Warrior;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat")
-	FString StartingEnemyId = TEXT("woods_shaman_001");
 
 	UPROPERTY()
 	UItemHandler* ItemHandler;
@@ -97,10 +99,8 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	UPlayerMinion* Minion;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Combat")
-	UEnemy* Enemy;
-
-	// Runs a battle between MinionHandler's active party and Enemy each time CoreMenu's BattlePlayButton is clicked.
+	// Runs MinionHandler's active party through every stage of the zone picked on CoreMenu's map, each time its
+	// BattlePlayButton is clicked, spawning each stage's enemies as it goes.
 	UPROPERTY(BlueprintReadOnly, Category = "Combat")
 	UBattleManager* BattleManager;
 };

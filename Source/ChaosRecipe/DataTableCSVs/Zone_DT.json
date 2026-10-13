@@ -1,0 +1,41 @@
+[
+	{
+		"Name": "NewRow",
+		"ZoneId": "NSLOCTEXT(\"[28151B9151061C94B1D49780E34C02F7]\", \"EC19D1FB4993862718DFD495D030AD10\", \"woods_01\")",
+		"ZoneName": "NSLOCTEXT(\"[28151B9151061C94B1D49780E34C02F7]\", \"A0178EE34C97DDEBB2609584F23DFB13\", \"woods_01\")",
+		"Stages": [
+			{
+				"RequiredProgress": 0,
+				"GroupSize":
+				{
+					"X": 1,
+					"Y": 1
+				},
+				"Enemies": [
+					{
+						"EnemyId": "woods_shaman_001",
+						"SpawnWeight": 1,
+						"MinPerGroup": 1,
+						"MaxPerGroup": 4
+					}
+				]
+			},
+			{
+				"RequiredProgress": 1,
+				"GroupSize":
+				{
+					"X": 1,
+					"Y": 2
+				},
+				"Enemies": [
+					{
+						"EnemyId": "woods_shaman_001",
+						"SpawnWeight": 1,
+						"MinPerGroup": 1,
+						"MaxPerGroup": 2
+					}
+				]
+			}
+		]
+	}
+]

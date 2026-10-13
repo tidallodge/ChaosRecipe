@@ -1,5 +1,6 @@
 // BattleManager
-/** Purpose: Simulate a battle between the player's minions and a group of enemies
+/** Purpose: Simulate a battle between the player's minions and a zone's enemies, stage by stage
+    Every stage spawns a random enemy group from Zone_DT, and the party carries its health from one stage to the next
     Every combatant picks a target and an attack/spell, hits with it, then waits out that ability's
     cooldown (one over its attack or cast rate) before acting again, until one side is defeated
 */
@@ -8,8 +9,10 @@
 #include "CoreMenu.h"
 #include "PlayerMinion.h"
 #include "MinionHandler.h"
+#include "PlayerInventory.h"
 #include "Enemy.h"
 #include "CurrencyManager.h"
+#include "DataTableHelpers.h"
 #include "Engine/World.h"
 
 namespace
@@ -18,8 +21,14 @@ namespace
 	// TickBattle); this only sets how quickly they're noticed and how often the timer display updates.
 	constexpr float BattleTickInterval = 0.05f;
 
-	// A battle where neither side can finish the other off (e.g. an enemy with no Damage) ends as a loss here.
-	constexpr float MaxBattleDuration = 300.f;
+	// A stage where neither side can finish the other off (e.g. an enemy with no Damage) ends the battle as a loss here.
+	constexpr float MaxStageDuration = 300.f;
+
+	// The zone's ZoneName, or its ZoneId if it has none.
+	FString GetZoneDisplayName(const FZoneStruct& Zone)
+	{
+		return (Zone.ZoneName.IsEmpty() ? Zone.ZoneId : Zone.ZoneName).ToString();
+	}
 
 	// Up to one decimal place, so whole amounts read as "17" and scaled ones as "17.5".
 	FString FormatDamage(float Damage)
@@ -87,16 +96,15 @@ void UBattleManager::BindToMinionHandler(UMinionHandler* MinionHandler)
 	BoundMinionHandler = MinionHandler;
 }
 
-void UBattleManager::SetEnemies(const TArray<UEnemy*>& InEnemies)
+void UBattleManager::BindToPlayerInventory(UPlayerInventory* PlayerInventory)
 {
-	Enemies.Reset();
-	for (UEnemy* Enemy : InEnemies)
+	if (!PlayerInventory)
 	{
-		if (Enemy)
-		{
-			Enemies.Add(Enemy);
-		}
+		UE_LOG(LogTemp, Error, TEXT("no PlayerInventory for BattleManager"));
+		return;
 	}
+
+	BoundPlayerInventory = PlayerInventory;
 }
 
 void UBattleManager::HandleBattlePlayButtonClicked()
@@ -122,54 +130,136 @@ void UBattleManager::StartBattle()
 		return;
 	}
 
-	// Read now rather than kept up to date, since minions can join or leave the active party between battles.
-	Minions.Reset();
-	if (BoundMinionHandler)
+	const FString ZoneId = BoundCoreMenu ? BoundCoreMenu->GetActiveZoneId() : FString();
+	if (ZoneId.IsEmpty())
 	{
-		Minions.Append(BoundMinionHandler->GetActivePartyMinions());
-	}
-
-	// Every battle starts fresh, so damage taken in the last one doesn't carry over.
-	Combatants.Reset();
-	for (UPlayerMinion* Minion : Minions)
-	{
-		Minion->RestoreToFull();
-		Combatants.AddDefaulted_GetRef().Combatant = Minion;
-		Combatants.Last().bIsMinion = true;
-	}
-	for (UEnemy* Enemy : Enemies)
-	{
-		Enemy->RestoreToFull();
-		Combatants.AddDefaulted_GetRef().Combatant = Enemy;
-	}
-
-	if (IsSideDefeated(true) || IsSideDefeated(false))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("BattleManager: Need at least one minion and one enemy able to fight (minions=%d, enemies=%d)."),
-			Minions.Num(), Enemies.Num());
+		UE_LOG(LogTemp, Warning, TEXT("BattleManager: No zone selected to battle in."));
 		if (BoundCoreMenu)
 		{
-			BoundCoreMenu->SetWarningText(TEXT("Need a minion and an enemy to battle."));
+			BoundCoreMenu->SetWarningText(TEXT("Pick a zone on the map first."));
 		}
 		return;
 	}
 
-	BattleKills.Reset();
-	for (UEnemy* Enemy : Enemies)
+	FZoneStruct LoadedZone;
+	const bool bFoundZone = DataTableHelpers::FindRow(ZoneDataTablePath,
+		[&ZoneId](const FZoneStruct& Row) { return Row.ZoneId.ToString().Equals(ZoneId, ESearchCase::IgnoreCase); }, LoadedZone);
+	if (!bFoundZone || LoadedZone.GetStageCount() == 0)
 	{
-		Enemy->OnKilledEvent.AddUniqueDynamic(this, &UBattleManager::HandleEnemyKilled);
+		UE_LOG(LogTemp, Warning, TEXT("BattleManager: Zone '%s' isn't in Zone_DT or has no stages."), *ZoneId);
+		if (BoundCoreMenu)
+		{
+			BoundCoreMenu->SetWarningText(TEXT("That zone has no stages to battle through."));
+		}
+		return;
+	}
+
+	// Read now rather than kept up to date, since minions can join or leave the active party between battles.
+	const TArray<UPlayerMinion*> ActivePartyMinions = BoundMinionHandler ? BoundMinionHandler->GetActivePartyMinions() : TArray<UPlayerMinion*>();
+	if (ActivePartyMinions.Num() == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BattleManager: No minions in the active party to battle with."));
+		if (BoundCoreMenu)
+		{
+			BoundCoreMenu->SetWarningText(TEXT("Need a minion in your active party to battle."));
+		}
+		return;
+	}
+
+	Zone = LoadedZone;
+	Minions.Reset();
+	Minions.Append(ActivePartyMinions);
+
+	// The party starts fresh, then carries whatever damage it takes from stage to stage until the battle ends.
+	for (UPlayerMinion* Minion : Minions)
+	{
+		Minion->RestoreToFull();
+	}
+
+	BattleTime = 0.f;
+	if (!StartStage(0))
+	{
+		if (BoundCoreMenu)
+		{
+			BoundCoreMenu->SetWarningText(FString::Printf(TEXT("%s has no enemies to battle."), *GetStageLabel()));
+		}
+		return;
 	}
 
 	bBattleRunning = true;
-	BattleTime = 0.f;
 	BattleStartWorldTime = World->GetTimeSeconds();
 	World->GetTimerManager().SetTimer(BattleTickHandle, this, &UBattleManager::TickBattle, BattleTickInterval, true);
 
 	if (BoundCoreMenu)
 	{
 		BoundCoreMenu->SetBattleTimerText(BattleTime);
-		BoundCoreMenu->LogToScreen(FString::Printf(TEXT("Battle started: %d minion(s) vs %d enemy(s)."), Minions.Num(), Enemies.Num()));
+		BoundCoreMenu->SetWarningText(FString::Printf(TEXT("Entering %s: %d stage(s)."), *GetZoneDisplayName(Zone), Zone.GetStageCount()));
 	}
+}
+
+bool UBattleManager::StartStage(int32 InStageIndex)
+{
+	StageIndex = InStageIndex;
+
+	// The last stage's enemies are all dead by now (or from an earlier battle), so they're let go.
+	for (UEnemy* Enemy : Enemies)
+	{
+		Enemy->OnKilledEvent.RemoveDynamic(this, &UBattleManager::HandleEnemyKilled);
+	}
+	Enemies.Reset();
+
+	TArray<UEnemy*> SpawnedEnemies;
+	for (const FString& EnemyId : Zone.RollEnemyGroup(StageIndex))
+	{
+		UEnemy* Enemy = NewObject<UEnemy>(this);
+		if (!Enemy->InitializeEnemy(EnemyId))
+		{
+			continue;
+		}
+
+		Enemy->OnKilledEvent.AddDynamic(this, &UBattleManager::HandleEnemyKilled);
+		if (BoundPlayerInventory)
+		{
+			BoundPlayerInventory->BindToEnemyEvents(Enemy);
+		}
+		SpawnedEnemies.Add(Enemy);
+	}
+	Enemies.Append(SpawnedEnemies);
+
+	if (BoundCoreMenu)
+	{
+		BoundCoreMenu->SetBattleEnemies(SpawnedEnemies);
+	}
+
+	if (Enemies.Num() == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BattleManager: %s spawned no enemies."), *GetStageLabel());
+		return false;
+	}
+
+	BattleKills.Reset();
+	StageStartTime = BattleTime;
+
+	// Everyone starts the stage ready to act. Minions killed in an earlier stage stay down: they're listed, but never
+	// act or get targeted.
+	Combatants.Reset();
+	for (UPlayerMinion* Minion : Minions)
+	{
+		FBattleCombatant& Entry = Combatants.AddDefaulted_GetRef();
+		Entry.Combatant = Minion;
+		Entry.bIsMinion = true;
+		Entry.NextActionTime = BattleTime;
+	}
+	for (UEnemy* Enemy : Enemies)
+	{
+		FBattleCombatant& Entry = Combatants.AddDefaulted_GetRef();
+		Entry.Combatant = Enemy;
+		Entry.NextActionTime = BattleTime;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("BattleManager: [%.2fs] %s started: %d minion(s) vs %d enemy(s)."),
+		BattleTime, *GetStageLabel(), Minions.Num(), Enemies.Num());
+	return true;
 }
 
 void UBattleManager::StopBattle()
@@ -261,9 +351,9 @@ void UBattleManager::TickBattle()
 		}
 	}
 
-	if (BattleTime >= MaxBattleDuration)
+	if (BattleTime - StageStartTime >= MaxStageDuration)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("BattleManager: Battle timed out after %.0fs."), MaxBattleDuration);
+		UE_LOG(LogTemp, Warning, TEXT("BattleManager: %s timed out after %.0fs."), *GetStageLabel(), MaxStageDuration);
 		EndBattle(false);
 	}
 }
@@ -354,8 +444,28 @@ bool UBattleManager::TryEndBattle()
 {
 	if (IsSideDefeated(false))
 	{
-		EndBattle(true);
-		return true;
+		if (StageIndex + 1 >= Zone.GetStageCount())
+		{
+			EndBattle(true);
+			return true;
+		}
+
+		// Said now, since the next stage starts counting its own kills. The kills go first, so the clear is the last,
+		// most visible line.
+		const FString ClearedMessage = FString::Printf(TEXT("%s cleared!"), *GetStageLabel());
+		if (BoundCoreMenu)
+		{
+			BoundCoreMenu->LogToScreen(ClearedMessage);
+			BoundCoreMenu->SetWarningText(BattleKills.Num() > 0 ? BuildBattleKillsMessage() + TEXT("\n") + ClearedMessage : ClearedMessage);
+		}
+
+		// Straight on to the next stage, with the party as it is.
+		if (!StartStage(StageIndex + 1))
+		{
+			EndBattle(false);
+			return true;
+		}
+		return false;
 	}
 
 	if (IsSideDefeated(true))
@@ -371,16 +481,26 @@ void UBattleManager::EndBattle(bool bMinionsWon)
 {
 	StopBattle();
 
+	// The damage the party carried from stage to stage is healed only now that the battle's over.
+	for (UPlayerMinion* Minion : Minions)
+	{
+		Minion->RestoreToFull();
+	}
+
 	if (BoundCoreMenu)
 	{
+		const FString Outcome = bMinionsWon
+			? FString::Printf(TEXT("%s cleared in %.1fs!"), *GetZoneDisplayName(Zone), BattleTime)
+			: FString::Printf(TEXT("Battle lost on %s after %.1fs."), *GetStageLabel(), BattleTime);
 		BoundCoreMenu->SetBattleTimerText(BattleTime);
-		BoundCoreMenu->LogToScreen(FString::Printf(TEXT("Battle %s in %.1fs."), bMinionsWon ? TEXT("won") : TEXT("lost"), BattleTime));
-
-		if (BattleKills.Num() > 0)
-		{
-			BoundCoreMenu->SetWarningText(BuildBattleKillsMessage());
-		}
+		BoundCoreMenu->LogToScreen(Outcome);
+		BoundCoreMenu->SetWarningText(BattleKills.Num() > 0 ? BuildBattleKillsMessage() + TEXT("\n") + Outcome : Outcome);
 	}
 
 	OnBattleEndedEvent.Broadcast(bMinionsWon, BattleTime);
+}
+
+FString UBattleManager::GetStageLabel() const
+{
+	return FString::Printf(TEXT("%s stage %d/%d"), *GetZoneDisplayName(Zone), StageIndex + 1, Zone.GetStageCount());
 }

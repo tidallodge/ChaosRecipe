@@ -179,6 +179,48 @@ public:
 	void HandleClicked();
 };
 
+// Carries the Zone_DT zone a dynamically created WBP_SingleButton in MapVertBox stands for, since UButton::OnClicked
+// takes no parameters and can't otherwise identify its sender.
+UCLASS()
+class UZoneButtonProxy : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY()
+	FString ZoneId;
+
+	UPROPERTY()
+	FText ZoneName;
+
+	UPROPERTY()
+	TObjectPtr<UCoreMenu> OwningMenu;
+
+	UFUNCTION()
+	void HandleClicked();
+};
+
+// Keeps one enemy's HP bar (made by UCoreMenu::SetBattleEnemies) in step with its health, since the enemy's
+// OnHealthChangedEvent doesn't say which enemy it's from.
+UCLASS()
+class UEnemyHPBarProxy : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY()
+	TObjectPtr<UEnemy> Enemy;
+
+	UPROPERTY()
+	TObjectPtr<UProgressBar> HPBar;
+
+	UPROPERTY()
+	TObjectPtr<UCoreMenu> OwningMenu;
+
+	UFUNCTION()
+	void HandleHealthChanged(float CurrentHealth, float MaxHealth, float CurrentOvershield);
+};
+
 // One damage number shown in a FDamageNumberStack.
 USTRUCT()
 struct FDamageNumber
@@ -223,15 +265,18 @@ enum class ECoreMenuWindow : uint8
 	PlayerStash,
 	MinionStash,
 	ActiveItemText,
+	Map,
 };
 
 // The part of the screen a window takes up. Only one window per bucket is shown at a time: showing a window hides
-// every other window in its bucket.
+// every other window in its bucket. A FullScreen window takes up the whole screen, so it's never shown alongside any
+// other window: showing one hides every MainWindows and SideWindows window too, and showing one of those hides it.
 UENUM()
 enum class ECoreMenuWindowBucket : uint8
 {
 	MainWindows,
 	SideWindows,
+	FullScreen,
 };
 
 // One ECoreMenuWindow's registration: its bucket and the panel(s) shown and hidden for it.
@@ -268,6 +313,8 @@ class CHAOSRECIPE_API UCoreMenu : public UUserWidget
 	friend class UMinionButtonProxy;
 	friend class UMinionStashButtonProxy;
 	friend class UHireShopMinionButtonProxy;
+	friend class UZoneButtonProxy;
+	friend class UEnemyHPBarProxy;
 
 public:
 
@@ -379,12 +426,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Combat")
 	UPlayerMinion* GetSelectedMinion() const { return SelectedMinion; }
 
-	// Same as SetSelectedMinion, for BattleEnemyHPBar/BattleEnemyHPText.
+	// Shows an HP bar for each of Enemies, a copy of BattleEnemyHPBar stacked where it was, kept updated as their
+	// health changes, and the damage of every hit any of them takes as a number where BattleEnemyHPText was. Replaces
+	// the previous enemies' bars. Called by BattleManager whenever a stage's enemy group spawns.
 	UFUNCTION(BlueprintCallable, Category = "Combat")
-	void SetSelectedEnemy(UEnemy* Enemy);
-
-	UFUNCTION(BlueprintCallable, Category = "Combat")
-	UEnemy* GetSelectedEnemy() const { return SelectedEnemy; }
+	void SetBattleEnemies(const TArray<UEnemy*>& Enemies);
 
 	// Rebuilds MinionButtonsVertBox with a WBP_MinionButton for each of Minions in the active party, up to
 	// MaxMinionButtons, showing its class's MinionIcon and ClassName, and the minion stash with one for each of the
@@ -403,6 +449,10 @@ public:
 	// loaded, rerolled or one is hired. A selected listing that's no longer offered is deselected.
 	UFUNCTION(BlueprintCallable, Category = "Hire Shop")
 	void SetHireShopMinions(const TArray<EMinionClass>& MinionClasses, const TArray<FString>& MinionUUIDs);
+
+	// The Zone_DT ZoneId of the zone last picked on the map (empty if none has been yet).
+	UFUNCTION(BlueprintCallable, Category = "Zone")
+	FString GetActiveZoneId() const { return ActiveZoneId; }
 
 	// Shows BattleTime (seconds since the battle started) as "M:SS.s" in BattleTimerText, if the widget
 	// blueprint has one. Called by BattleManager every battle tick.
@@ -483,9 +533,10 @@ protected:
 	// item with that currency (bound by ItemHandler, via GetActiveItemRollButton)
 	UPROPERTY(meta = (BindWidget))
 	UUserWidget* ActiveItemRollButton;
-	// Nested in BattleMinionVertBox/BattleEnemyVertBox; driven by the selected minion/enemy (SetSelectedMinion/SetSelectedEnemy).
-	// The HP texts are swapped out for damage number stacks at runtime (see InitDamageNumberStack) and only
-	// kept as the look those numbers copy.
+	// Nested in BattleMinionVertBox/BattleEnemyVertBox; driven by the selected minion (SetSelectedMinion) and the
+	// battle's enemies (SetBattleEnemies). The HP texts are swapped out for damage number stacks at runtime (see
+	// InitDamageNumberStack), and BattleEnemyHPBar for a box of one bar per enemy (EnemyHPBarsBox); they're only kept
+	// as the look those numbers and bars copy.
 	UPROPERTY(meta = (BindWidget))
 	UProgressBar* BattleMinionHPBar;
 	UPROPERTY(meta = (BindWidget))
@@ -530,6 +581,11 @@ protected:
 	UButton* HireShopRerollButton;
 	UPROPERTY(meta = (BindWidget))
 	UButton* HireShopHireButton;
+	// Toggles the Map window (MapVertBox), which lists a WBP_SingleButton for each Zone_DT zone (PopulateMap)
+	UPROPERTY(meta = (BindWidget))
+	UButton* MapButton;
+	UPROPERTY(meta = (BindWidget))
+	UPanelWidget* MapVertBox;
 
 	// Click handler for SellButton
 	UFUNCTION()
@@ -633,6 +689,15 @@ protected:
 	// or warns the player if no hire shop minion is selected
 	UFUNCTION()
 	void OnHireShopHireButtonClicked();
+	// Click handler for MapButton; toggles the Map window
+	UFUNCTION()
+	void OnMapButtonClicked();
+	// Adds a WBP_SingleButton showing each Zone_DT zone's ZoneName to MapVertBox, after whatever WBP_CoreMenu already
+	// has in it. Called once, in NativeOnInitialized, since Zone_DT doesn't change while the game runs.
+	void PopulateMap();
+	// Click handler for a zone button in MapVertBox; makes ZoneId the active zone and says so in WarningsTextBox
+	UFUNCTION()
+	void OnZoneButtonClicked(FString ZoneId, FText ZoneName);
 	// Replaces the minion buttons in HireShopButtonsVertBox with a WBP_MinionButton for each of CurrentHireShopMinions,
 	// showing its class's MinionIcon and ClassName, wrapped in a selection border. Clicking one selects it
 	// (OnHireShopMinionButtonClicked).
@@ -659,7 +724,8 @@ protected:
 	// NativeOnInitialized.
 	void RegisterWindows();
 	void RegisterWindow(ECoreMenuWindow Window, ECoreMenuWindowBucket Bucket, const TArray<UPanelWidget*>& Panels, bool bIncludeChildren = true);
-	// Shows Window, first hiding every other window in its bucket.
+	// Shows Window, first hiding every other window in its bucket, and any FullScreen window. A FullScreen window hides
+	// every other window instead.
 	void ShowWindow(ECoreMenuWindow Window);
 	void HideWindow(ECoreMenuWindow Window);
 	bool IsWindowVisible(ECoreMenuWindow Window) const;
@@ -675,7 +741,7 @@ protected:
 	// Sets ActiveItemImage to the selected item's icon.
 	void UpdateActiveItemImage();
 	// Called once a window has been hidden: with an item selected, each active item window comes back in its
-	// bucket if nothing else is showing there now.
+	// bucket if nothing else is showing there now. Nothing comes back while a FullScreen window is showing.
 	void RefreshActiveItemDisplay();
 	// Sets SelectedItemUUID and moves the white selection border onto that item's icon in the shop/stash grids.
 	void SetSelectedItemUUID(const FString& ItemUUID);
@@ -838,6 +904,14 @@ protected:
 	UPROPERTY()
 	FString SelectedHireShopMinionUUID;
 
+	// Keeps the zone buttons' proxies alive (and their click bindings valid).
+	UPROPERTY()
+	TArray<TObjectPtr<UZoneButtonProxy>> ZoneButtonProxies;
+
+	// The Zone_DT ZoneId of the zone last picked on the map. Set via OnZoneButtonClicked.
+	UPROPERTY()
+	FString ActiveZoneId;
+
 	// Every window ShowWindow/HideWindow manage, filled in by RegisterWindows.
 	UPROPERTY()
 	TMap<ECoreMenuWindow, FCoreMenuWindow> Windows;
@@ -855,17 +929,15 @@ protected:
 	float WarningTextAge = 0.f;
 	float WarningTextDisplaySeconds = 0.f;
 
-	// Bound to the selected minion's/enemy's OnHealthChangedEvent by SetSelectedMinion/SetSelectedEnemy.
+	// Bound to the selected minion's OnHealthChangedEvent by SetSelectedMinion.
 	UFUNCTION()
 	void OnSelectedMinionHealthChanged(float CurrentHealth, float MaxHealth, float CurrentOvershield);
-	UFUNCTION()
-	void OnSelectedEnemyHealthChanged(float CurrentHealth, float MaxHealth, float CurrentOvershield);
 
-	// Bound to the selected minion's/enemy's OnHitTakenEvent by SetSelectedMinion/SetSelectedEnemy.
+	// Bound to the selected minion's / every battle enemy's OnHitTakenEvent by SetSelectedMinion/SetBattleEnemies.
 	UFUNCTION()
 	void OnSelectedMinionHitTaken(const FCombatHitResult& HitResult);
 	UFUNCTION()
-	void OnSelectedEnemyHitTaken(const FCombatHitResult& HitResult);
+	void OnBattleEnemyHitTaken(const FCombatHitResult& HitResult);
 
 	// Fills HPBar to Current / Max, with any overshield added to both sides. While there's overshield the
 	// bar uses ShieldedHPBarColor, otherwise UnshieldedBarColor. A MaxHealth of 0 (e.g. a minion/enemy that
@@ -876,8 +948,12 @@ protected:
 	// Empties HPBar and puts it back to UnshieldedBarColor, for when nothing is selected.
 	void ClearHealthDisplay(UProgressBar* HPBar, const FLinearColor& UnshieldedBarColor);
 
-	// Swaps HPText out of the layout for an empty vertical box in the same spot (same slot settings), which
-	// becomes Stack's Box, and keeps HPText as Stack's Template. Must run before the Slate widgets are built.
+	// Swaps Widget out of the layout for an empty vertical box in the same spot (same index and slot settings) and
+	// returns the box, or null if Widget has no parent panel. Must run before the Slate widgets are built.
+	UVerticalBox* SwapForVerticalBox(UWidget* Widget);
+
+	// Swaps HPText out of the layout for a vertical box (SwapForVerticalBox), which becomes Stack's Box, and keeps
+	// HPText as Stack's Template.
 	void InitDamageNumberStack(UTextBlock* HPText, FDamageNumberStack& Stack);
 
 	// Adds the damage HitResult did as a new number at the bottom of Stack. Hits that did no damage
@@ -894,6 +970,18 @@ protected:
 
 	UPROPERTY()
 	FDamageNumberStack EnemyDamageNumbers;
+
+	// Put in BattleEnemyHPBar's place in NativeOnInitialized; holds one copy of it per battle enemy (SetBattleEnemies).
+	UPROPERTY()
+	TObjectPtr<UVerticalBox> EnemyHPBarsBox;
+
+	// One per bar in EnemyHPBarsBox, each keeping its bar's binding to its enemy.
+	UPROPERTY()
+	TArray<TObjectPtr<UEnemyHPBarProxy>> EnemyHPBarProxies;
+
+	// Gap (px) between the enemy HP bars in EnemyHPBarsBox.
+	UPROPERTY(EditAnywhere, Category = "Combat")
+	float EnemyHPBarSpacing = 4.f;
 
 	// Seconds each damage number takes to fade from fully visible to gone. Every number fades on its own
 	// clock, so several hits close together show as a stack that empties from the top.
@@ -925,8 +1013,5 @@ protected:
 
 	UPROPERTY()
 	TObjectPtr<UPlayerMinion> SelectedMinion;
-
-	UPROPERTY()
-	TObjectPtr<UEnemy> SelectedEnemy;
 
 };

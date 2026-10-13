@@ -6,14 +6,17 @@
 #include "TimerManager.h"
 #include "CombatTypes.h"
 #include "EnemyStruct.h"
+#include "ZoneStruct.h"
 #include "BattleManager.generated.h"
 
 class UCoreMenu;
 class UMinionHandler;
+class UPlayerInventory;
 class UPlayerMinion;
 class UEnemy;
 
-// Broadcast once when a battle finishes. bMinionsWon is false for a loss or a timeout.
+// Broadcast once when a battle (a run through a zone's stages) finishes. bMinionsWon is true only if every stage was
+// cleared; false for a loss or a timeout.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnBattleEndedEvent, bool, bMinionsWon, float, BattleTime);
 
 UCLASS()
@@ -22,7 +25,8 @@ class CHAOSRECIPE_API UBattleManager : public UObject
 	GENERATED_BODY()
 
 public:
-	// Starts a battle whenever CoreMenu's BattlePlayButton is clicked, and shows the battle time there.
+	// Starts a battle in CoreMenu's active zone whenever its BattlePlayButton is clicked, and shows the battle time
+	// and each stage's enemies there.
 	UFUNCTION()
 	void BindToCoreMenuEvents(UCoreMenu* CoreMenu);
 
@@ -30,11 +34,14 @@ public:
 	UFUNCTION()
 	void BindToMinionHandler(UMinionHandler* MinionHandler);
 
-	// Who the active party fights in every battle from now on. Takes effect at the next StartBattle.
-	void SetEnemies(const TArray<UEnemy*>& InEnemies);
+	// Lets every enemy spawned from now on grant the player its drops when it's killed.
+	UFUNCTION()
+	void BindToPlayerInventory(UPlayerInventory* PlayerInventory);
 
-	// Sends the active party in against the enemies, restoring every combatant to full, resetting the battle timer
-	// to 0 and starting to simulate. Ignored while a battle is already running.
+	// Sends the active party through every stage of CoreMenu's active zone in order: each stage spawns a new random
+	// enemy group (FZoneStruct::RollEnemyGroup), and clearing it moves straight on to the next. The party starts at full
+	// health and keeps whatever damage it takes from stage to stage, until the battle ends: by clearing the last stage,
+	// losing every minion, or a stage timing out. Ignored while a battle is already running.
 	UFUNCTION(BlueprintCallable, Category = "Battle")
 	void StartBattle();
 
@@ -45,9 +52,13 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Battle")
 	bool IsBattleRunning() const { return bBattleRunning; }
 
-	// Seconds since the current (or last) battle started.
+	// Seconds since the current (or last) battle started, across all of its stages.
 	UFUNCTION(BlueprintPure, Category = "Battle")
 	float GetBattleTime() const { return BattleTime; }
+
+	// Which of the zone's stages the current (or last) battle is on, from 0.
+	UFUNCTION(BlueprintPure, Category = "Battle")
+	int32 GetStageIndex() const { return StageIndex; }
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnBattleEndedEvent OnBattleEndedEvent;
@@ -66,7 +77,7 @@ protected:
 		ICombatant* Target = nullptr;
 	};
 
-	// An enemy killed during the current battle and what it dropped, shown once the battle ends.
+	// An enemy killed during the current stage and what it dropped, shown once the stage ends.
 	struct FBattleKill
 	{
 		FString EnemyName;
@@ -83,8 +94,13 @@ protected:
 	// "<EnemyName> Slain: +<Gold> Gold, +<Count> <CurrencyName>, ..." with one line per entry in BattleKills.
 	FString BuildBattleKillsMessage() const;
 
+	// Spawns stage InStageIndex's enemy group from Zone (replacing the last stage's enemies), shows it in CoreMenu, and
+	// lines it up against the party as it is now, everyone ready to act. Returns false if no enemy could be spawned.
+	bool StartStage(int32 InStageIndex);
+
 	// Runs every BattleTickInterval while a battle is going: advances BattleTime, lets every combatant whose
-	// cooldown is up act (in the order they became ready), and ends the battle once a side is defeated.
+	// cooldown is up act (in the order they became ready), moves on to the next stage once one is cleared, and ends
+	// the battle once the party is defeated, the last stage is cleared, or a stage takes too long.
 	void TickBattle();
 
 	// The living combatant whose cooldown came up earliest at or before BattleTime, or null if none are ready.
@@ -98,22 +114,34 @@ protected:
 
 	bool IsSideDefeated(bool bMinionSide) const;
 
-	// Ends the battle if either side is fully defeated. Returns true if it did.
+	// Once a side is fully defeated: the party losing ends the battle, and the enemies losing starts the next stage,
+	// or ends the battle as won after the last one. Returns true if the battle ended.
 	bool TryEndBattle();
 
+	// Stops the battle, puts the party back to full health, and says how it went.
 	void EndBattle(bool bMinionsWon);
 
-	// The active party as it stood when the current (or last) battle started.
+	// "<ZoneName> stage 2/5", for messages.
+	FString GetStageLabel() const;
+
+	// The zone the current (or last) battle is in, loaded from Zone_DT when it started, and which of its stages it's on.
+	UPROPERTY()
+	FZoneStruct Zone;
+
+	int32 StageIndex = 0;
+
+	// The active party as it stood when the current (or last) battle started. It keeps its health between stages.
 	UPROPERTY()
 	TArray<TObjectPtr<UPlayerMinion>> Minions;
 
+	// The current stage's enemy group, spawned when the stage started.
 	UPROPERTY()
 	TArray<TObjectPtr<UEnemy>> Enemies;
 
-	// Rebuilt from Minions and Enemies at the start of each battle (minions first, so they win ties).
+	// Rebuilt from Minions and Enemies at the start of each stage (minions first, so they win ties).
 	TArray<FBattleCombatant> Combatants;
 
-	// Cleared at the start of each battle.
+	// Cleared at the start of each stage.
 	TArray<FBattleKill> BattleKills;
 
 	UPROPERTY()
@@ -122,9 +150,15 @@ protected:
 	UPROPERTY()
 	TObjectPtr<UMinionHandler> BoundMinionHandler = nullptr;
 
+	UPROPERTY()
+	TObjectPtr<UPlayerInventory> BoundPlayerInventory = nullptr;
+
 	FTimerHandle BattleTickHandle;
 
 	bool bBattleRunning = false;
 	float BattleTime = 0.f;
 	double BattleStartWorldTime = 0.0;
+
+	// BattleTime when the current stage started, for timing it out after MaxStageDuration.
+	float StageStartTime = 0.f;
 };
