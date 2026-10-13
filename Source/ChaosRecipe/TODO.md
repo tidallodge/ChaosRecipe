@@ -74,18 +74,36 @@ MISC
         - Eery Glade
         - Dread Thicket
         - WildWood
+            - Enemies
+                - Deranged Vagrant
+                - Wolf
+                - Cultist
+            - Boss
+                - Cutlist Group
     - Mountain
         - approach
         - ascent
         - ravine
         - ridge
         - summit
+            - Enemies
+                - Sentient Rock
+                - Harpy
+                - Shaman
+            - Boss
+                - Golem
     - lowlands
         - steppes
         - plains
         - burial site
         - bog
         - some kind of tree shrine area (spruce or larch trees)
+            - Enemies
+                - Wildkin
+                - Necromancer
+                - Raised Dead
+            - Boss
+                - Chimeric Abomination 
     - shallows
         -
     - the deep
