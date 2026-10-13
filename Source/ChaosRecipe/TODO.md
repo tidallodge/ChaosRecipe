@@ -65,3 +65,30 @@ MISC
         - inscription | add / subtract
         - glyph | reroll
         - effigy | exotic currency
+
+
+- Areas + Zones
+    - Woods
+        - Forest Edge
+        - The Woods
+        - Eery Glade
+        - Dread Thicket
+        - WildWood
+    - Mountain
+        - approach
+        - ascent
+        - ravine
+        - ridge
+        - summit
+    - lowlands
+        - steppes
+        - plains
+        - burial site
+        - bog
+        - some kind of tree shrine area (spruce or larch trees)
+    - shallows
+        -
+    - the deep
+        -   
+    - abyssal plane
+        -
