@@ -33,6 +33,9 @@ struct FModifierTags
     bool Attack;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
+    bool Spell;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
     bool Defense;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
