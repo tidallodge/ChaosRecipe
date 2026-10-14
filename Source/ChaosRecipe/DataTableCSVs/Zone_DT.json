@@ -1,11 +1,80 @@
 [
 	{
-		"Name": "NewRow",
+		"Name": "woods_01",
 		"ZoneId": "NSLOCTEXT(\"[28151B9151061C94B1D49780E34C02F7]\", \"EC19D1FB4993862718DFD495D030AD10\", \"woods_01\")",
 		"ZoneName": "NSLOCTEXT(\"[28151B9151061C94B1D49780E34C02F7]\", \"A0178EE34C97DDEBB2609584F23DFB13\", \"woods_01\")",
 		"Stages": [
 			{
-				"RequiredProgress": 0,
+				"GroupSize":
+				{
+					"X": 1,
+					"Y": 1
+				},
+				"Enemies": [
+					{
+						"EnemyId": "woods_vagrant_01",
+						"SpawnWeight": 1,
+						"MinPerGroup": 1,
+						"MaxPerGroup": 4
+					}
+				]
+			},
+			{
+				"GroupSize":
+				{
+					"X": 2,
+					"Y": 2
+				},
+				"Enemies": [
+					{
+						"EnemyId": "woods_vagrant_01",
+						"SpawnWeight": 1,
+						"MinPerGroup": 1,
+						"MaxPerGroup": 1
+					},
+					{
+						"EnemyId": "woods_wolf_01",
+						"SpawnWeight": 1,
+						"MinPerGroup": 1,
+						"MaxPerGroup": 0
+					}
+				]
+			},
+			{
+				"GroupSize":
+				{
+					"X": 2,
+					"Y": 2
+				},
+				"Enemies": [
+					{
+						"EnemyId": "woods_cultist_01",
+						"SpawnWeight": 1,
+						"MinPerGroup": 1,
+						"MaxPerGroup": 0
+					},
+					{
+						"EnemyId": "woods_vagrant_01",
+						"SpawnWeight": 0.5,
+						"MinPerGroup": 0,
+						"MaxPerGroup": 1
+					},
+					{
+						"EnemyId": "woods_wolf_01",
+						"SpawnWeight": 0.5,
+						"MinPerGroup": 0,
+						"MaxPerGroup": 1
+					}
+				]
+			}
+		]
+	},
+	{
+		"Name": "woods_02",
+		"ZoneId": "NSLOCTEXT(\"[28151B9151061C94B1D49780E34C02F7]\", \"0B68B48B493D35AFD6BDFDA0972E233D\", \"woods_02\")",
+		"ZoneName": "NSLOCTEXT(\"[28151B9151061C94B1D49780E34C02F7]\", \"2B63C8DA4AABBAFF7BAD5594C89A9AC5\", \"woods_02\")",
+		"Stages": [
+			{
 				"GroupSize":
 				{
 					"X": 1,
@@ -21,7 +90,6 @@
 				]
 			},
 			{
-				"RequiredProgress": 1,
 				"GroupSize":
 				{
 					"X": 1,
@@ -33,6 +101,51 @@
 						"SpawnWeight": 1,
 						"MinPerGroup": 1,
 						"MaxPerGroup": 2
+					}
+				]
+			},
+			{
+				"GroupSize":
+				{
+					"X": 2,
+					"Y": 2
+				},
+				"Enemies": [
+					{
+						"EnemyId": "woods_shaman_001",
+						"SpawnWeight": 1,
+						"MinPerGroup": 2,
+						"MaxPerGroup": 0
+					}
+				]
+			},
+			{
+				"GroupSize":
+				{
+					"X": 2,
+					"Y": 3
+				},
+				"Enemies": [
+					{
+						"EnemyId": "woods_shaman_001",
+						"SpawnWeight": 1,
+						"MinPerGroup": 2,
+						"MaxPerGroup": 0
+					}
+				]
+			},
+			{
+				"GroupSize":
+				{
+					"X": 3,
+					"Y": 3
+				},
+				"Enemies": [
+					{
+						"EnemyId": "woods_shaman_001",
+						"SpawnWeight": 1,
+						"MinPerGroup": 3,
+						"MaxPerGroup": 0
 					}
 				]
 			}

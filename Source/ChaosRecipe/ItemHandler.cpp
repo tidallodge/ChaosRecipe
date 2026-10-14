@@ -14,14 +14,46 @@
 #include "BaseItemStruct.h"
 #include "BaseWeaponStruct.h"
 #include "BaseArmorStruct.h"
+#include "BaseJewelryStruct.h"
 #include "ItemInstanceManager.h"
+#include "DataTableHelpers.h"
 #include "JsonObjectConverter.h"
 #include "Engine/Engine.h"
 
 namespace
 {
-	// Builds the modifiers text for ActiveItemTextBox, matching the layout CoreMenu uses when a
-	// stash item is selected (OnSingleLoadItemButtonClicked): one "<AffixType>:" header per non-empty
+	// Which stats struct (and so which cache, data table and saved ItemType) an item class is built into:
+	// Shields share armor's (BaseArmor_DT), and Misc items share jewelry's (BaseJewelry_Misc_DT).
+	EItemClass GetStatsItemClass(EItemClass ItemClass)
+	{
+		switch (ItemClass)
+		{
+		case EItemClass::Armor:
+		case EItemClass::Shield:  return EItemClass::Armor;
+		case EItemClass::Jewelry:
+		case EItemClass::Misc:    return EItemClass::Jewelry;
+		case EItemClass::Weapon:
+		default:                  return EItemClass::Weapon;
+		}
+	}
+
+	// Reads a stash item's stats back out of its SavedItems.json entry (rolled modifiers and all), keyed to
+	// ItemUUID. Returns false, leaving OutStats empty, if it can't be read.
+	template <typename TItemStats>
+	bool LoadSavedItemStats(const TSharedPtr<FJsonObject>& SavedItem, const FString& ItemUUID, TItemStats& OutStats)
+	{
+		OutStats = TItemStats();
+		if (!SavedItem.IsValid() || !FJsonObjectConverter::JsonObjectToUStruct(SavedItem.ToSharedRef(), &OutStats))
+		{
+			OutStats = TItemStats();
+			return false;
+		}
+
+		OutStats.UUID = FText::FromString(ItemUUID);
+		return true;
+	}
+
+	// Builds the modifiers text for ActiveItemTextBox: one "<AffixType>:" header per non-empty
 	// group (Implicit, then Prefixes, then Suffixes), each followed by indented "  Name (value)"
 	// lines, and falling back to "Modifiers: none\n" when there are no modifiers at all. Looks each
 	// ModifierId up in ModifierPool to display its ModifierName instead of the raw id.
@@ -178,52 +210,58 @@ void UItemHandler::OnShopItemSelected(FString ItemId, FString ItemUUID)
     OnItemSelected(ItemId, ItemUUID);
 }
 
-void UItemHandler::OnItemSelected(const FString& ItemId, const FString& ItemUUID)
+bool UItemHandler::OnItemSelected(const FString& ItemId, const FString& ItemUUID)
 {
     if (ItemId.IsEmpty())
     {
         UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Received empty ItemId for item selection."));
-        return;
+        return false;
     }
 
     FBaseItemStruct ItemData;
     if (!LoadItemDataRow(ItemId, ItemData))
     {
         UE_LOG(LogTemp, Warning, TEXT("ItemHandler: No item found in BaseItem_DT for ItemId '%s'."), *ItemId);
-        return;
+        return false;
     }
 
     LogItemData(ItemData);
 
-    const bool bIsArmor = ItemData.ItemClass == EItemClass::Armor || ItemData.ItemClass == EItemClass::Shield;
-    LastSelectedItemClass = bIsArmor ? EItemClass::Armor : EItemClass::Weapon;
+    LastSelectedItemClass = GetStatsItemClass(ItemData.ItemClass);
 
-    // Pre-seed the relevant cache with an existing UUID (e.g. a saved stash item) so the
-    // GetWeaponStatsForItem/GetArmorStatsForItem call below preserves it instead of leaving it
-    // empty (which would make a later Save mint a brand new UUID rather than overwriting this item).
+    // A stash item is cached as it was saved, so Randomize/Save edit it in place rather than starting it over
+    // from its base stats (which would throw away the modifiers it has already rolled).
+    const TSharedPtr<FJsonObject> SavedItem = SavedItemsManager.GetSavedItemJson(ItemUUID);
+
+    // Pre-seed the relevant cache with an existing UUID (e.g. a shop listing's) so the
+    // Get*StatsForItem call below preserves it instead of leaving it empty (which would make a
+    // later Save mint a brand new UUID rather than overwriting this item).
     if (!ItemUUID.IsEmpty())
     {
-        if (bIsArmor)
-        {
-            CachedArmorStats.UUID = FText::FromString(ItemUUID);
-        }
-        else
-        {
-            CachedWeaponStats.UUID = FText::FromString(ItemUUID);
-        }
+        GetActiveItemUUID() = FText::FromString(ItemUUID);
     }
+
+    // So a saved item's modifiers display by name.
+    EnsureModifierPoolLoaded();
 
     const FString ItemName = ItemData.ItemName.ToString();
     FString Message;
     FString ActiveItemText;
 
-    if (!bIsArmor)
+    if (LastSelectedItemClass == EItemClass::Weapon)
     {
-        CachedWeaponStats = GetWeaponStatsForItem(ItemId);
+        if (SavedItem.IsValid())
+        {
+            LoadSavedItemStats(SavedItem, ItemUUID, CachedWeaponStats);
+        }
+        else
+        {
+            CachedWeaponStats = GetWeaponStatsForItem(ItemId);
+        }
         if (CachedWeaponStats.ItemId.IsEmpty())
         {
             UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Failed to cache weapon stats for ItemId '%s'."), *ItemId);
-            return;
+            return false;
         }
 
         FBaseWeaponStruct WeaponData;
@@ -289,7 +327,7 @@ void UItemHandler::OnItemSelected(const FString& ItemId, const FString& ItemUUID
 
         ActiveItemText = BuildWeaponDisplayText(ItemName, CachedWeaponStats);
     }
-    else
+    else if (LastSelectedItemClass == EItemClass::Armor)
     {
         FBaseArmorStruct ArmorData;
         if (LoadArmorDataRow(ItemId, ArmorData))
@@ -297,11 +335,18 @@ void UItemHandler::OnItemSelected(const FString& ItemId, const FString& ItemUUID
             LogArmorData(ArmorData);
         }
 
-        CachedArmorStats = GetArmorStatsForItem(ItemId);
+        if (SavedItem.IsValid())
+        {
+            LoadSavedItemStats(SavedItem, ItemUUID, CachedArmorStats);
+        }
+        else
+        {
+            CachedArmorStats = GetArmorStatsForItem(ItemId);
+        }
         if (CachedArmorStats.ItemId.IsEmpty())
         {
             UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Failed to cache armor stats for ItemId '%s'."), *ItemId);
-            return;
+            return false;
         }
 
         const FString DefenseSummary = FString::Printf(
@@ -320,6 +365,35 @@ void UItemHandler::OnItemSelected(const FString& ItemId, const FString& ItemUUID
 
         ActiveItemText = BuildArmorDisplayText(ItemName, CachedArmorStats);
     }
+    else
+    {
+        FBaseJewelryStruct JewelryData;
+        if (LoadJewelryDataRow(ItemId, JewelryData))
+        {
+            LogJewelryData(JewelryData);
+        }
+
+        if (SavedItem.IsValid())
+        {
+            LoadSavedItemStats(SavedItem, ItemUUID, CachedJewelryStats);
+        }
+        else
+        {
+            CachedJewelryStats = GetJewelryStatsForItem(ItemId);
+        }
+        if (CachedJewelryStats.ItemId.IsEmpty())
+        {
+            UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Failed to cache jewelry stats for ItemId '%s'."), *ItemId);
+            return false;
+        }
+
+        Message = FString::Printf(
+            TEXT("ItemHandler selected jewelry stats:\nUUID:%s\nGoldValue:%.0f"),
+            *CachedJewelryStats.UUID.ToString(),
+            GetDisplayGoldValue(CachedJewelryStats));
+
+        ActiveItemText = BuildJewelryDisplayText(ItemName, CachedJewelryStats);
+    }
 
     if (BoundCoreMenu)
     {
@@ -328,6 +402,7 @@ void UItemHandler::OnItemSelected(const FString& ItemId, const FString& ItemUUID
     }
 
     UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
+    return true;
 }
 
 FString UItemHandler::BuildWeaponDisplayText(const FString& ItemName, const FItemWeaponStatsStruct& WeaponStats) const
@@ -359,6 +434,30 @@ FString UItemHandler::BuildArmorDisplayText(const FString& ItemName, const FItem
             ArmorStats.ImplicitModifiers, ArmorStats.PrefixModifiers, ArmorStats.SuffixModifiers));
 }
 
+FString UItemHandler::BuildJewelryDisplayText(const FString& ItemName, const FItemJewelryStatsStruct& JewelryStats) const
+{
+    return FString::Printf(
+        TEXT("%s\nGold Value: %.0f\n%s"),
+        *ItemName,
+        GetDisplayGoldValue(JewelryStats),
+        *BuildGroupedModifiersText(ItemModifierAssigner.GetModifierPool(),
+            JewelryStats.ImplicitModifiers, JewelryStats.PrefixModifiers, JewelryStats.SuffixModifiers));
+}
+
+void UItemHandler::EnsureModifierPoolLoaded()
+{
+    if (ItemModifierAssigner.GetModifierPoolCount() > 0)
+    {
+        return;
+    }
+
+    TArray<FItemModifierStruct> AllItemModifiers;
+    if (LoadAllItemModifierRows(AllItemModifiers))
+    {
+        ItemModifierAssigner.SetModifierPool(AllItemModifiers);
+    }
+}
+
 FString UItemHandler::GetItemDisplayText(const FString& ItemId, const FString& ItemUUID)
 {
     // A saved item's ItemId comes from its save, so the stash only needs to pass its UUID.
@@ -375,30 +474,31 @@ FString UItemHandler::GetItemDisplayText(const FString& ItemId, const FString& I
         return FString();
     }
 
-    // Randomizing is what normally loads the modifier pool, so without this a saved item's modifiers would show
-    // as raw ids until something had been randomized this session.
-    if (ItemModifierAssigner.GetModifierPoolCount() == 0)
-    {
-        TArray<FItemModifierStruct> AllItemModifiers;
-        if (LoadAllItemModifierRows(AllItemModifiers))
-        {
-            ItemModifierAssigner.SetModifierPool(AllItemModifiers);
-        }
-    }
+    EnsureModifierPoolLoaded();
 
     const FString ItemName = ItemData.ItemName.ToString();
-    if (ItemData.ItemClass == EItemClass::Armor || ItemData.ItemClass == EItemClass::Shield)
+    const EItemClass StatsItemClass = GetStatsItemClass(ItemData.ItemClass);
+    if (StatsItemClass == EItemClass::Armor)
     {
         FItemArmorStatsStruct ArmorStats;
         const bool bHasStats = SavedItem.IsValid()
-            ? FJsonObjectConverter::JsonObjectToUStruct(SavedItem.ToSharedRef(), &ArmorStats)
+            ? LoadSavedItemStats(SavedItem, ItemUUID, ArmorStats)
             : BuildArmorStatsForItem(ResolvedItemId, ArmorStats);
         return bHasStats ? BuildArmorDisplayText(ItemName, ArmorStats) : FString();
     }
 
+    if (StatsItemClass == EItemClass::Jewelry)
+    {
+        FItemJewelryStatsStruct JewelryStats;
+        const bool bHasStats = SavedItem.IsValid()
+            ? LoadSavedItemStats(SavedItem, ItemUUID, JewelryStats)
+            : BuildJewelryStatsForItem(ResolvedItemId, JewelryStats);
+        return bHasStats ? BuildJewelryDisplayText(ItemName, JewelryStats) : FString();
+    }
+
     FItemWeaponStatsStruct WeaponStats;
     const bool bHasStats = SavedItem.IsValid()
-        ? FJsonObjectConverter::JsonObjectToUStruct(SavedItem.ToSharedRef(), &WeaponStats)
+        ? LoadSavedItemStats(SavedItem, ItemUUID, WeaponStats)
         : BuildWeaponStatsForItem(ResolvedItemId, WeaponStats);
     return bHasStats ? BuildWeaponDisplayText(ItemName, WeaponStats) : FString();
 }
@@ -505,36 +605,95 @@ FItemArmorStatsStruct UItemHandler::GetArmorStatsForItem(const FString& ItemId)
     return CachedArmorStats;
 }
 
-FText UItemHandler::GetUUID() const
+bool UItemHandler::BuildJewelryStatsForItem(const FString& ItemId, FItemJewelryStatsStruct& OutJewelryStats) const
 {
-    if (LastSelectedItemClass == EItemClass::Armor)
+    const FText ExistingUUID = OutJewelryStats.UUID;
+
+    FBaseItemStruct BaseItemData;
+    FBaseJewelryStruct JewelryData;
+    if (!LoadItemDataRow(ItemId, BaseItemData) || !LoadJewelryDataRow(ItemId, JewelryData))
     {
-        if (CachedArmorStats.UUID.IsEmpty())
-        {
-            const_cast<UItemHandler*>(this)->SetUUID();
-        }
-        return CachedArmorStats.UUID;
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Unable to build jewelry stats for %s."), *ItemId);
+        return false;
     }
 
-    if (CachedWeaponStats.UUID.IsEmpty())
+    OutJewelryStats.ItemId = BaseItemData.ItemId;
+    OutJewelryStats.ItemLevel = 1;
+    OutJewelryStats.Tags = FTagsStruct();
+    OutJewelryStats.ItemBaseGoldValue = JewelryData.ItemBaseGoldValue;
+    OutJewelryStats.ItemGoldValue = JewelryData.ItemBaseGoldValue;
+    OutJewelryStats.ImplicitModifiers.Empty();
+    OutJewelryStats.PrefixModifiers.Empty();
+    OutJewelryStats.SuffixModifiers.Empty();
+
+    if (!ExistingUUID.IsEmpty())
+    {
+        OutJewelryStats.UUID = ExistingUUID;
+    }
+
+    return true;
+}
+
+FItemJewelryStatsStruct UItemHandler::GetJewelryStatsForItem(const FString& ItemId)
+{
+    const FText ExistingUUID = CachedJewelryStats.UUID;
+    CachedJewelryStats = FItemJewelryStatsStruct();
+    CachedJewelryStats.UUID = ExistingUUID;
+
+    if (!BuildJewelryStatsForItem(ItemId, CachedJewelryStats))
+    {
+        CachedJewelryStats = FItemJewelryStatsStruct();
+    }
+
+    return CachedJewelryStats;
+}
+
+FText& UItemHandler::GetActiveItemUUID()
+{
+    switch (LastSelectedItemClass)
+    {
+    case EItemClass::Armor:   return CachedArmorStats.UUID;
+    case EItemClass::Jewelry: return CachedJewelryStats.UUID;
+    case EItemClass::Weapon:
+    default:                  return CachedWeaponStats.UUID;
+    }
+}
+
+float UItemHandler::GetActiveItemGoldValue() const
+{
+    switch (LastSelectedItemClass)
+    {
+    case EItemClass::Armor:   return GetDisplayGoldValue(CachedArmorStats);
+    case EItemClass::Jewelry: return GetDisplayGoldValue(CachedJewelryStats);
+    case EItemClass::Weapon:
+    default:                  return GetDisplayGoldValue(CachedWeaponStats);
+    }
+}
+
+void UItemHandler::SaveActiveItem(const FString& ItemUUID)
+{
+    switch (LastSelectedItemClass)
+    {
+    case EItemClass::Armor:   SavedItemsManager.SaveItem(ItemUUID, CachedArmorStats);   break;
+    case EItemClass::Jewelry: SavedItemsManager.SaveItem(ItemUUID, CachedJewelryStats); break;
+    case EItemClass::Weapon:
+    default:                  SavedItemsManager.SaveItem(ItemUUID, CachedWeaponStats);  break;
+    }
+}
+
+FText UItemHandler::GetUUID() const
+{
+    if (GetActiveItemUUID().IsEmpty())
     {
         const_cast<UItemHandler*>(this)->SetUUID();
     }
 
-    return CachedWeaponStats.UUID;
+    return GetActiveItemUUID();
 }
 
 void UItemHandler::SetUUID()
 {
-    const FText NewUUID = FText::FromString(FGuid::NewGuid().ToString());
-    if (LastSelectedItemClass == EItemClass::Armor)
-    {
-        CachedArmorStats.UUID = NewUUID;
-    }
-    else
-    {
-        CachedWeaponStats.UUID = NewUUID;
-    }
+    GetActiveItemUUID() = FText::FromString(FGuid::NewGuid().ToString());
 }
 
 void UItemHandler::OnBuyButtonClicked(FString ItemId, FString ItemUUID)
@@ -542,13 +701,21 @@ void UItemHandler::OnBuyButtonClicked(FString ItemId, FString ItemUUID)
     UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Buy button clicked for ItemId '%s'."), *ItemId);
     // UUID was already minted for this listing in PopulateShopGrid and cached on selection
     // (OnItemSelected's ExistingUUID preservation below), so Buy no longer mints one itself.
-    OnItemSelected(ItemId, ItemUUID);
+    // Without stats there's nothing to price the item by or to put in the stash, so the purchase is
+    // rejected rather than charging nothing for an empty item.
+    if (!OnItemSelected(ItemId, ItemUUID))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Couldn't build stats for '%s', so it can't be bought."), *ItemId);
+        if (BoundCoreMenu)
+        {
+            BoundCoreMenu->SetWarningText(TEXT("This item's data couldn't be loaded, so it can't be bought."));
+        }
+        return;
+    }
 
     // OnItemSelected just refreshed whichever cache matches LastSelectedItemClass, so read the
     // purchased item's gold value (post-modifier, same value shown in ActiveItemText) from there.
-    const float BoughtGoldValue = LastSelectedItemClass == EItemClass::Armor
-        ? GetDisplayGoldValue(CachedArmorStats)
-        : GetDisplayGoldValue(CachedWeaponStats);
+    const float BoughtGoldValue = GetActiveItemGoldValue();
 
     const int32 RoundedGoldCost = FMath::RoundToInt(BoughtGoldValue);
     if (BoundPlayerInventory && !BoundPlayerInventory->CanAffordGoldCost(RoundedGoldCost))
@@ -563,14 +730,7 @@ void UItemHandler::OnBuyButtonClicked(FString ItemId, FString ItemUUID)
 
     // Add the purchased item to the player's stash the same way Save does, so it shows up in
     // PlayerStashUniGrid (backed by SavedItems.json) without requiring a separate Save click.
-    if (LastSelectedItemClass == EItemClass::Armor)
-    {
-        SavedItemsManager.SaveItem(ItemUUID, CachedArmorStats);
-    }
-    else
-    {
-        SavedItemsManager.SaveItem(ItemUUID, CachedWeaponStats);
-    }
+    SaveActiveItem(ItemUUID);
 
     OnItemBoughtEvent.Broadcast(ItemId, ItemUUID, BoughtGoldValue);
 
@@ -603,7 +763,7 @@ void UItemHandler::RandomizeActiveItem(const FString& CurrencyId)
 
     // A roll saves the active item, so one that isn't in the stash yet (e.g. a shop item that hasn't been bought)
     // would land there for free.
-    const FText& ActiveItemUUID = LastSelectedItemClass == EItemClass::Armor ? CachedArmorStats.UUID : CachedWeaponStats.UUID;
+    const FText& ActiveItemUUID = GetActiveItemUUID();
     if (!SavedItemsManager.HasSavedItem(ActiveItemUUID.ToString()))
     {
         UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Active item '%s' isn't saved, so it can't be randomized."), *ActiveItemUUID.ToString());
@@ -642,6 +802,10 @@ void UItemHandler::RandomizeActiveItem(const FString& CurrencyId)
     else if (LastSelectedItemClass == EItemClass::Armor)
     {
         bDidRandomize = RandomizeArmorItem(CurrencyId);
+    }
+    else if (LastSelectedItemClass == EItemClass::Jewelry)
+    {
+        bDidRandomize = RandomizeJewelryItem(CurrencyId);
     }
     else
     {
@@ -1181,9 +1345,87 @@ bool UItemHandler::RandomizeArmorItem(const FString& CurrencyId)
     return true;
 }
 
+bool UItemHandler::RandomizeJewelryItem(const FString& CurrencyId)
+{
+    if (CachedJewelryStats.ItemId.IsEmpty())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: No cached jewelry stats available to randomize."));
+        return false;
+    }
+
+    // Load every possible item modifier and hand the full pool to the ModifierAssigner.
+    TArray<FItemModifierStruct> AllItemModifiers;
+    if (LoadAllItemModifierRows(AllItemModifiers))
+    {
+        ItemModifierAssigner.SetModifierPool(AllItemModifiers);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Failed to load modifiers from ItemModifier_DT."));
+    }
+
+    // Resolve this item's class and type, then apply the chosen currency's modifier-modification rules to
+    // whatever is already on the item.
+    const FString RandomizeItemId = CachedJewelryStats.ItemId.ToString();
+    FBaseItemStruct RandomizeItemData;
+    FBaseJewelryStruct RandomizeJewelryData;
+    if (!LoadItemDataRow(RandomizeItemId, RandomizeItemData) || !LoadJewelryDataRow(RandomizeItemId, RandomizeJewelryData))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Could not resolve class/type for '%s' to assign modifiers."), *RandomizeItemId);
+        return false;
+    }
+
+    const FString RandomizeItemType = UEnum::GetValueAsString(RandomizeJewelryData.JewelryType)
+        .RightChop(FString(TEXT("EJewelryType::")).Len());
+
+    FCurrencyStruct Currency;
+    if (!CurrencyManagerInstance.LoadCurrencyDataRow(CurrencyId, Currency))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ItemHandler: unknown currency '%s'."), *CurrencyId);
+        if (BoundCoreMenu)
+        {
+            BoundCoreMenu->SetWarningText(TEXT("Unknown currency."));
+        }
+        return false;
+    }
+
+    const bool bModifiersChanged = ApplyCurrencyToItemModifiers(Currency, RandomizeItemId, RandomizeItemData.ItemClass, RandomizeItemType,
+        CachedJewelryStats.ImplicitModifiers, CachedJewelryStats.PrefixModifiers, CachedJewelryStats.SuffixModifiers);
+
+    if (!bModifiersChanged)
+    {
+        return false;
+    }
+
+    // Jewelry's modifiers all apply to its wearer rather than to stats of its own, so its gold value is all
+    // there is to recompute.
+    CachedJewelryStats.ItemGoldValue = ComputeModifiedGoldValue(CachedJewelryStats.ItemBaseGoldValue,
+        CachedJewelryStats.ImplicitModifiers, CachedJewelryStats.PrefixModifiers, CachedJewelryStats.SuffixModifiers);
+
+    SavedItemsManager.SaveItem(GetUUID().ToString(), CachedJewelryStats);
+
+    const FString Message = FString::Printf(
+        TEXT("ItemHandler randomized jewelry stats:\nUUID:%s\nGoldValue:%.0f"),
+        *CachedJewelryStats.UUID.ToString(),
+        CachedJewelryStats.ItemGoldValue);
+
+    const FString ActiveItemText = BuildJewelryDisplayText(RandomizeItemData.ItemName.ToString(), CachedJewelryStats);
+
+    if (BoundCoreMenu)
+    {
+        BoundCoreMenu->LogToScreen(Message);
+        BoundCoreMenu->SetActiveItemText(ActiveItemText);
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("%s"), *Message);
+
+    return true;
+}
+
 void UItemHandler::RecalculateWeaponLocalDamage()
 {
-    // Local damage starts as the item's base damage, then the rolled modifiers adjust it:
+    // Local damage starts as the item's base damage, then the rolled Local modifiers adjust it (any
+    // other AppliesTo is left for whoever equips the weapon, UPlayerMinion):
     //   - Addition modifiers roll two independent values within their MinMaxRange and add the lower to
     //     the min damage and the higher to the max damage (each scaled by the DamageModifier weight),
     //     so the modifier contributes its own spread.
@@ -1196,7 +1438,7 @@ void UItemHandler::RecalculateWeaponLocalDamage()
         BaseDamage = *FoundBase;
     }
 
-    // Pair every rolled modifier with its data-table row and the value it rolled.
+    // Pair every rolled Local modifier with its data-table row and the value it rolled.
     struct FRolledModifier { const FItemModifierStruct* Row = nullptr; int32 Value = 0; };
     TArray<FRolledModifier> RolledModifiers;
     auto GatherRolled = [this, &RolledModifiers](const TMap<FString, int32>& Modifiers)
@@ -1208,7 +1450,7 @@ void UItemHandler::RecalculateWeaponLocalDamage()
                 {
                     return Modifier.ModifierId.ToString().Equals(Entry.Key, ESearchCase::IgnoreCase);
                 });
-            if (Row)
+            if (Row && Row->AppliesTo == EAppliesToEnum::Local)
             {
                 RolledModifiers.Add({ Row, Entry.Value });
             }
@@ -1218,7 +1460,7 @@ void UItemHandler::RecalculateWeaponLocalDamage()
     GatherRolled(CachedWeaponStats.PrefixModifiers);
     GatherRolled(CachedWeaponStats.SuffixModifiers);
 
-    // AttackRate is derived from scratch here (base rate scaled by every currently-assigned
+    // AttackRate is derived from scratch here (base rate scaled by every currently-assigned Local
     // WeaponAttackRate modifier) rather than accumulated incrementally at roll time, so it stays correct
     // across partial modifier changes (currency add/remove/reroll).
     float BaseAttackRate = 0.f;
@@ -1318,7 +1560,7 @@ void UItemHandler::RecalculateWeaponLocalDamage()
 void UItemHandler::RecalculateArmorDefense()
 {
     // Defense starts from the item's base row (reloaded here since CachedArmorStats.BaseDefense
-    // is itself overwritten below), then the rolled modifiers adjust it the same way weapon damage
+    // is itself overwritten below), then the rolled Local modifiers adjust it the same way weapon damage
     // modifiers do: Addition modifiers roll two independent values within their MinMaxRange and add
     // the lower to the min and the higher to the max (each scaled by the mitigation weight), and
     // Multiplication modifiers then scale the result by (1 + rolled%) for any channel whose
@@ -1330,7 +1572,7 @@ void UItemHandler::RecalculateArmorDefense()
         BaseDefenseValue = ArmorData.BaseDefense;
     }
 
-    // Pair every rolled modifier with its data-table row and the value it rolled.
+    // Pair every rolled Local modifier with its data-table row and the value it rolled.
     struct FRolledModifier { const FItemModifierStruct* Row = nullptr; int32 Value = 0; };
     TArray<FRolledModifier> RolledModifiers;
     auto GatherRolled = [this, &RolledModifiers](const TMap<FString, int32>& Modifiers)
@@ -1342,7 +1584,7 @@ void UItemHandler::RecalculateArmorDefense()
                 {
                     return Modifier.ModifierId.ToString().Equals(Entry.Key, ESearchCase::IgnoreCase);
                 });
-            if (Row)
+            if (Row && Row->AppliesTo == EAppliesToEnum::Local)
             {
                 RolledModifiers.Add({ Row, Entry.Value });
             }
@@ -1441,7 +1683,8 @@ void UItemHandler::OnSaveItem(FString ItemId)
     }
 
     FString Message;
-    if (ItemData.ItemClass == EItemClass::Armor || ItemData.ItemClass == EItemClass::Shield)
+    const EItemClass StatsItemClass = GetStatsItemClass(ItemData.ItemClass);
+    if (StatsItemClass == EItemClass::Armor)
     {
         LastSelectedItemClass = EItemClass::Armor;
         if (CachedArmorStats.ItemId.IsEmpty() || CachedArmorStats.ItemId.ToString() != ItemId)
@@ -1457,6 +1700,23 @@ void UItemHandler::OnSaveItem(FString ItemId)
         const FString UUID = GetUUID().ToString();
         SavedItemsManager.SaveItem(UUID, CachedArmorStats);
         Message = FString::Printf(TEXT("Saved armor item %s (UUID: %s)"), *ItemId, *UUID);
+    }
+    else if (StatsItemClass == EItemClass::Jewelry)
+    {
+        LastSelectedItemClass = EItemClass::Jewelry;
+        if (CachedJewelryStats.ItemId.IsEmpty() || CachedJewelryStats.ItemId.ToString() != ItemId)
+        {
+            CachedJewelryStats = GetJewelryStatsForItem(ItemId);
+        }
+        if (CachedJewelryStats.ItemId.IsEmpty())
+        {
+            UE_LOG(LogTemp, Warning, TEXT("ItemHandler: No cached jewelry stats available to save for ItemId '%s'."), *ItemId);
+            return;
+        }
+
+        const FString UUID = GetUUID().ToString();
+        SavedItemsManager.SaveItem(UUID, CachedJewelryStats);
+        Message = FString::Printf(TEXT("Saved jewelry item %s (UUID: %s)"), *ItemId, *UUID);
     }
     else
     {
@@ -1519,6 +1779,7 @@ void UItemHandler::OnResetGame()
 {
     CachedWeaponStats = FItemWeaponStatsStruct();
     CachedArmorStats = FItemArmorStatsStruct();
+    CachedJewelryStats = FItemJewelryStatsStruct();
     LastSelectedItemClass = EItemClass::Weapon;
 
     SavedItemsManager.ClearAllSavedItems();
@@ -1581,7 +1842,7 @@ bool UItemHandler::LoadWeaponDataRow(const FString& ItemId, FBaseWeaponStruct& O
     {
         if (FBaseWeaponStruct* WeaponRow = WeaponDataTable->FindRow<FBaseWeaponStruct>(RowName, TEXT("ItemHandler::LoadWeaponDataRow"), true))
         {
-            if (WeaponRow->ItemId.ToString().Equals(ItemId, ESearchCase::IgnoreCase))
+            if (WeaponRow->ItemId.Equals(ItemId, ESearchCase::IgnoreCase))
             {
                 OutWeaponData = *WeaponRow;
                 return true;
@@ -1606,9 +1867,34 @@ bool UItemHandler::LoadArmorDataRow(const FString& ItemId, FBaseArmorStruct& Out
     {
         if (FBaseArmorStruct* ArmorRow = ArmorDataTable->FindRow<FBaseArmorStruct>(RowName, TEXT("ItemHandler::LoadArmorDataRow"), true))
         {
-            if (ArmorRow->ItemId.ToString().Equals(ItemId, ESearchCase::IgnoreCase))
+            if (ArmorRow->ItemId.Equals(ItemId, ESearchCase::IgnoreCase))
             {
                 OutArmorData = *ArmorRow;
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool UItemHandler::LoadJewelryDataRow(const FString& ItemId, FBaseJewelryStruct& OutJewelryData) const
+{
+    const FString DataTablePath = TEXT("/Game/ItemData/BaseJewelry_Misc_DT.BaseJewelry_Misc_DT");
+    UDataTable* JewelryDataTable = LoadObject<UDataTable>(nullptr, *DataTablePath);
+    if (!JewelryDataTable)
+    {
+        UE_LOG(LogTemp, Error, TEXT("ItemHandler: Failed to load jewelry data table at %s."), *DataTablePath);
+        return false;
+    }
+
+    for (const FName& RowName : JewelryDataTable->GetRowNames())
+    {
+        if (FBaseJewelryStruct* JewelryRow = JewelryDataTable->FindRow<FBaseJewelryStruct>(RowName, TEXT("ItemHandler::LoadJewelryDataRow"), true))
+        {
+            if (JewelryRow->ItemId.Equals(ItemId, ESearchCase::IgnoreCase))
+            {
+                OutJewelryData = *JewelryRow;
                 return true;
             }
         }
@@ -1639,6 +1925,20 @@ bool UItemHandler::LoadAllItemModifierRows(TArray<FItemModifierStruct>& OutModif
 
     UE_LOG(LogTemp, Warning, TEXT("ItemHandler: Loaded %d modifiers from ItemModifier_DT."), OutModifiers.Num());
     return OutModifiers.Num() > 0;
+}
+
+TArray<FString> UItemHandler::GetItemIdOptions()
+{
+    TArray<FString> ItemIds;
+    TArray<FBaseItemStruct> Items;
+    if (DataTableHelpers::LoadAllRows(TEXT("/Game/ItemData/BaseItem_DT.BaseItem_DT"), Items))
+    {
+        for (const FBaseItemStruct& Item : Items)
+        {
+            ItemIds.Add(Item.ItemId.ToString());
+        }
+    }
+    return ItemIds;
 }
 
 void UItemHandler::LogItemData(const FBaseItemStruct& ItemData) const
@@ -1687,4 +1987,15 @@ void UItemHandler::LogArmorData(const FBaseArmorStruct& ArmorData) const
         ArmorData.BaseDefense.BaseOvershield.Y);
 
     UE_LOG(LogTemp, Warning, TEXT("ItemHandler loaded armor table data:\n%s"), *ArmorInfo);
+}
+
+void UItemHandler::LogJewelryData(const FBaseJewelryStruct& JewelryData) const
+{
+    const FString JewelryInfo = FString::Printf(
+        TEXT("JewelryType: %s\nJewelrySlot: %s\nItemBaseGoldValue: %d"),
+        *UEnum::GetValueAsString(JewelryData.JewelryType),
+        *UEnum::GetValueAsString(JewelryData.JewelrySlot),
+        JewelryData.ItemBaseGoldValue);
+
+    UE_LOG(LogTemp, Warning, TEXT("ItemHandler loaded jewelry table data:\n%s"), *JewelryInfo);
 }

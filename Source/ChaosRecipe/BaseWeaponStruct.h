@@ -67,8 +67,9 @@ struct FBaseWeaponStruct : public FTableRowBase
 {
     GENERATED_BODY()
 
-   	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-    FText ItemId;
+    // A BaseItem_DT ItemId (picked from a dropdown in the data table editor).
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item", meta = (GetOptions = "ChaosRecipe.ItemHandler.GetItemIdOptions"))
+    FString ItemId;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
     FText ItemName;

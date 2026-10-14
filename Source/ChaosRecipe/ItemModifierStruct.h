@@ -27,6 +27,15 @@ enum class EModifierOperator : uint8
     UniqueModifier UMETA(DisplayName = "UniqueModifier"),
 };
 
+UENUM(BlueprintType)
+enum class EAppliesToEnum : uint8
+{
+    Global UMETA(DisplayName = "Global"),   // applies to its wearer in all instances (UPlayerMinion)
+    Local UMETA(DisplayName = "Local"),     // baked into the item's own base stats, e.g. weapon damage or armor defense (UItemHandler)
+    Attacks UMETA(DisplayName = "Attacks"), // only modifies abilities tagged as Attacks
+    Spells UMETA(DisplayName = "Spells"),   // only modifies abilities tagged as Spells
+};
+
 USTRUCT(BlueprintType)
 struct FValidItemClasses
 {
@@ -99,7 +108,7 @@ struct FValidJewelryTypes
 {
     GENERATED_BODY()
 
-    // No dedicated EJewelryType exists yet; derived from the relevant slots in EItemSlot (BaseItemStruct.h)
+    // Mirrors EJewelryType (BaseJewelryStruct.h), minus Misc
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Valid Jewelry Types")
     bool Neck;
 
@@ -115,7 +124,7 @@ struct FValidMiscTypes
 {
     GENERATED_BODY()
 
-    // No dedicated EMiscType exists yet; derived from the relevant slot in EItemSlot (BaseItemStruct.h)
+    // Mirrors EJewelryType::Misc (BaseJewelryStruct.h)
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Valid Misc Types")
     bool Misc;
 };
@@ -141,58 +150,6 @@ struct FValidItemTypesOverride
     FValidMiscTypes Misc;
 
 };
-
-// USTRUCT(BlueprintType)
-// struct FModifierTags
-// {
-//     GENERATED_BODY()
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-//     bool Physical;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-//     bool Fire;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-//     bool Ice;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-//     bool Electric;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-//     bool Abyssal;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-//     bool Damage;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-//     bool Attack;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-//     bool Defense;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-//     bool Resistance;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-//     bool Speed;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-//     bool Critical;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-//     bool Life;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-//     bool Armor;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-//     bool Evade;
-
-//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Modifier Tags")
-//     bool Overshield;
-
-// };
 
 USTRUCT(BlueprintType)
 struct FItemModifierDamageStruct
@@ -352,6 +309,9 @@ struct FItemModifierStruct : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Modifiers")
     FModifierBuckets ModifierBuckets;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Modifiers")
+    EAppliesToEnum AppliesTo;
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
     float GoldValueModifier;

@@ -7,6 +7,7 @@
 
 struct FItemWeaponStatsStruct;
 struct FItemArmorStatsStruct;
+struct FItemJewelryStatsStruct;
 
 UENUM(BlueprintType)
 enum class EAssignedEntity : uint8
@@ -24,8 +25,12 @@ public:
     UItemInstanceManager();
     ~UItemInstanceManager();
 
+    // Each is saved with an ItemType ("Weapon", "Armor" or "Jewelry") saying which of these it was saved from.
+    // Ignored without an ItemUUID, or without an ItemId, since that has no BaseItem_DT row and so could never
+    // show up in the stash.
     void SaveItem(const FString& ItemUUID, const FItemWeaponStatsStruct& ItemData);
     void SaveItem(const FString& ItemUUID, const FItemArmorStatsStruct& ItemData);
+    void SaveItem(const FString& ItemUUID, const FItemJewelryStatsStruct& ItemData);
 
     TSharedPtr<FJsonObject> GetSavedItemJson(const FString& ItemUUID) const;
     bool HasSavedItem(const FString& ItemUUID) const;

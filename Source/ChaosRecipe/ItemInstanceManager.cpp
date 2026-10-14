@@ -45,6 +45,19 @@ namespace
         JsonObject->SetStringField(TEXT("ItemType"), TEXT("Armor"));
         return JsonObject;
     }
+
+    TSharedPtr<FJsonObject> CreateJewelryJsonObject(const FString& ItemUUID, const FItemJewelryStatsStruct& ItemData)
+    {
+        TSharedPtr<FJsonObject> JsonObject = MakeShared<FJsonObject>();
+        TSharedRef<FJsonObject> JsonObjectRef = JsonObject.ToSharedRef();
+
+        FJsonObjectConverter::UStructToJsonObject(FItemJewelryStatsStruct::StaticStruct(), &ItemData, JsonObjectRef, 0, 0);
+
+        JsonObject->SetStringField(TEXT("UUID"), ItemUUID);
+        JsonObject->SetStringField(TEXT("ItemId"), ItemData.ItemId.ToString());
+        JsonObject->SetStringField(TEXT("ItemType"), TEXT("Jewelry"));
+        return JsonObject;
+    }
 }
 
 UItemInstanceManager::UItemInstanceManager()
@@ -58,7 +71,7 @@ UItemInstanceManager::~UItemInstanceManager()
 
 void UItemInstanceManager::SaveItem(const FString& ItemUUID, const FItemWeaponStatsStruct& ItemData)
 {
-    if (ItemUUID.IsEmpty())
+    if (ItemUUID.IsEmpty() || ItemData.ItemId.IsEmpty())
     {
         return;
     }
@@ -69,12 +82,23 @@ void UItemInstanceManager::SaveItem(const FString& ItemUUID, const FItemWeaponSt
 
 void UItemInstanceManager::SaveItem(const FString& ItemUUID, const FItemArmorStatsStruct& ItemData)
 {
-    if (ItemUUID.IsEmpty())
+    if (ItemUUID.IsEmpty() || ItemData.ItemId.IsEmpty())
     {
         return;
     }
 
     SavedItemsByUUID.Add(ItemUUID, CreateArmorJsonObject(ItemUUID, ItemData));
+    WriteSavedItemsToDisk();
+}
+
+void UItemInstanceManager::SaveItem(const FString& ItemUUID, const FItemJewelryStatsStruct& ItemData)
+{
+    if (ItemUUID.IsEmpty() || ItemData.ItemId.IsEmpty())
+    {
+        return;
+    }
+
+    SavedItemsByUUID.Add(ItemUUID, CreateJewelryJsonObject(ItemUUID, ItemData));
     WriteSavedItemsToDisk();
 }
 

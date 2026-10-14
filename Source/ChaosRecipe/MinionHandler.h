@@ -86,6 +86,11 @@ public:
 	UFUNCTION()
 	void OnAssignItemToMinion(FString MinionUUID, FString ItemUUID);
 
+	// Bound to CoreMenu's OnUnequipItemFromMinionEvent: unequips the item ItemUUID from the minion MinionUUID
+	// (UnequipItemFromMinion), which returns it to the stash.
+	UFUNCTION()
+	void OnUnequipItemFromMinion(FString MinionUUID, FString ItemUUID);
+
 protected:
 	// Bound to every minion's OnSaveDataChangedEvent, so any change to its level, attributes or equipment is saved.
 	UFUNCTION()

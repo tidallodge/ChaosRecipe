@@ -223,5 +223,133 @@
 			"EnemyIcon": "None",
 			"EnemyStaticMesh": "None"
 		}
+	},
+	{
+		"Name": "woods_wolf_01",
+		"EnemyId": "NSLOCTEXT(\"[FF67F8B3918D268E602182826EB948FA]\", \"F383472E4BC833E64E0D169E0A0B2D72\", \"woods_wolf_01\")",
+		"EnemyName": "NSLOCTEXT(\"[FF67F8B3918D268E602182826EB948FA]\", \"41801902407EC85E3280E2B03BF8E2E2\", \"Wolf\")",
+		"MaxHealth": 10,
+		"Overshield": 0,
+		"PhysicalMitigation": 0,
+		"EvadeChance": 0,
+		"Resistances":
+		{
+		},
+		"Damage":
+		{
+			"Physical":
+			{
+				"X": 1,
+				"Y": 3
+			}
+		},
+		"AttackRate": 1.5,
+		"Spells": [],
+		"GoldDrop":
+		{
+			"X": 10,
+			"Y": 15
+		},
+		"CurrencyDrops": [],
+		"EnemyAssetData":
+		{
+			"EnemyIcon": "None",
+			"EnemyStaticMesh": "None"
+		}
+	},
+	{
+		"Name": "woods_vagrant_01",
+		"EnemyId": "NSLOCTEXT(\"[FF67F8B3918D268E602182826EB948FA]\", \"4E9605A2406A1F7E1968DBB50F27E779\", \"woods_vagrant_01\")",
+		"EnemyName": "NSLOCTEXT(\"[FF67F8B3918D268E602182826EB948FA]\", \"6D99C61449C99310BFBB2DA9AD64DC46\", \"Deranged Vangrant\")",
+		"MaxHealth": 15,
+		"Overshield": 0,
+		"PhysicalMitigation": 0,
+		"EvadeChance": 0,
+		"Resistances":
+		{
+		},
+		"Damage":
+		{
+			"Physical":
+			{
+				"X": 2,
+				"Y": 4
+			}
+		},
+		"AttackRate": 1,
+		"Spells": [],
+		"GoldDrop":
+		{
+			"X": 15,
+			"Y": 18
+		},
+		"CurrencyDrops": [
+			{
+				"CurrencyId": "add_mod_01",
+				"DropChance": 20,
+				"DropCount":
+				{
+					"X": 1,
+					"Y": 2
+				}
+			}
+		],
+		"EnemyAssetData":
+		{
+			"EnemyIcon": "None",
+			"EnemyStaticMesh": "None"
+		}
+	},
+	{
+		"Name": "woods_cultist_01",
+		"EnemyId": "NSLOCTEXT(\"[FF67F8B3918D268E602182826EB948FA]\", \"B56603E2471D493EF12E2CA9850895AA\", \"woods_cultist_01\")",
+		"EnemyName": "NSLOCTEXT(\"[FF67F8B3918D268E602182826EB948FA]\", \"F41F92954E36B311D542E7BB83252A16\", \"Cultist\")",
+		"MaxHealth": 15,
+		"Overshield": 5,
+		"PhysicalMitigation": 0,
+		"EvadeChance": 0,
+		"Resistances":
+		{
+		},
+		"Damage":
+		{
+			"Physical":
+			{
+				"X": 2,
+				"Y": 5
+			}
+		},
+		"AttackRate": 1,
+		"Spells": [],
+		"GoldDrop":
+		{
+			"X": 20,
+			"Y": 24
+		},
+		"CurrencyDrops": [
+			{
+				"CurrencyId": "add_mod_01",
+				"DropChance": 20,
+				"DropCount":
+				{
+					"X": 1,
+					"Y": 1
+				}
+			},
+			{
+				"CurrencyId": "magic_reroll_01",
+				"DropChance": 20,
+				"DropCount":
+				{
+					"X": 1,
+					"Y": 2
+				}
+			}
+		],
+		"EnemyAssetData":
+		{
+			"EnemyIcon": "None",
+			"EnemyStaticMesh": "None"
+		}
 	}
 ]

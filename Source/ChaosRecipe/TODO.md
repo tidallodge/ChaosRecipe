@@ -71,8 +71,8 @@ MISC
     - Woods
         - Forest Edge
         - The Woods
-        - Eery Glade
-        - Dread Thicket
+        - Humming Glade
+        - Black Thicket
         - WildWood
             - Enemies
                 - Deranged Vagrant

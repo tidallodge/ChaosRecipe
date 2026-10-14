@@ -20,6 +20,7 @@ void UMinionHandler::BindToCoreMenuEvents(UCoreMenu* CoreMenu)
 	BoundCoreMenu = CoreMenu;
 	CoreMenu->OnResetGameButtonClickedEvent.AddDynamic(this, &UMinionHandler::OnResetGame);
 	CoreMenu->OnAssignItemToMinionEvent.AddDynamic(this, &UMinionHandler::OnAssignItemToMinion);
+	CoreMenu->OnUnequipItemFromMinionEvent.AddDynamic(this, &UMinionHandler::OnUnequipItemFromMinion);
 	UpdateMinionButtons();
 }
 
@@ -226,6 +227,11 @@ void UMinionHandler::OnResetGame()
 void UMinionHandler::OnAssignItemToMinion(FString MinionUUID, FString ItemUUID)
 {
 	EquipItemOnMinion(MinionUUID, ItemUUID);
+}
+
+void UMinionHandler::OnUnequipItemFromMinion(FString MinionUUID, FString ItemUUID)
+{
+	UnequipItemFromMinion(MinionUUID, ItemUUID);
 }
 
 void UMinionHandler::HandleMinionSaveDataChanged(FString MinionUUID)

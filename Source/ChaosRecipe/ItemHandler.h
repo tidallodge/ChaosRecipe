@@ -8,6 +8,7 @@
 #include "BaseItemStruct.h"
 #include "BaseWeaponStruct.h"
 #include "BaseArmorStruct.h"
+#include "BaseJewelryStruct.h"
 #include "ItemInstanceManager.h"
 #include "ItemModifierStruct.h"
 #include "ModifierAssigner.h"
@@ -111,6 +112,41 @@ struct FItemArmorStatsStruct : public FTableRowBase
     TMap<FString, int32> SuffixModifiers;
 };
 
+// Jewelry and Misc items (BaseJewelry_Misc_DT). They have no stats of their own for modifiers to change, so every
+// modifier they roll applies to whoever wears them (UPlayerMinion).
+USTRUCT(BlueprintType)
+struct FItemJewelryStatsStruct : public FTableRowBase
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jewelry Stats")
+    FText ItemId;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jewelry Stats")
+    FText UUID;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jewelry Stats")
+    int32 ItemLevel;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jewelry Stats")
+    FTagsStruct Tags;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jewelry Stats")
+    int32 ItemBaseGoldValue = 0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jewelry Stats")
+    float ItemGoldValue = 0.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jewelry Stats")
+    TMap<FString, int32> ImplicitModifiers;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jewelry Stats")
+    TMap<FString, int32> PrefixModifiers;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Jewelry Stats")
+    TMap<FString, int32> SuffixModifiers;
+};
+
 UCLASS()
 class CHAOSRECIPE_API UItemHandler : public UObject
 {
@@ -130,6 +166,14 @@ public:
 
     UFUNCTION()
     FItemArmorStatsStruct GetArmorStatsForItem(const FString& ItemId);
+
+    UFUNCTION()
+    FItemJewelryStatsStruct GetJewelryStatsForItem(const FString& ItemId);
+
+    // Feeds the ItemId dropdown on FBaseWeaponStruct/FBaseArmorStruct/FBaseJewelryStruct in their data table editors
+    // (GetOptions metadata): every BaseItem_DT ItemId.
+    UFUNCTION()
+    static TArray<FString> GetItemIdOptions();
 
     UFUNCTION()
     FText GetUUID() const;
@@ -170,6 +214,11 @@ public:
     UFUNCTION()
     bool RandomizeArmorItem(const FString& CurrencyId);
 
+    // Returns true if an active item was actually rerolled (i.e. there was one cached to reroll and the
+    // currency actually had an effect on the item).
+    UFUNCTION()
+    bool RandomizeJewelryItem(const FString& CurrencyId);
+
     UFUNCTION()
     void OnSaveItem(FString ItemId);
 
@@ -209,6 +258,11 @@ protected:
     FItemArmorStatsStruct CachedArmorStats;
 
     UPROPERTY()
+    FItemJewelryStatsStruct CachedJewelryStats;
+
+    // Which cache holds the active item: Weapon (CachedWeaponStats), Armor (CachedArmorStats, Shields too) or
+    // Jewelry (CachedJewelryStats, Misc items too).
+    UPROPERTY()
     EItemClass LastSelectedItemClass = EItemClass::Weapon;
 
     UItemInstanceManager SavedItemsManager;
@@ -226,11 +280,11 @@ protected:
     TObjectPtr<UPlayerInventory> BoundPlayerInventory = nullptr;
 
     // Rebuilds CachedWeaponStats.WeaponLocalDamage (and AttackRate) from the item's base weapon data
-    // plus every currently-assigned modifier, so it can be called after any modifier change and always
+    // plus every currently-assigned Local modifier, so it can be called after any modifier change and always
     // reflects exactly what's on the item right now.
     void RecalculateWeaponLocalDamage();
 
-    // Rebuilds CachedArmorStats.BaseDefense from the item's base defense plus the rolled defense modifiers.
+    // Rebuilds CachedArmorStats.BaseDefense from the item's base defense plus the rolled Local defense modifiers.
     void RecalculateArmorDefense();
 
     // Applies Currency's ModifierModificationType rules (Add/Remove/RandomizeMods/RandomizeValues) to the
@@ -249,26 +303,46 @@ protected:
         const TMap<FString, int32>& PrefixModifiers, const TMap<FString, int32>& SuffixModifiers) const;
 
     // Shared by OnStashItemSelected/OnShopItemSelected/OnBuyButtonClicked: caches this item's stats
-    // (preserving ItemUUID if given, e.g. for a saved stash item) and displays them as the active
-    // item, in the same weapon/armor stat breakdown format Randomize uses.
-    void OnItemSelected(const FString& ItemId, const FString& ItemUUID);
+    // (preserving ItemUUID if given) and displays them as the active item, in the same stat breakdown
+    // format Randomize uses. An item saved in SavedItems.json (i.e. a stash item) is cached as it was
+    // saved, rolled modifiers and all; anything else (e.g. a shop listing) gets its base stats. Returns
+    // false, leaving nothing new cached, if the item's stats can't be built.
+    bool OnItemSelected(const FString& ItemId, const FString& ItemUUID);
+
+    // The UUID of the active item, in whichever cache LastSelectedItemClass says holds it.
+    FText& GetActiveItemUUID();
+    const FText& GetActiveItemUUID() const { return const_cast<UItemHandler*>(this)->GetActiveItemUUID(); }
+
+    // The active item's current (post-modifier) gold value, from whichever cache holds it.
+    float GetActiveItemGoldValue() const;
+
+    // Saves the active item, from whichever cache holds it, to SavedItems.json under ItemUUID.
+    void SaveActiveItem(const FString& ItemUUID);
+
+    // Loads ItemModifier_DT into ItemModifierAssigner if it isn't yet. Randomizing is what normally loads it, so
+    // without this a saved item's modifiers would show as raw ids until something had been randomized this session.
+    void EnsureModifierPoolLoaded();
 
     // The ActiveItemTextBox text for an item, shared by OnItemSelected, Randomize*Item and GetItemDisplayText so
-    // they all lay it out the same way: its name, a "Base Damage:"/"Base Defense:" block, Attack Rate (weapons
-    // only), Gold Value, then its modifiers (named from ItemModifierAssigner's pool).
+    // they all lay it out the same way: its name, a "Base Damage:"/"Base Defense:" block (jewelry has neither),
+    // Attack Rate (weapons only), Gold Value, then its modifiers (named from ItemModifierAssigner's pool).
     FString BuildWeaponDisplayText(const FString& ItemName, const FItemWeaponStatsStruct& WeaponStats) const;
     FString BuildArmorDisplayText(const FString& ItemName, const FItemArmorStatsStruct& ArmorStats) const;
+    FString BuildJewelryDisplayText(const FString& ItemName, const FItemJewelryStatsStruct& JewelryStats) const;
 
     bool LoadItemDataRow(const FString& ItemId, FBaseItemStruct& OutItemData) const;
     bool LoadWeaponDataRow(const FString& ItemId, FBaseWeaponStruct& OutWeaponData) const;
     bool LoadArmorDataRow(const FString& ItemId, FBaseArmorStruct& OutArmorData) const;
+    bool LoadJewelryDataRow(const FString& ItemId, FBaseJewelryStruct& OutJewelryData) const;
 
     // Loads every row from ItemModifier_DT (all possible item modifiers).
     bool LoadAllItemModifierRows(TArray<FItemModifierStruct>& OutModifiers) const;
     bool BuildWeaponStatsForItem(const FString& ItemId, FItemWeaponStatsStruct& OutWeaponStats) const;
     bool BuildArmorStatsForItem(const FString& ItemId, FItemArmorStatsStruct& OutArmorStats) const;
+    bool BuildJewelryStatsForItem(const FString& ItemId, FItemJewelryStatsStruct& OutJewelryStats) const;
 
     void LogItemData(const FBaseItemStruct& ItemData) const;
     void LogWeaponData(const FBaseWeaponStruct& WeaponData) const;
     void LogArmorData(const FBaseArmorStruct& ArmorData) const;
+    void LogJewelryData(const FBaseJewelryStruct& JewelryData) const;
 };

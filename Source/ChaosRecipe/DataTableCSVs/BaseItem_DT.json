@@ -106,5 +106,101 @@
 			"ItemIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/ArmorAssets/ArmorIcons/scholar_robes_front.scholar_robes_front'",
 			"ItemStaticMesh": "None"
 		}
+	},
+	{
+		"Name": "helmet_armor_001",
+		"ItemId": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"FDD3BA91412B44386957E997FD7D132C\", \"helmet_armor_001\")",
+		"ItemName": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"7D2FD90F4A25D342B35199985C4B3F89\", \"Iron Helmet\")",
+		"ItemClass": "Armor",
+		"ItemSlot": "Head",
+		"ItemAssetData":
+		{
+			"ItemIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/ArmorAssets/ArmorIcons/iron_helmet.iron_helmet'",
+			"ItemStaticMesh": "None"
+		}
+	},
+	{
+		"Name": "helmet_evade_001",
+		"ItemId": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"5C41CBDE4CAA365F5B0AAB8B42DBC3A6\", \"helmet_evade_001\")",
+		"ItemName": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"8D3180A348CA75F90A27A3858F59D5BE\", \"Leather Hat\")",
+		"ItemClass": "Armor",
+		"ItemSlot": "Head",
+		"ItemAssetData":
+		{
+			"ItemIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/ArmorAssets/ArmorIcons/leather_hat.leather_hat'",
+			"ItemStaticMesh": "None"
+		}
+	},
+	{
+		"Name": "helmet_overshield_001",
+		"ItemId": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"C229AEC0478B10F083E03FA2E27265C2\", \"helmet_overshield_001\")",
+		"ItemName": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"6DE0487944855CD90AC2A497F35CBFDD\", \"Circlet\")",
+		"ItemClass": "Armor",
+		"ItemSlot": "Head",
+		"ItemAssetData":
+		{
+			"ItemIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/ArmorAssets/ArmorIcons/circlet.circlet'",
+			"ItemStaticMesh": "None"
+		}
+	},
+	{
+		"Name": "greaves_armor_001",
+		"ItemId": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"C1477A98418B7EF3B4A811A92E2A3759\", \"greaves_armor_001\")",
+		"ItemName": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"08EBEB49452B718C1D1CE982A88B4B07\", \"Iron Greaves\")",
+		"ItemClass": "Armor",
+		"ItemSlot": "Boots",
+		"ItemAssetData":
+		{
+			"ItemIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/ArmorAssets/ArmorIcons/iron_greaves.iron_greaves'",
+			"ItemStaticMesh": "None"
+		}
+	},
+	{
+		"Name": "greaves_evade_001",
+		"ItemId": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"11E64CB7495D4803F983B3BF5505E07B\", \"greaves_evade_001\")",
+		"ItemName": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"7C70A5D341311882E255A98A6E7C4D45\", \"Assassin Pants\")",
+		"ItemClass": "Armor",
+		"ItemSlot": "Boots",
+		"ItemAssetData":
+		{
+			"ItemIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/ArmorAssets/ArmorIcons/assassin_pants.assassin_pants'",
+			"ItemStaticMesh": "None"
+		}
+	},
+	{
+		"Name": "greaves_overshield_001",
+		"ItemId": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"A2631E9E4E2435C33C85B0966E64F58E\", \"greaves_overshield_001\")",
+		"ItemName": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"E16DE11A4C344F7A8B722F8DA5950A4B\", \"Silk Slippers\")",
+		"ItemClass": "Armor",
+		"ItemSlot": "Boots",
+		"ItemAssetData":
+		{
+			"ItemIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/ArmorAssets/ArmorIcons/silk_slippers.silk_slippers'",
+			"ItemStaticMesh": "None"
+		}
+	},
+	{
+		"Name": "amulet_001",
+		"ItemId": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"9EFE4BB34FCDCDEC8686A3A7C3772061\", \"amulet_001\")",
+		"ItemName": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"DDEFE7E34E632A89AA2EF8A0DB04772D\", \"Copper Pendant\")",
+		"ItemClass": "Jewelry",
+		"ItemSlot": "Neck",
+		"ItemAssetData":
+		{
+			"ItemIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/Jewlry_MiscAssets/copper_pendant.copper_pendant'",
+			"ItemStaticMesh": "None"
+		}
+	},
+	{
+		"Name": "ring_001",
+		"ItemId": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"64170AEF4A588223F7D27598050D1EB0\", \"ring_001\")",
+		"ItemName": "NSLOCTEXT(\"[DF50B8D72FEEE76EF7A19D5C74ED3555]\", \"3847ED184C6DAD39AD4304A8EB0B0DF9\", \"Bronze Ring\")",
+		"ItemClass": "Jewelry",
+		"ItemSlot": "Ring",
+		"ItemAssetData":
+		{
+			"ItemIcon": "/Script/Engine.Texture2D'/Game/ItemAssets/Jewlry_MiscAssets/bronze_ring.bronze_ring'",
+			"ItemStaticMesh": "None"
+		}
 	}
 ]

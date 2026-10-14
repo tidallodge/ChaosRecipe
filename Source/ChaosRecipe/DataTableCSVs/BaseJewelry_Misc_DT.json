@@ -1,0 +1,98 @@
+[
+	{
+		"Name": "amulet_001",
+		"ItemId": "amulet_001",
+		"ItemName": "NSLOCTEXT(\"[2FE47D5A2805EDC856C989089969A0D5]\", \"ED73AAC1466329F5FA9DA0AEBE615BA2\", \"Copper Pendant\")",
+		"JewelryType": "Neck",
+		"JewelrySlot": "Neck",
+		"ImplicitModifiers": [],
+		"ModifierBuckets":
+		{
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatIceDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatAbyssalDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"IceResist": false,
+				"ElectricResist": false,
+				"AbyssalResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
+		},
+		"ItemBaseGoldValue": 1000
+	},
+	{
+		"Name": "ring_001",
+		"ItemId": "ring_001",
+		"ItemName": "NSLOCTEXT(\"[2FE47D5A2805EDC856C989089969A0D5]\", \"7D428214495C291C8B4C8D9490830C5E\", \"Bronze Ring\")",
+		"JewelryType": "Ring",
+		"JewelrySlot": "Ring",
+		"ImplicitModifiers": [],
+		"ModifierBuckets":
+		{
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatIceDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatAbyssalDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"IceResist": false,
+				"ElectricResist": false,
+				"AbyssalResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
+		},
+		"ItemBaseGoldValue": 750
+	}
+]

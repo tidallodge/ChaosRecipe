@@ -8,6 +8,7 @@
 #include "BaseItemStruct.h"
 #include "BaseWeaponStruct.h"
 #include "BaseArmorStruct.h"
+#include "BaseJewelryStruct.h"
 #include "ItemModifierStruct.h"
 #include "ItemHandler.h"
 #include "MinionInstanceManager.h"
@@ -93,6 +94,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Minion|Equipment")
 	bool EquipArmor(const FItemArmorStatsStruct& ArmorStats);
 
+	// Unlike armor, jewelry isn't kept one per slot, so this leaves making room in its slot to EquipItem (which
+	// does, via GetMaxItemsInSlot) and only replaces the item itself if it's already equipped.
+	UFUNCTION(BlueprintCallable, Category = "Minion|Equipment")
+	bool EquipJewelry(const FItemJewelryStatsStruct& JewelryStats);
+
 	UFUNCTION(BlueprintCallable, Category = "Minion|Equipment")
 	bool UnequipItem(const FString& ItemUUID);
 
@@ -149,7 +155,7 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Minion")
 	FCombatAttributes GetBaseAttributes() const { return BaseAttributes; }
 
-	// BaseAttributes after every equipped item's attribute modifiers.
+	// BaseAttributes after every equipped item's Global attribute modifiers.
 	UFUNCTION(BlueprintPure, Category = "Minion")
 	FCombatAttributes GetTotalAttributes() const { return TotalAttributes; }
 
@@ -198,8 +204,8 @@ protected:
 	bool HasWeaponEquipped() const { return !EquippedWeapon.ItemId.IsEmpty(); }
 	void ClearEquippedWeapon();
 
-	// Shared by EquipItem's weapon and armor paths: unequips whatever has to go to make room in ItemId's ItemSlot,
-	// then runs Equip. If Equip fails, whatever was unequipped is put back.
+	// Shared by EquipItem's weapon, armor and jewelry paths: unequips whatever has to go to make room in ItemId's
+	// ItemSlot, then runs Equip. If Equip fails, whatever was unequipped is put back.
 	bool EquipInItemSlot(const FString& ItemUUID, const FString& ItemId, TFunctionRef<bool()> Equip);
 
 	void BroadcastHealthChanged();
@@ -250,9 +256,14 @@ protected:
 	UPROPERTY()
 	TMap<EArmorSlot, FItemArmorStatsStruct> EquippedArmor;
 
+	// Every equipped Jewelry and Misc item, in any slot. How many each slot holds is up to GetMaxItemsInSlot.
+	UPROPERTY()
+	TArray<FItemJewelryStatsStruct> EquippedJewelry;
+
 	// Placeholder for slots that will hold more than one item (e.g. two Rings): a slot listed here holds that many,
-	// and every other slot holds 1. Empty for now, so every slot holds 1. Before a weapon or armor slot can hold
-	// more, EquippedWeapon (a single weapon) and EquippedArmor (one per EArmorSlot) need room for more too.
+	// and every other slot holds 1. Empty for now, so every slot holds 1. Jewelry slots (Neck, Ring, Belt, Misc)
+	// can already hold more (EquippedJewelry isn't one per slot); before a weapon or armor slot can, EquippedWeapon
+	// (a single weapon) and EquippedArmor (one per EArmorSlot) need room for more too.
 	UPROPERTY()
 	TMap<EItemSlot, int32> MaxItemsPerSlot;
 

@@ -1,7 +1,7 @@
 // PlayerMinion
 /** Purpose: A player-owned combatant built from a minion class (MinionClass_DT) and level
     Identified by its own MinionUUID, under which UMinionHandler saves its level, attributes and equipped items
-    Equips weapons and armor from the player's stash, which modify its stats and attacks
+    Equips weapons, armor and jewelry from the player's stash, which modify its stats and attacks
     Uses attacks/spells on anything that implements ICombatTarget, and takes hits through it too
 */
 
@@ -16,6 +16,7 @@ namespace
 	const TCHAR* BaseItemDataTablePath = TEXT("/Game/ItemData/BaseItem_DT.BaseItem_DT");
 	const TCHAR* BaseWeaponDataTablePath = TEXT("/Game/ItemData/BaseWeapon_DT.BaseWeapon_DT");
 	const TCHAR* BaseArmorDataTablePath = TEXT("/Game/ItemData/BaseArmor_DT.BaseArmor_DT");
+	const TCHAR* BaseJewelryDataTablePath = TEXT("/Game/ItemData/BaseJewelry_Misc_DT.BaseJewelry_Misc_DT");
 	const TCHAR* ItemModifierDataTablePath = TEXT("/Game/ItemData/ItemModifier_DT.ItemModifier_DT");
 
 	// An equipped item's modifier row paired with the value it rolled.
@@ -119,6 +120,7 @@ bool UPlayerMinion::InitializeFromSaveData(const FMinionSaveData& SaveData)
 	RemovedItemUUIDs = SaveData.RemovedItemUUIDs;
 	ClearEquippedWeapon();
 	EquippedArmor.Empty();
+	EquippedJewelry.Empty();
 	RecalculateStats();
 
 	for (const FString& ItemUUID : SaveData.EquippedItemUUIDs)
@@ -273,6 +275,19 @@ bool UPlayerMinion::EquipItem(const FString& ItemUUID)
 		return EquipInItemSlot(ItemUUID, ArmorStats.ItemId.ToString(), [this, &ArmorStats]() { return EquipArmor(ArmorStats); });
 	}
 
+	if (ItemType == TEXT("Jewelry"))
+	{
+		FItemJewelryStatsStruct JewelryStats;
+		if (!FJsonObjectConverter::JsonObjectToUStruct(ItemJson.ToSharedRef(), &JewelryStats))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("PlayerMinion: Failed to read jewelry stats for UUID '%s'."), *ItemUUID);
+			return false;
+		}
+
+		JewelryStats.UUID = FText::FromString(ItemUUID);
+		return EquipInItemSlot(ItemUUID, JewelryStats.ItemId.ToString(), [this, &JewelryStats]() { return EquipJewelry(JewelryStats); });
+	}
+
 	UE_LOG(LogTemp, Warning, TEXT("PlayerMinion: Can't equip UUID '%s' with unsupported ItemType '%s'."), *ItemUUID, *ItemType);
 	return false;
 }
@@ -345,6 +360,11 @@ TArray<FString> UPlayerMinion::GetEquippedItemUUIDsInSlot(EItemSlot Slot) const
 	{
 		AddIfInSlot(Entry.Value.ItemId, Entry.Value.UUID);
 	}
+
+	for (const FItemJewelryStatsStruct& Jewelry : EquippedJewelry)
+	{
+		AddIfInSlot(Jewelry.ItemId, Jewelry.UUID);
+	}
 	return ItemUUIDs;
 }
 
@@ -353,7 +373,7 @@ bool UPlayerMinion::EquipWeapon(const FItemWeaponStatsStruct& WeaponStats)
 	const FString ItemId = WeaponStats.ItemId.ToString();
 	FBaseWeaponStruct WeaponBase;
 	const bool bFoundWeapon = DataTableHelpers::FindRow(BaseWeaponDataTablePath,
-		[&ItemId](const FBaseWeaponStruct& Row) { return Row.ItemId.ToString().Equals(ItemId, ESearchCase::IgnoreCase); }, WeaponBase);
+		[&ItemId](const FBaseWeaponStruct& Row) { return Row.ItemId.Equals(ItemId, ESearchCase::IgnoreCase); }, WeaponBase);
 	if (!bFoundWeapon)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PlayerMinion: No BaseWeapon_DT row for '%s'; can't equip it."), *ItemId);
@@ -379,7 +399,7 @@ bool UPlayerMinion::EquipArmor(const FItemArmorStatsStruct& ArmorStats)
 	const FString ItemId = ArmorStats.ItemId.ToString();
 	FBaseArmorStruct ArmorBase;
 	const bool bFoundArmor = DataTableHelpers::FindRow(BaseArmorDataTablePath,
-		[&ItemId](const FBaseArmorStruct& Row) { return Row.ItemId.ToString().Equals(ItemId, ESearchCase::IgnoreCase); }, ArmorBase);
+		[&ItemId](const FBaseArmorStruct& Row) { return Row.ItemId.Equals(ItemId, ESearchCase::IgnoreCase); }, ArmorBase);
 	if (!bFoundArmor)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("PlayerMinion: No BaseArmor_DT row for '%s'; can't equip it."), *ItemId);
@@ -402,6 +422,37 @@ bool UPlayerMinion::EquipArmor(const FItemArmorStatsStruct& ArmorStats)
 	return true;
 }
 
+bool UPlayerMinion::EquipJewelry(const FItemJewelryStatsStruct& JewelryStats)
+{
+	const FString ItemId = JewelryStats.ItemId.ToString();
+	FBaseJewelryStruct JewelryBase;
+	const bool bFoundJewelry = DataTableHelpers::FindRow(BaseJewelryDataTablePath,
+		[&ItemId](const FBaseJewelryStruct& Row) { return Row.ItemId.Equals(ItemId, ESearchCase::IgnoreCase); }, JewelryBase);
+	if (!bFoundJewelry)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PlayerMinion: No BaseJewelry_Misc_DT row for '%s'; can't equip it."), *ItemId);
+		return false;
+	}
+
+	const FString ItemUUID = JewelryStats.UUID.ToString();
+	const int32 EquippedIndex = EquippedJewelry.IndexOfByPredicate(
+		[&ItemUUID](const FItemJewelryStatsStruct& Equipped) { return Equipped.UUID.ToString() == ItemUUID; });
+	if (EquippedIndex != INDEX_NONE)
+	{
+		EquippedJewelry[EquippedIndex] = JewelryStats;
+	}
+	else
+	{
+		EquippedJewelry.Add(JewelryStats);
+	}
+	RecalculateStats();
+	BroadcastSaveDataChanged();
+
+	UE_LOG(LogTemp, Warning, TEXT("PlayerMinion: Equipped %s jewelry %s (UUID: %s)"),
+		*UEnum::GetValueAsString(JewelryBase.JewelrySlot), *ItemId, *ItemUUID);
+	return true;
+}
+
 bool UPlayerMinion::UnequipItem(const FString& ItemUUID)
 {
 	bool bUnequipped = false;
@@ -420,6 +471,11 @@ bool UPlayerMinion::UnequipItem(const FString& ItemUUID)
 		}
 	}
 
+	if (EquippedJewelry.RemoveAll([&ItemUUID](const FItemJewelryStatsStruct& Jewelry) { return Jewelry.UUID.ToString() == ItemUUID; }) > 0)
+	{
+		bUnequipped = true;
+	}
+
 	if (bUnequipped)
 	{
 		RecalculateStats();
@@ -432,6 +488,7 @@ void UPlayerMinion::UnequipAll()
 {
 	ClearEquippedWeapon();
 	EquippedArmor.Empty();
+	EquippedJewelry.Empty();
 	RecalculateStats();
 	BroadcastSaveDataChanged();
 }
@@ -463,6 +520,11 @@ TArray<FString> UPlayerMinion::GetEquippedItemUUIDs() const
 	for (const TPair<EArmorSlot, FItemArmorStatsStruct>& Entry : EquippedArmor)
 	{
 		ItemUUIDs.Add(Entry.Value.UUID.ToString());
+	}
+
+	for (const FItemJewelryStatsStruct& Jewelry : EquippedJewelry)
+	{
+		ItemUUIDs.Add(Jewelry.UUID.ToString());
 	}
 	return ItemUUIDs;
 }
@@ -561,7 +623,7 @@ void UPlayerMinion::RecalculateStats()
 		DataTableHelpers::LoadAllRows(ItemModifierDataTablePath, ModifierPool);
 	}
 
-	auto GatherRolled = [this](const TMap<FString, int32>& Modifiers, TArray<FRolledModifier>& OutRolled)
+	auto GatherRolled = [this](const TMap<FString, int32>& Modifiers, EAppliesToEnum AppliesTo, TArray<FRolledModifier>& OutRolled)
 	{
 		for (const TPair<FString, int32>& Entry : Modifiers)
 		{
@@ -570,35 +632,49 @@ void UPlayerMinion::RecalculateStats()
 				{
 					return Modifier.ModifierId.ToString().Equals(Entry.Key, ESearchCase::IgnoreCase);
 				});
-			if (Row)
+			if (Row && Row->AppliesTo == AppliesTo)
 			{
 				OutRolled.Add({ Row, Entry.Value });
 			}
 		}
 	};
-	auto GatherItem = [&GatherRolled](const auto& ItemStats, TArray<FRolledModifier>& OutRolled)
+	auto GatherItem = [&GatherRolled](const auto& ItemStats, EAppliesToEnum AppliesTo, TArray<FRolledModifier>& OutRolled)
 	{
-		GatherRolled(ItemStats.ImplicitModifiers, OutRolled);
-		GatherRolled(ItemStats.PrefixModifiers, OutRolled);
-		GatherRolled(ItemStats.SuffixModifiers, OutRolled);
+		GatherRolled(ItemStats.ImplicitModifiers, AppliesTo, OutRolled);
+		GatherRolled(ItemStats.PrefixModifiers, AppliesTo, OutRolled);
+		GatherRolled(ItemStats.SuffixModifiers, AppliesTo, OutRolled);
 	};
 
-	// Weapon modifiers are kept separate for crit, which is local to the weapon.
-	TArray<FRolledModifier> WeaponModifiers;
+	// The weapon's Local modifiers are only needed for crit; its local damage and attack rate already
+	// include the rest (ItemHandler::RecalculateWeaponLocalDamage), as armor's BaseDefense does for armor.
+	TArray<FRolledModifier> WeaponLocalModifiers;
 	if (HasWeaponEquipped())
 	{
-		GatherItem(EquippedWeapon, WeaponModifiers);
+		GatherItem(EquippedWeapon, EAppliesToEnum::Local, WeaponLocalModifiers);
 	}
 
-	TArray<FRolledModifier> AllModifiers = WeaponModifiers;
+	// Global modifiers from everything equipped apply to the minion itself. Attacks/Spells modifiers aren't
+	// gathered: they only modify abilities of that type, so they'll be applied per hit once those exist.
+	TArray<FRolledModifier> GlobalModifiers;
+	if (HasWeaponEquipped())
+	{
+		GatherItem(EquippedWeapon, EAppliesToEnum::Global, GlobalModifiers);
+	}
+
 	for (const TPair<EArmorSlot, FItemArmorStatsStruct>& Entry : EquippedArmor)
 	{
-		GatherItem(Entry.Value, AllModifiers);
+		GatherItem(Entry.Value, EAppliesToEnum::Global, GlobalModifiers);
 	}
 
-	auto ApplyAttributeModifiers = [&AllModifiers](int32 BaseValue, float FItemModifierAttributeStruct::* Field)
+	// Jewelry has no stats of its own, so its modifiers only ever show up here, through its wearer's.
+	for (const FItemJewelryStatsStruct& Jewelry : EquippedJewelry)
 	{
-		return FMath::RoundToInt(ApplyModifiersToStat(static_cast<float>(BaseValue), AllModifiers,
+		GatherItem(Jewelry, EAppliesToEnum::Global, GlobalModifiers);
+	}
+
+	auto ApplyAttributeModifiers = [&GlobalModifiers](int32 BaseValue, float FItemModifierAttributeStruct::* Field)
+	{
+		return FMath::RoundToInt(ApplyModifiersToStat(static_cast<float>(BaseValue), GlobalModifiers,
 			[Field](const FItemModifierAffectedAttributes& Attributes) { return Attributes.AttributeModifier.*Field; }));
 	};
 	TotalAttributes.Health = ApplyAttributeModifiers(BaseAttributes.Health, &FItemModifierAttributeStruct::Health);
@@ -616,6 +692,28 @@ void UPlayerMinion::RecalculateStats()
 		Defense.Overshield += Entry.Value.BaseDefense.BaseOvershield;
 	}
 
+	// Global mitigation modifiers then apply on top of the summed armor, to both ends of each range.
+	struct FMitigationChannel
+	{
+		FIntPoint FCombatDefense::* Field;
+		float FItemModifierMitigationStruct::* ModifierField;
+	};
+	static const FMitigationChannel MitigationChannels[] = {
+		{ &FCombatDefense::PhysicalMitigation, &FItemModifierMitigationStruct::PhysicalReduction },
+		{ &FCombatDefense::EvadeChance,        &FItemModifierMitigationStruct::Evade },
+		{ &FCombatDefense::Overshield,         &FItemModifierMitigationStruct::Overshield },
+	};
+	for (const FMitigationChannel& Channel : MitigationChannels)
+	{
+		auto GetWeight = [&Channel](const FItemModifierAffectedAttributes& Attributes)
+		{
+			return Attributes.MigitationModifier.*Channel.ModifierField;
+		};
+		FIntPoint& Range = Defense.*Channel.Field;
+		Range.X = FMath::RoundToInt(ApplyModifiersToStat(static_cast<float>(Range.X), GlobalModifiers, GetWeight));
+		Range.Y = FMath::RoundToInt(ApplyModifiersToStat(static_cast<float>(Range.Y), GlobalModifiers, GetWeight));
+	}
+
 	struct FResistanceChannel
 	{
 		EDamageType DamageType;
@@ -629,7 +727,7 @@ void UPlayerMinion::RecalculateStats()
 	};
 	for (const FResistanceChannel& Channel : ResistanceChannels)
 	{
-		const float Resistance = ApplyModifiersToStat(0.f, AllModifiers,
+		const float Resistance = ApplyModifiersToStat(0.f, GlobalModifiers,
 			[&Channel](const FItemModifierAffectedAttributes& Attributes) { return Attributes.ResistanceModifier.*Channel.Field; });
 		if (Resistance != 0.f)
 		{
@@ -657,9 +755,9 @@ void UPlayerMinion::RecalculateStats()
 		Offense.WeaponDamage.Add(EDamageType::Abyssal, LocalDamage.LocalAbyssalDamage);
 		Offense.AttackRate = EquippedWeapon.AttackRate;
 
-		Offense.CritChance = ApplyModifiersToStat(EquippedWeaponBase.WeaponBaseCritChance, WeaponModifiers,
+		Offense.CritChance = ApplyModifiersToStat(EquippedWeaponBase.WeaponBaseCritChance, WeaponLocalModifiers,
 			[](const FItemModifierAffectedAttributes& Attributes) { return Attributes.WeaponCriticalChance; });
-		Offense.CritMultiplier = ApplyModifiersToStat(EquippedWeaponBase.WeaponBaseCritMulti, WeaponModifiers,
+		Offense.CritMultiplier = ApplyModifiersToStat(EquippedWeaponBase.WeaponBaseCritMulti, WeaponLocalModifiers,
 			[](const FItemModifierAffectedAttributes& Attributes) { return Attributes.WeaponCriticalMulti; });
 	}
 	else

@@ -50,8 +50,12 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHireShopHireButtonClickedEvent, F
 // Fired when StashAssignButton is clicked, so listeners (e.g. MinionHandler) can equip the stash item ItemUUID on
 // the minion MinionUUID. Expected to be handled synchronously: CoreMenu reloads the stash right after broadcasting.
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnAssignItemToMinionEvent, FString, MinionUUID, FString, ItemUUID);
-// Bound by ItemHandler to supply the text a shop/stash item's hover flyout shows (the same text ActiveItemTextBox
-// shows for it), since CoreMenu doesn't build item stats itself.
+// Fired when an item is clicked in the MinionEquip window, so listeners (e.g. MinionHandler) can unequip the item
+// ItemUUID from the minion MinionUUID, which returns it to the stash. Expected to be handled synchronously: CoreMenu
+// reloads the stash right after broadcasting.
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnUnequipItemFromMinionEvent, FString, MinionUUID, FString, ItemUUID);
+// Bound by ItemHandler to supply the text a shop/stash/equipped item's hover flyout shows (the same text
+// ActiveItemTextBox shows for it), since CoreMenu doesn't build item stats itself.
 DECLARE_DELEGATE_RetVal_TwoParams(FString, FGetItemDisplayTextDelegate, const FString& /* ItemId */, const FString& /* ItemUUID */);
 
 class UCoreMenu;
@@ -156,6 +160,36 @@ public:
 
 	UFUNCTION()
 	void HandleClicked();
+};
+
+// Carries one of the MinionEquip window's slot buttons (a WBP_SingleImageButton in MinionEqiupCanvas) and the selected
+// minion's item it shows, since UButton::OnClicked takes no parameters and can't otherwise identify its sender.
+UCLASS()
+class UMinionEquipButtonProxy : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	// The item slots it shows, worked out from its name by UCoreMenu::InitMinionEquipButtons.
+	UPROPERTY()
+	TArray<EItemSlot> ItemSlots;
+
+	UPROPERTY()
+	TObjectPtr<UUserWidget> ButtonWidget;
+
+	// UUID of the equipped item it shows (empty if none). Set by UCoreMenu::RefreshMinionEquipButtons.
+	UPROPERTY()
+	FString ItemUUID;
+
+	UPROPERTY()
+	TObjectPtr<UCoreMenu> OwningMenu;
+
+	UFUNCTION()
+	void HandleClicked();
+
+	// Bound to the button's ToolTipWidgetDelegate, so the item's hover flyout is built each time it opens.
+	UFUNCTION()
+	UWidget* CreateToolTip();
 };
 
 // Carries the hire shop listing a dynamically created WBP_MinionButton in HireShopButtonsVertBox stands for, since
@@ -312,6 +346,7 @@ class CHAOSRECIPE_API UCoreMenu : public UUserWidget
 	friend class UCurrencyButtonProxy;
 	friend class UMinionButtonProxy;
 	friend class UMinionStashButtonProxy;
+	friend class UMinionEquipButtonProxy;
 	friend class UHireShopMinionButtonProxy;
 	friend class UZoneButtonProxy;
 	friend class UEnemyHPBarProxy;
@@ -347,7 +382,11 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnAssignItemToMinionEvent OnAssignItemToMinionEvent;
 
-	// Supplies the text for each shop/stash item's hover flyout (CreateItemToolTip). Unbound, items show no flyout.
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnUnequipItemFromMinionEvent OnUnequipItemFromMinionEvent;
+
+	// Supplies the text for each shop/stash/equipped item's hover flyout (CreateItemToolTip). Unbound, items show no
+	// flyout.
 	FGetItemDisplayTextDelegate GetItemDisplayTextDelegate;
 
 	UPROPERTY()
@@ -562,10 +601,13 @@ protected:
 	UPanelWidget* MinionStashVertBox;
 	UPROPERTY(meta = (BindWidget))
 	UPanelWidget* MinionStashButtonsVertBox;
-	// Shown by OnMinionButtonClicked, with MinionEquipText listing the clicked minion's equipped items
-	// (UpdateMinionEquipText). Named to match WBP_CoreMenu, typo included.
+	// Shown by OnMinionButtonClicked, with MinionEqiupCanvas holding a WBP_SingleImageButton per item slot, named
+	// Minion{ItemSlot}EquipButton, that shows the selected minion's item in that slot (InitMinionEquipButtons). Both
+	// named to match WBP_CoreMenu, typos included.
 	UPROPERTY(meta = (BindWidget))
 	UPanelWidget* MinionEqiupVertBox;
+	UPROPERTY(meta = (BindWidget))
+	UPanelWidget* MinionEqiupCanvas;
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* MinionEquipText;
 	// Shows the HireShop window (HireShopVertBox), whose HireShopButtonsVertBox lists a minion button for each minion
@@ -632,6 +674,8 @@ protected:
 	void ClearSelectedItem();
 	// The BaseItem_DT ItemName of the saved item ItemUUID, or ItemUUID itself if it can't be found.
 	FString GetSavedItemName(const FString& ItemUUID) const;
+	// The BaseItem_DT row of the saved item ItemUUID, or null if it can't be found.
+	const FBaseItemStruct* FindSavedItemRow(const FString& ItemUUID) const;
 	// Click handler for the Reset Game button; wipes save data (broadcasts OnResetGameButtonClickedEvent
 	// for listeners like ItemHandler/PlayerInventory) and refreshes the stash and shop grids.
 	UFUNCTION()
@@ -659,23 +703,32 @@ protected:
 	// (SelectMinion)
 	UFUNCTION()
 	void OnMinionStashButtonClicked(UPlayerMinion* Minion);
-	// Makes Minion the selected minion: StashAssignButton assigns to it, MinionEquipText lists its equipment, and its
-	// button in MinionStashButtonsVertBox gets the white selection border. Says so in WarningsTextBox for
+	// Makes Minion the selected minion: StashAssignButton assigns to it, the MinionEquip window shows its equipment, and
+	// its button in MinionStashButtonsVertBox gets the white selection border. Says so in WarningsTextBox for
 	// WarningDisplaySeconds.
 	void SelectMinion(UPlayerMinion* Minion, float WarningDisplaySeconds);
+	// Finds the MinionEquip window's slot buttons in MinionEqiupCanvas, works out each one's item slots from its name,
+	// and binds its clicks and hover flyout. Called once, in NativeOnInitialized, since a flyout is only picked up when
+	// the Slate widgets are built.
+	void InitMinionEquipButtons();
+	// Shows the item EquipWindowMinion has equipped in each slot button's slot as that item's BaseItem_DT ItemIcon,
+	// leaving the rest of the buttons empty.
+	void RefreshMinionEquipButtons();
+	// Click handler for a MinionEquip window slot button: unequips ItemUUID from EquipWindowMinion (via
+	// OnUnequipItemFromMinionEvent), which returns it to the stash, and says so in WarningsTextBox. Does nothing for an
+	// empty slot.
+	UFUNCTION()
+	void OnMinionEquipButtonClicked(FString ItemUUID);
+	// Bound to EquipWindowMinion's OnSaveDataChangedEvent, so the slot buttons keep up as its equipment changes (e.g. an
+	// assigned or unequipped item, or the minion leaving the active party).
+	UFUNCTION()
+	void OnEquipWindowMinionSaveDataChanged(FString MinionUUID);
 	// Click handler for ReserveMinionButton; toggles the MinionStash window
 	UFUNCTION()
 	void OnReserveMinionButtonClicked();
 	// Replaces the minion buttons in MinionStashButtonsVertBox with a WBP_MinionButton for each of Minions that isn't
 	// in the active party, showing its class's MinionIcon and ClassName, wrapped in a selection border.
 	void PopulateMinionStash(const TArray<UPlayerMinion*>& Minions);
-	// Sets MinionEquipText to EquipTextMinion's class name, followed by a line for each ItemSlot it has an item
-	// in, naming that item ("No minion selected" if no minion button has been clicked yet).
-	void UpdateMinionEquipText();
-	// Bound to EquipTextMinion's OnSaveDataChangedEvent, so MinionEquipText keeps up as its equipment changes
-	// (e.g. an assigned item).
-	UFUNCTION()
-	void OnEquipTextMinionSaveDataChanged(FString MinionUUID);
 	// Creates a WBP_MinionButton showing MinionIcon and MinionName, for the caller to bind and add. Null if it
 	// can't be created.
 	UUserWidget* CreateMinionButtonWidget(UClass* MinionButtonClass, UTexture2D* MinionIcon, const FText& MinionName);
@@ -711,7 +764,7 @@ protected:
 	// Builds the hover flyout for a currency button: CurrencyName on top, CurrencyDescription underneath.
 	// Returns null if the Currency_DT row can't be found.
 	UWidget* CreateCurrencyToolTip(const FName& RowName);
-	// Builds the hover flyout for a shop/stash item: its name on top, with the rest of the text ActiveItemTextBox
+	// Builds the hover flyout for a shop/stash/equipped item: its name on top, with the rest of the text ActiveItemTextBox
 	// shows for it (from GetItemDisplayTextDelegate) underneath. Returns null if there's no text for it.
 	UWidget* CreateItemToolTip(const FString& ItemId, const FString& ItemUUID);
 	// The look shared by every hover flyout: Title in bold over Body, on a dark background.
@@ -879,9 +932,14 @@ protected:
 	UPROPERTY()
 	FString SelectedMinionUUID;
 
-	// The selected minion, whose equipped items MinionEquipText lists. Set via SelectMinion.
+	// The selected minion, whose equipment the MinionEquip window's slot buttons show. Set via SelectMinion.
 	UPROPERTY()
-	TObjectPtr<UPlayerMinion> EquipTextMinion;
+	TObjectPtr<UPlayerMinion> EquipWindowMinion;
+
+	// One per MinionEquip window slot button, in button name order, so buttons sharing a slot (e.g. the two ring
+	// buttons) fill in that order. Built once by InitMinionEquipButtons.
+	UPROPERTY()
+	TArray<TObjectPtr<UMinionEquipButtonProxy>> MinionEquipButtonProxies;
 
 	// The class of each minion the hire shop offers, as last set by SetHireShopMinions.
 	UPROPERTY()

@@ -59,6 +59,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -140,6 +147,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Local",
 		"GoldValueModifier": 1.125
 	},
 	{
@@ -202,6 +210,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -283,6 +298,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.25
 	},
 	{
@@ -345,6 +361,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Multiplication",
@@ -426,6 +449,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.125
 	},
 	{
@@ -488,6 +512,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Multiplication",
@@ -569,6 +600,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.25
 	},
 	{
@@ -631,6 +663,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -712,6 +751,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.125
 	},
 	{
@@ -774,6 +814,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -855,6 +902,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.25
 	},
 	{
@@ -917,6 +965,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -998,6 +1053,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.125
 	},
 	{
@@ -1060,6 +1116,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -1141,6 +1204,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.25
 	},
 	{
@@ -1203,6 +1267,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -1284,6 +1355,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.125
 	},
 	{
@@ -1346,6 +1418,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -1427,6 +1506,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.25
 	},
 	{
@@ -1489,6 +1569,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -1570,6 +1657,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.125
 	},
 	{
@@ -1632,6 +1720,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -1713,6 +1808,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.25
 	},
 	{
@@ -1775,6 +1871,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Multiplication",
@@ -1856,6 +1959,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.125
 	},
 	{
@@ -1918,6 +2022,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Multiplication",
@@ -1999,6 +2110,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.25
 	},
 	{
@@ -2061,6 +2173,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Multiplication",
@@ -2142,6 +2261,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.375
 	},
 	{
@@ -2204,6 +2324,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Multiplication",
@@ -2285,6 +2412,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.125
 	},
 	{
@@ -2347,6 +2475,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Multiplication",
@@ -2428,6 +2563,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.25
 	},
 	{
@@ -2490,6 +2626,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Multiplication",
@@ -2571,6 +2714,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.375
 	},
 	{
@@ -2633,6 +2777,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "GlobalMod",
@@ -2714,6 +2865,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.125
 	},
 	{
@@ -2776,6 +2928,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "GlobalMod",
@@ -2857,6 +3016,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.25
 	},
 	{
@@ -2919,6 +3079,13 @@
 				"IceResistance": 1,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "GlobalMod",
@@ -3000,6 +3167,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.125
 	},
 	{
@@ -3062,6 +3230,13 @@
 				"IceResistance": 1,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "GlobalMod",
@@ -3143,6 +3318,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.25
 	},
 	{
@@ -3205,6 +3381,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 1,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "GlobalMod",
@@ -3286,6 +3469,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.125
 	},
 	{
@@ -3348,6 +3532,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 1,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "GlobalMod",
@@ -3429,6 +3620,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.25
 	},
 	{
@@ -3491,6 +3683,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 1
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "GlobalMod",
@@ -3572,6 +3771,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.125
 	},
 	{
@@ -3634,6 +3834,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 1
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "GlobalMod",
@@ -3715,6 +3922,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.25
 	},
 	{
@@ -3776,6 +3984,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "GlobalMod",
@@ -3857,6 +4072,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 3
 	},
 	{
@@ -3918,6 +4134,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "UniqueModifier",
@@ -3999,6 +4222,7 @@
 				"UniqueSkill": true
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 4
 	},
 	{
@@ -4061,6 +4285,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 1,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -4142,6 +4373,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.125
 	},
 	{
@@ -4204,13 +4436,20 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 1,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Addition",
 		"UniqueModifierId": "",
 		"ValidItemClasses":
 		{
-			"Armor": false,
+			"Armor": true,
 			"Weapon": false,
 			"Shield": false,
 			"Jewelry": false,
@@ -4285,6 +4524,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.125
 	},
 	{
@@ -4347,6 +4587,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 1,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -4428,6 +4675,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.25
 	},
 	{
@@ -4490,6 +4738,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 1,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -4571,6 +4826,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.375
 	},
 	{
@@ -4633,6 +4889,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -4714,6 +4977,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.125
 	},
 	{
@@ -4776,6 +5040,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -4857,6 +5128,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.25
 	},
 	{
@@ -4919,6 +5191,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -5000,6 +5279,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.125
 	},
 	{
@@ -5062,6 +5342,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -5143,6 +5430,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.25
 	},
 	{
@@ -5205,6 +5493,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -5286,6 +5581,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.125
 	},
 	{
@@ -5348,6 +5644,13 @@
 				"IceResistance": 0,
 				"ElectricResistance": 0,
 				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
 			}
 		},
 		"ModifierOperator": "Addition",
@@ -5429,6 +5732,7 @@
 				"UniqueSkill": false
 			}
 		},
+		"AppliesTo": "Global",
 		"GoldValueModifier": 1.25
 	}
 ]

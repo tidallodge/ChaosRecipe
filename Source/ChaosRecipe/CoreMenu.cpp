@@ -154,6 +154,8 @@ void UCoreMenu::NativeOnInitialized()
 
 	RegisterWindows();
 	PopulateMap();
+	// Here too, since the hover flyouts it binds are only picked up when the Slate widgets are built.
+	InitMinionEquipButtons();
 }
 
 void UCoreMenu::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -441,111 +443,9 @@ void UCoreMenu::OnSingleLoadItemButtonClicked(FString ItemUUID)
 
 	// Lets listeners (e.g. ItemHandler) load this existing saved item's stats into their
 	// working cache, keyed to its already-assigned UUID, so Randomize/Save edit it in place
-	// instead of a stale or nonexistent cached item.
+	// instead of a stale or nonexistent cached item. ItemHandler also shows it in ActiveItemTextBox,
+	// laid out for its class (weapon, armor or jewelry).
 	OnStashItemSelectedEvent.Broadcast(ItemId, ItemUUID);
-
-	// Item display name comes from BaseItem_DT (the saved JSON only stores the ItemId).
-	const FString ItemName = bHasSelectedItemData ? SelectedItemData.ItemName.ToString() : ItemId;
-
-	double AttackRate = 0.0;
-	ItemObject->TryGetNumberField(TEXT("attackRate"), AttackRate);
-
-	// itemGoldValue is populated as soon as an item's stats are built (it starts equal to
-	// itemBaseGoldValue), so the itemBaseGoldValue fallback only matters for saves from before
-	// this field existed.
-	double ItemGoldValue = 0.0;
-	double ItemBaseGoldValue = 0.0;
-	ItemObject->TryGetNumberField(TEXT("itemGoldValue"), ItemGoldValue);
-	ItemObject->TryGetNumberField(TEXT("itemBaseGoldValue"), ItemBaseGoldValue);
-	const double DisplayGoldValue = ItemGoldValue > 0.0 ? ItemGoldValue : ItemBaseGoldValue;
-
-	// Damage is saved by FJsonObjectConverter as per-channel FIntPoints ({"x": min, "y": max}).
-	// Prefer weaponLocalDamage.LocalDamage (base damage with rolled modifiers applied, which is what
-	// ItemHandler shows for a freshly rolled item), falling back to weaponDamage.BaseDamage.
-	auto BuildDamageLinesFromJson = [](const TSharedPtr<FJsonObject>& DamageObject, const TCHAR* FieldPrefix)
-	{
-		const TCHAR* Channels[][2] = {
-			{ TEXT("Physical"), TEXT("PhysicalDamage") },
-			{ TEXT("Fire"),     TEXT("FireDamage") },
-			{ TEXT("Ice"),      TEXT("IceDamage") },
-			{ TEXT("Electric"), TEXT("ElectricDamage") },
-			{ TEXT("Abyssal"),  TEXT("AbyssalDamage") },
-		};
-
-		FString Text;
-		for (const auto& Channel : Channels)
-		{
-			const TSharedPtr<FJsonObject>* RangeObject;
-			if (!DamageObject->TryGetObjectField(FString(FieldPrefix) + Channel[1], RangeObject))
-			{
-				continue;
-			}
-
-			int32 MinDamage = 0;
-			int32 MaxDamage = 0;
-			(*RangeObject)->TryGetNumberField(TEXT("x"), MinDamage);
-			(*RangeObject)->TryGetNumberField(TEXT("y"), MaxDamage);
-			if (MinDamage == 0 && MaxDamage == 0)
-			{
-				continue;
-			}
-
-			Text += FString::Printf(TEXT("  %s: %d-%d\n"), Channel[0], MinDamage, MaxDamage);
-		}
-		return Text;
-	};
-
-	FString WeaponDamageText;
-	const TSharedPtr<FJsonObject>* DamageMapObject;
-	const TSharedPtr<FJsonObject>* DamageObject;
-	if (ItemObject->TryGetObjectField(TEXT("weaponLocalDamage"), DamageMapObject)
-		&& (*DamageMapObject)->TryGetObjectField(TEXT("LocalDamage"), DamageObject))
-	{
-		WeaponDamageText = BuildDamageLinesFromJson(*DamageObject, TEXT("local"));
-	}
-	if (WeaponDamageText.IsEmpty()
-		&& ItemObject->TryGetObjectField(TEXT("weaponDamage"), DamageMapObject)
-		&& (*DamageMapObject)->TryGetObjectField(TEXT("BaseDamage"), DamageObject))
-	{
-		WeaponDamageText = BuildDamageLinesFromJson(*DamageObject, TEXT("base"));
-	}
-
-	// Collect implicit/prefix/suffix modifiers (ModifierId -> rolled value).
-	auto AppendModifiers = [&ItemObject](const TCHAR* FieldName, const TCHAR* Label, FString& OutText)
-	{
-		const TSharedPtr<FJsonObject>* ModifierObject;
-		if (!ItemObject->TryGetObjectField(FieldName, ModifierObject) || (*ModifierObject)->Values.Num() == 0)
-		{
-			return;
-		}
-
-		OutText += FString::Printf(TEXT("%s:\n"), Label);
-		for (const TPair<FString, TSharedPtr<FJsonValue>>& ModifierPair : (*ModifierObject)->Values)
-		{
-			double ModifierValue = 0.0;
-			ModifierPair.Value->TryGetNumber(ModifierValue);
-			OutText += FString::Printf(TEXT("  %s (%d)\n"), *ModifierPair.Key, FMath::RoundToInt(ModifierValue));
-		}
-	};
-
-	FString ModifiersText;
-	AppendModifiers(TEXT("implicitModifiers"), TEXT("Implicit"), ModifiersText);
-	AppendModifiers(TEXT("prefixModifiers"), TEXT("Prefixes"), ModifiersText);
-	AppendModifiers(TEXT("suffixModifiers"), TEXT("Suffixes"), ModifiersText);
-	if (ModifiersText.IsEmpty())
-	{
-		ModifiersText = TEXT("Modifiers: none\n");
-	}
-
-	const FString DisplayText = FString::Printf(
-		TEXT("%s\nBase Damage:\n%sAttack Rate: %.2f\nGold Value: %.0f\n%s"),
-		*ItemName,
-		*WeaponDamageText,
-		AttackRate,
-		DisplayGoldValue,
-		*ModifiersText);
-
-	ActiveItemTextBox->SetText(FText::FromString(DisplayText));
 }
 
 void UCoreMenu::PopulatePlayerStash()
@@ -1364,66 +1264,195 @@ void UCoreMenu::SelectMinion(UPlayerMinion* Minion, float WarningDisplaySeconds)
 	LogToScreen(Message);
 	SetWarningText(Message, WarningDisplaySeconds);
 
-	// Unbound first even when the same minion is clicked again, since a minion can't be bound twice.
-	if (EquipTextMinion)
+	// Unbound first even when the same minion is selected again, since a minion can't be bound twice.
+	if (EquipWindowMinion)
 	{
-		EquipTextMinion->OnSaveDataChangedEvent.RemoveDynamic(this, &UCoreMenu::OnEquipTextMinionSaveDataChanged);
+		EquipWindowMinion->OnSaveDataChangedEvent.RemoveDynamic(this, &UCoreMenu::OnEquipWindowMinionSaveDataChanged);
 	}
-	EquipTextMinion = Minion;
-	EquipTextMinion->OnSaveDataChangedEvent.AddDynamic(this, &UCoreMenu::OnEquipTextMinionSaveDataChanged);
-	UpdateMinionEquipText();
+	EquipWindowMinion = Minion;
+	EquipWindowMinion->OnSaveDataChangedEvent.AddDynamic(this, &UCoreMenu::OnEquipWindowMinionSaveDataChanged);
+	RefreshMinionEquipButtons();
 }
 
-void UCoreMenu::OnEquipTextMinionSaveDataChanged(FString MinionUUID)
+void UCoreMenu::OnEquipWindowMinionSaveDataChanged(FString MinionUUID)
 {
-	UpdateMinionEquipText();
+	RefreshMinionEquipButtons();
 }
 
-void UCoreMenu::UpdateMinionEquipText()
+// The item slots a MinionEquip window slot button shows, from its name: Minion{ItemSlot}EquipButton, plus a _N suffix
+// where more than one button shows a slot (e.g. MinionRingEquipButton_1 and _2). {ItemSlot} is an EItemSlot name, or
+// one of the names WBP_CoreMenu uses for a slot instead. Empty if the name doesn't name a slot.
+static TArray<EItemSlot> GetMinionEquipButtonItemSlots(const FString& ButtonName)
 {
-	if (!MinionEquipText)
+	// WBP_CoreMenu's names for the slots it calls something else. The main hand button shows two-handed weapons too.
+	static const TMap<FString, TArray<EItemSlot>> SlotNameAliases = {
+		{ TEXT("Helmet"),   { EItemSlot::Head } },
+		{ TEXT("Amulet"),   { EItemSlot::Neck } },
+		{ TEXT("Greaves"),  { EItemSlot::Boots } },
+		{ TEXT("MainHand"), { EItemSlot::HandMain, EItemSlot::HandBoth } },
+		{ TEXT("OffHand"),  { EItemSlot::HandOff } },
+	};
+
+	const int32 SuffixIndex = ButtonName.Find(TEXT("EquipButton"), ESearchCase::CaseSensitive);
+	if (SuffixIndex == INDEX_NONE)
 	{
+		return {};
+	}
+
+	FString SlotName = ButtonName.Left(SuffixIndex);
+	if (!SlotName.RemoveFromStart(TEXT("Minion"), ESearchCase::CaseSensitive))
+	{
+		return {};
+	}
+
+	if (const TArray<EItemSlot>* AliasedSlots = SlotNameAliases.Find(SlotName))
+	{
+		return *AliasedSlots;
+	}
+
+	const int64 SlotValue = StaticEnum<EItemSlot>()->GetValueByNameString(SlotName);
+	if (SlotValue == INDEX_NONE)
+	{
+		return {};
+	}
+	return { static_cast<EItemSlot>(SlotValue) };
+}
+
+void UCoreMenu::InitMinionEquipButtons()
+{
+	if (!MinionEqiupCanvas)
+	{
+		UE_LOG(LogTemp, Error, TEXT("MinionEqiupCanvas is null or not found!"));
 		return;
 	}
 
-	if (!EquipTextMinion)
+	TArray<UUserWidget*> ButtonWidgets;
+	UWidgetTree::ForWidgetAndChildren(MinionEqiupCanvas, [&ButtonWidgets](UWidget* Widget)
 	{
-		MinionEquipText->SetText(FText::FromString(TEXT("No minion selected")));
-		return;
-	}
+		UUserWidget* ButtonWidget = Cast<UUserWidget>(Widget);
+		if (ButtonWidget && ButtonWidget->GetName().Contains(TEXT("EquipButton")))
+		{
+			ButtonWidgets.Add(ButtonWidget);
+		}
+	});
+	// So buttons sharing a slot fill in name order (MinionRingEquipButton_1 before _2).
+	ButtonWidgets.Sort([](const UUserWidget& A, const UUserWidget& B) { return A.GetName() < B.GetName(); });
 
-	FString Text = EquipTextMinion->GetMinionClassName().ToString();
-	bool bHasEquippedItems = false;
-
-	// NumEnums() also counts the _MAX entry UHT adds to the end.
-	const UEnum* ItemSlotEnum = StaticEnum<EItemSlot>();
-	for (int32 Index = 0; Index < ItemSlotEnum->NumEnums() - 1; ++Index)
+	for (UUserWidget* ButtonWidget : ButtonWidgets)
 	{
-		const EItemSlot ItemSlot = static_cast<EItemSlot>(ItemSlotEnum->GetValueByIndex(Index));
-		const TArray<FString> SlotItemUUIDs = EquipTextMinion->GetEquippedItemUUIDsInSlot(ItemSlot);
-		if (SlotItemUUIDs.Num() == 0)
+		const TArray<EItemSlot> ItemSlots = GetMinionEquipButtonItemSlots(ButtonWidget->GetName());
+		if (ItemSlots.Num() == 0)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s doesn't name an item slot, so it won't show any equipment."), *ButtonWidget->GetName());
+			continue;
+		}
+
+		UButton* Button = GetSingleImageButton(ButtonWidget);
+		if (!Button)
 		{
 			continue;
 		}
 
-		TArray<FString> ItemNames;
-		for (const FString& ItemUUID : SlotItemUUIDs)
+		UMinionEquipButtonProxy* Proxy = NewObject<UMinionEquipButtonProxy>(this);
+		Proxy->ItemSlots = ItemSlots;
+		Proxy->ButtonWidget = ButtonWidget;
+		Proxy->OwningMenu = this;
+		MinionEquipButtonProxies.Add(Proxy);
+		Button->OnClicked.AddDynamic(Proxy, &UMinionEquipButtonProxy::HandleClicked);
+		// Has to be bound before the Slate widgets are built, which is when it's picked up.
+		Button->ToolTipWidgetDelegate.BindDynamic(Proxy, &UMinionEquipButtonProxy::CreateToolTip);
+	}
+
+	// No minion is selected yet, so this just empties every slot.
+	RefreshMinionEquipButtons();
+}
+
+void UCoreMenu::RefreshMinionEquipButtons()
+{
+	TSet<FString> ShownItemUUIDs;
+	for (UMinionEquipButtonProxy* Proxy : MinionEquipButtonProxies)
+	{
+		TArray<FString> SlotItemUUIDs;
+		if (EquipWindowMinion)
 		{
-			ItemNames.Add(GetSavedItemName(ItemUUID));
+			for (const EItemSlot ItemSlot : Proxy->ItemSlots)
+			{
+				SlotItemUUIDs.Append(EquipWindowMinion->GetEquippedItemUUIDsInSlot(ItemSlot));
+			}
 		}
 
-		// Trimmed, since some display names have a stray space (e.g. "Gloves ").
-		const FString SlotName = ItemSlotEnum->GetDisplayNameTextByIndex(Index).ToString().TrimStartAndEnd();
-		Text += FString::Printf(TEXT("\n%s: %s"), *SlotName, *FString::Join(ItemNames, TEXT(", ")));
-		bHasEquippedItems = true;
-	}
+		// Buttons sharing a slot (e.g. the two ring buttons) each show the next item in it.
+		const FString* ItemUUID = SlotItemUUIDs.FindByPredicate([&ShownItemUUIDs](const FString& UUID) { return !ShownItemUUIDs.Contains(UUID); });
+		Proxy->ItemUUID = ItemUUID ? *ItemUUID : FString();
+		if (ItemUUID)
+		{
+			ShownItemUUIDs.Add(*ItemUUID);
+		}
 
-	if (!bHasEquippedItems)
+		UImage* Icon = GetSingleImageButtonIcon(Proxy->ButtonWidget);
+		if (!Icon)
+		{
+			continue;
+		}
+
+		const FBaseItemStruct* ItemRow = Proxy->ItemUUID.IsEmpty() ? nullptr : FindSavedItemRow(Proxy->ItemUUID);
+		if (ItemRow && ItemRow->ItemAssetData.ItemIcon)
+		{
+			Icon->SetBrushFromTexture(ItemRow->ItemAssetData.ItemIcon);
+			// Not hit-testable so clicks still reach the owning button.
+			Icon->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+			continue;
+		}
+
+		if (ItemRow)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("No ItemIcon set for item: %s"), *ItemRow->ItemId.ToString());
+		}
+		// Without a texture the icon would render as a plain white box. Hidden (not Collapsed) keeps the button's
+		// layout size.
+		Icon->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
+void UMinionEquipButtonProxy::HandleClicked()
+{
+	if (OwningMenu)
 	{
-		Text += TEXT("\nNo items equipped");
+		OwningMenu->OnMinionEquipButtonClicked(ItemUUID);
+	}
+}
+
+UWidget* UMinionEquipButtonProxy::CreateToolTip()
+{
+	// An empty slot has no flyout. An equipped item's ItemId comes from its save, so its UUID is enough.
+	return OwningMenu && !ItemUUID.IsEmpty() ? OwningMenu->CreateItemToolTip(FString(), ItemUUID) : nullptr;
+}
+
+void UCoreMenu::OnMinionEquipButtonClicked(FString ItemUUID)
+{
+	// An empty slot has nothing to unequip.
+	if (ItemUUID.IsEmpty() || !EquipWindowMinion)
+	{
+		return;
 	}
 
-	MinionEquipText->SetText(FText::FromString(Text));
+	const FString ItemName = GetSavedItemName(ItemUUID);
+
+	// MinionHandler unequips the item and saves the minion during the broadcast, and the slot buttons catch up through
+	// OnEquipWindowMinionSaveDataChanged. The item itself stays in SavedItems.json, so it's back in the stash.
+	OnUnequipItemFromMinionEvent.Broadcast(EquipWindowMinion->GetMinionUUID(), ItemUUID);
+
+	if (EquipWindowMinion->IsItemEquipped(ItemUUID))
+	{
+		SetWarningText(FString::Printf(TEXT("Couldn't remove %s from the selected minion."), *ItemName));
+		return;
+	}
+
+	const FString Message = FString::Printf(TEXT("Removed %s from the selected minion and returned it to your stash."), *ItemName);
+	LogToScreen(Message);
+	SetWarningText(Message, 6.f);
+
+	PopulatePlayerStash();
 }
 
 void UShopItemButtonProxy::HandleClicked()
@@ -1655,9 +1684,7 @@ void UCoreMenu::OnStashAssignButtonClicked()
 {
 	UE_LOG(LogTemp, Warning, TEXT("StashAssignButton Clicked."));
 
-	// Shown on every click, so the minion's equipment is up whether or not the assignment goes through (the
-	// text then keeps up with it through OnEquipTextMinionSaveDataChanged).
-	UpdateMinionEquipText();
+	// Shown on every click, whether or not the assignment goes through.
 	ShowWindow(ECoreMenuWindow::MinionEquip);
 
 	if (ValidateSelectedStashItem())
@@ -1748,22 +1775,33 @@ void UCoreMenu::ClearSelectedItem()
 
 FString UCoreMenu::GetSavedItemName(const FString& ItemUUID) const
 {
-	TSharedPtr<FJsonObject> ItemObject;
-	FString ItemId;
-	if (ItemDataTable && GetSavedItemJsonByUUID(ItemUUID, ItemObject) && ItemObject->TryGetStringField(TEXT("ItemId"), ItemId))
+	if (const FBaseItemStruct* ItemRow = FindSavedItemRow(ItemUUID))
 	{
-		for (const FName& RowName : ItemDataTable->GetRowNames())
-		{
-			const FBaseItemStruct* ItemRow = ItemDataTable->FindRow<FBaseItemStruct>(RowName, TEXT("CoreMenu::GetSavedItemName"));
-			if (ItemRow && ItemRow->ItemId.ToString().Equals(ItemId, ESearchCase::IgnoreCase))
-			{
-				return ItemRow->ItemName.ToString();
-			}
-		}
+		return ItemRow->ItemName.ToString();
 	}
 
 	UE_LOG(LogTemp, Warning, TEXT("No saved item name found for UUID: %s"), *ItemUUID);
 	return ItemUUID;
+}
+
+const FBaseItemStruct* UCoreMenu::FindSavedItemRow(const FString& ItemUUID) const
+{
+	TSharedPtr<FJsonObject> ItemObject;
+	FString ItemId;
+	if (!ItemDataTable || !GetSavedItemJsonByUUID(ItemUUID, ItemObject) || !ItemObject->TryGetStringField(TEXT("ItemId"), ItemId))
+	{
+		return nullptr;
+	}
+
+	for (const FName& RowName : ItemDataTable->GetRowNames())
+	{
+		const FBaseItemStruct* ItemRow = ItemDataTable->FindRow<FBaseItemStruct>(RowName, TEXT("CoreMenu::FindSavedItemRow"));
+		if (ItemRow && ItemRow->ItemId.ToString().Equals(ItemId, ESearchCase::IgnoreCase))
+		{
+			return ItemRow;
+		}
+	}
+	return nullptr;
 }
 
 void UCoreMenu::OnResetGameButtonClicked()
