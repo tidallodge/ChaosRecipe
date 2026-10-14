@@ -9576,7 +9576,7 @@
 	{
 		"Name": "accuracy_flat_01",
 		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"75740F294BA1BFDD576B08B943C18AB2\", \"accuracy_flat_01\")",
-		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"BAF7D65342C75525A3EA89B448FA671D\", \"Accuracy +\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"BAF7D65342C75525A3EA89B448FA671D\", \"Accuracy\")",
 		"ItemTags":
 		{
 			"Etched": false
@@ -9604,7 +9604,10 @@
 		"ModifierTier": 0,
 		"ModifierRequiredLevel": 1,
 		"ModifierAffixType": "Prefix",
-		"MinMaxRange": [],
+		"MinMaxRange": [
+			50,
+			100
+		],
 		"ModifiedAttribute":
 		{
 			"WeaponAttackRate": 0,
@@ -9725,7 +9728,7 @@
 	{
 		"Name": "accuracy_percent_01",
 		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"A065995344F958DBE90262A3387F92DA\", \"accuracy_percent_01\")",
-		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"35F1E41346CAE78EDBE98EAA9FB83449\", \"Accuracy %\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"35F1E41346CAE78EDBE98EAA9FB83449\", \"Increased Accuracy\")",
 		"ItemTags":
 		{
 			"Etched": false
@@ -9753,7 +9756,10 @@
 		"ModifierTier": 0,
 		"ModifierRequiredLevel": 1,
 		"ModifierAffixType": "Prefix",
-		"MinMaxRange": [],
+		"MinMaxRange": [
+			10,
+			20
+		],
 		"ModifiedAttribute":
 		{
 			"WeaponAttackRate": 0,
@@ -9789,7 +9795,7 @@
 				"Dexterity": 0
 			}
 		},
-		"ModifierOperator": "Addition",
+		"ModifierOperator": "Multiplication",
 		"UniqueModifierId": "",
 		"ValidItemClasses":
 		{
@@ -9870,5 +9876,917 @@
 		},
 		"AppliesTo": "Global",
 		"GoldValueModifier": 0
+	},
+	{
+		"Name": "mana_flat_01",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"BE548DB944DBAD45373B9ABB60FC5530\", \"mana_flat_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"D4122FB04CE05A24CAA77ABD4D38DDAF\", \"Mana\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Abyssal": false,
+			"Damage": false,
+			"Attack": false,
+			"Spell": false,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			1,
+			10
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"AbyssalDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
+			}
+		},
+		"ModifierOperator": "Addition",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": true,
+			"Weapon": true,
+			"Shield": true,
+			"Jewelry": true,
+			"Misc": true
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		},
+		"ModifierBuckets":
+		{
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatIceDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatAbyssalDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"IceResist": false,
+				"ElectricResist": false,
+				"AbyssalResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
+		},
+		"AppliesTo": "Global",
+		"GoldValueModifier": 1.125
+	},
+	{
+		"Name": "mana_percent_01",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"0C930B1E4F6E796C88FFBDBFC8D1F12C\", \"mana_percent_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"2E4093E24391E9B839C3618059B811F7\", \"Increased Mana\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Abyssal": false,
+			"Damage": false,
+			"Attack": false,
+			"Spell": false,
+			"Defense": false,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
+		},
+		"ModifierWeight": 1000,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			10,
+			20
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"AbyssalDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
+			}
+		},
+		"ModifierOperator": "Multiplication",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": true,
+			"Weapon": true,
+			"Shield": true,
+			"Jewelry": true,
+			"Misc": true
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		},
+		"ModifierBuckets":
+		{
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatIceDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatAbyssalDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"IceResist": false,
+				"ElectricResist": false,
+				"AbyssalResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
+		},
+		"AppliesTo": "Global",
+		"GoldValueModifier": 1.125
+	},
+	{
+		"Name": "armor_percent_01",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"87C1D1544EDA96C6B2B8ABB5D2630E05\", \"armor_percent_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"5AB9546147FDE4C2879EA291660FC90C\", \"Increased Armor\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Abyssal": false,
+			"Damage": false,
+			"Attack": false,
+			"Spell": false,
+			"Defense": true,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false,
+			"Life": false,
+			"Armor": true,
+			"Evade": false,
+			"Overshield": false
+		},
+		"ModifierWeight": 250,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			10,
+			20
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"AbyssalDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 1,
+				"Evade": 0,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
+			}
+		},
+		"ModifierOperator": "Multiplication",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": true,
+			"Weapon": true,
+			"Shield": true,
+			"Jewelry": true,
+			"Misc": true
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		},
+		"ModifierBuckets":
+		{
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatIceDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatAbyssalDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"IceResist": false,
+				"ElectricResist": false,
+				"AbyssalResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
+		},
+		"AppliesTo": "Global",
+		"GoldValueModifier": 1.125
+	},
+	{
+		"Name": "evade_percent_01",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"E0094DCC4CDF58C9D26EE4B6B3F9207B\", \"evade_percent_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"25865B804F64814D355E2B9D81CF2056\", \"Increased Evasion\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Abyssal": false,
+			"Damage": false,
+			"Attack": false,
+			"Spell": false,
+			"Defense": true,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": true,
+			"Overshield": false
+		},
+		"ModifierWeight": 250,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			10,
+			20
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"AbyssalDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 1,
+				"Overshield": 0,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
+			}
+		},
+		"ModifierOperator": "Multiplication",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": true,
+			"Weapon": true,
+			"Shield": true,
+			"Jewelry": true,
+			"Misc": true
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		},
+		"ModifierBuckets":
+		{
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatIceDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatAbyssalDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"IceResist": false,
+				"ElectricResist": false,
+				"AbyssalResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
+		},
+		"AppliesTo": "Global",
+		"GoldValueModifier": 1.125
+	},
+	{
+		"Name": "overshield_percent_01",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"7BBE64514C0AB87F4843E192BD6C109B\", \"overshield_percent_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"7E2FF98A4AB1DA4439FAF99C903386C4\", \"Increased OverShield\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Abyssal": false,
+			"Damage": false,
+			"Attack": false,
+			"Spell": false,
+			"Defense": true,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": true
+		},
+		"ModifierWeight": 250,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			10,
+			20
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"AbyssalDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 0,
+				"Evade": 0,
+				"Overshield": 1,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
+			}
+		},
+		"ModifierOperator": "Multiplication",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": true,
+			"Weapon": true,
+			"Shield": true,
+			"Jewelry": true,
+			"Misc": true
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		},
+		"ModifierBuckets":
+		{
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatIceDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatAbyssalDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"IceResist": false,
+				"ElectricResist": false,
+				"AbyssalResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
+		},
+		"AppliesTo": "Global",
+		"GoldValueModifier": 1.125
+	},
+	{
+		"Name": "defenses_percent_01",
+		"ModifierId": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"56DD13244FC8443D32720B8DB7919171\", \"defenses_percent_01\")",
+		"ModifierName": "NSLOCTEXT(\"[0167F5F64C13037CE4CA5A79C7AE169A]\", \"946AE5FF40C0B0943C1DA6BD7B7B3E3E\", \"Increased Defenses\")",
+		"ItemTags":
+		{
+			"Etched": false
+		},
+		"ModifierTags":
+		{
+			"Physical": false,
+			"Fire": false,
+			"Ice": false,
+			"Electric": false,
+			"Abyssal": false,
+			"Damage": false,
+			"Attack": false,
+			"Spell": false,
+			"Defense": true,
+			"Resistance": false,
+			"Speed": false,
+			"Critical": false,
+			"Life": false,
+			"Armor": false,
+			"Evade": false,
+			"Overshield": false
+		},
+		"ModifierWeight": 250,
+		"ModifierTier": 0,
+		"ModifierRequiredLevel": 1,
+		"ModifierAffixType": "Prefix",
+		"MinMaxRange": [
+			10,
+			20
+		],
+		"ModifiedAttribute":
+		{
+			"WeaponAttackRate": 0,
+			"WeaponCriticalChance": 0,
+			"WeaponCriticalMulti": 0,
+			"DamageModifier":
+			{
+				"PhysicalDamage": 0,
+				"FireDamage": 0,
+				"IceDamage": 0,
+				"ElectricDamage": 0,
+				"AbyssalDamage": 0
+			},
+			"MigitationModifier":
+			{
+				"PhysicalReduction": 1,
+				"Evade": 1,
+				"Overshield": 1,
+				"Block": 0
+			},
+			"ResistanceModifier":
+			{
+				"FireResistance": 0,
+				"IceResistance": 0,
+				"ElectricResistance": 0,
+				"AbyssalResistance": 0
+			},
+			"AttributeModifier":
+			{
+				"Health": 0,
+				"Strength": 0,
+				"Intelligence": 0,
+				"Dexterity": 0
+			}
+		},
+		"ModifierOperator": "Multiplication",
+		"UniqueModifierId": "",
+		"ValidItemClasses":
+		{
+			"Armor": true,
+			"Weapon": true,
+			"Shield": true,
+			"Jewelry": true,
+			"Misc": true
+		},
+		"ValidItemTypesOverride":
+		{
+			"Armor":
+			{
+				"Head": false,
+				"Chest": false,
+				"Gloves": false,
+				"Boots": false,
+				"Shield": false
+			},
+			"Weapon":
+			{
+				"Sword": false,
+				"Axe": false
+			},
+			"Shield":
+			{
+				"HandOff": false
+			},
+			"Jewelry":
+			{
+				"Neck": false,
+				"Ring": false,
+				"Belt": false
+			},
+			"Misc":
+			{
+				"Misc": false
+			}
+		},
+		"ModifierBuckets":
+		{
+			"WeaponModifierBuckets":
+			{
+				"LocalFlatPhysDamage": false,
+				"LocalPercentPhysDamage": false,
+				"LocalFlatFireDamage": false,
+				"LocalFlatIceDamage": false,
+				"LocalFlatElectricDamage": false,
+				"LocalFlatAbyssalDamage": false,
+				"LocalAttackRate": false,
+				"LocalCritChance": false,
+				"LocalCritDamage": false
+			},
+			"ArmorModifierBuckets":
+			{
+				"PhysicalMitigation": false,
+				"Evade": false,
+				"OverShield": false,
+				"life": false
+			},
+			"JewelryModifierBuckets":
+			{
+				"FireResist": false
+			},
+			"MiscModifierBuckets":
+			{
+				"Life": false
+			},
+			"GlobalModifierBuckets":
+			{
+				"FireResist": false,
+				"IceResist": false,
+				"ElectricResist": false,
+				"AbyssalResist": false,
+				"GlobalAllSkills": false,
+				"UniqueSkill": false
+			}
+		},
+		"AppliesTo": "Global",
+		"GoldValueModifier": 1.125
 	}
 ]
