@@ -12,6 +12,7 @@
 #include "MinionHandler.h"
 #include "HireShopHandler.h"
 #include "BattleManager.h"
+#include "BattleScene.h"
 #include "Engine/DataTable.h"
 #include "UObject/ConstructorHelpers.h"
 
@@ -147,6 +148,9 @@ void ACoreGameMode::BeginPlay()
 			BattleManager->BindToCoreMenuEvents(CoreMenuWidget);
 			BattleManager->BindToMinionHandler(MinionHandler);
 			BattleManager->BindToPlayerInventory(PlayerInventory);
+
+			// The ABattleScene placed in the level, which shows each stage's enemies as their meshes.
+			BattleManager->BindToBattleScene(Cast<ABattleScene>(UGameplayStatics::GetActorOfClass(GetWorld(), ABattleScene::StaticClass())));
 
 			UE_LOG(LogTemp, Warning, TEXT("CoreMenu widget loaded and displayed"));
 		}

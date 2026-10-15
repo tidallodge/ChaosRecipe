@@ -44,10 +44,11 @@ struct FEnemyAssetData
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere)
-	UTexture2D* EnemyIcon;
+	UTexture2D* EnemyIcon = nullptr;
 
+	// Shown for the enemy in the level's ABattleScene while it's in a battle.
 	UPROPERTY(EditAnywhere)
-	UStaticMesh* EnemyStaticMesh;
+	UStaticMesh* EnemyStaticMesh = nullptr;
 };
 
 USTRUCT(BlueprintType)

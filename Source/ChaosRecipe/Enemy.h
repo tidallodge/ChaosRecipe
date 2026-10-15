@@ -60,6 +60,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Enemy")
 	FText GetEnemyName() const { return EnemyData.EnemyName; }
 
+	// Its Enemy_DT EnemyStaticMesh, or null if it has none.
+	UFUNCTION(BlueprintPure, Category = "Enemy")
+	UStaticMesh* GetStaticMesh() const { return EnemyData.EnemyAssetData.EnemyStaticMesh; }
+
 	UFUNCTION(BlueprintPure, Category = "Enemy|Combat")
 	float GetCurrentHealth() const { return CurrentHealth; }
 

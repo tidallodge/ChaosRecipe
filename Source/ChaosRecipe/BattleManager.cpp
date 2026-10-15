@@ -1,6 +1,7 @@
 // BattleManager
 /** Purpose: Simulate a battle between the player's minions and a zone's enemies, stage by stage
-    Every stage spawns a random enemy group from Zone_DT, and the party carries its health from one stage to the next
+    Every stage spawns a random enemy group from Zone_DT after a short pause, and the party carries its health from one
+    stage to the next
     Every combatant picks a target and an attack/spell, hits with it, then waits out that ability's
     cooldown (one over its attack or cast rate) before acting again, until one side is defeated
 */
@@ -11,6 +12,7 @@
 #include "MinionHandler.h"
 #include "PlayerInventory.h"
 #include "Enemy.h"
+#include "BattleScene.h"
 #include "CurrencyManager.h"
 #include "DataTableHelpers.h"
 #include "Engine/World.h"
@@ -23,6 +25,13 @@ namespace
 
 	// A stage where neither side can finish the other off (e.g. an enemy with no Damage) ends the battle as a loss here.
 	constexpr float MaxStageDuration = 300.f;
+
+	// The pause before each stage's enemies spawn, the first stage's included. The battle clock keeps running through it.
+	constexpr float StageSpawnDelay = 1.f;
+
+	// The pause between a stage's enemies spawning and anyone acting, so their meshes are on screen before the fight
+	// starts. The battle clock keeps running through it too.
+	constexpr float StageFightDelay = 1.f;
 
 	// The zone's ZoneName, or its ZoneId if it has none.
 	FString GetZoneDisplayName(const FZoneStruct& Zone)
@@ -107,6 +116,17 @@ void UBattleManager::BindToPlayerInventory(UPlayerInventory* PlayerInventory)
 	BoundPlayerInventory = PlayerInventory;
 }
 
+void UBattleManager::BindToBattleScene(ABattleScene* BattleScene)
+{
+	if (!BattleScene)
+	{
+		UE_LOG(LogTemp, Error, TEXT("no BattleScene for BattleManager"));
+		return;
+	}
+
+	BoundBattleScene = BattleScene;
+}
+
 void UBattleManager::HandleBattlePlayButtonClicked()
 {
 	StartBattle();
@@ -177,14 +197,7 @@ void UBattleManager::StartBattle()
 	}
 
 	BattleTime = 0.f;
-	if (!StartStage(0))
-	{
-		if (BoundCoreMenu)
-		{
-			BoundCoreMenu->SetWarningText(FString::Printf(TEXT("%s has no enemies to battle."), *GetStageLabel()));
-		}
-		return;
-	}
+	QueueStage(0);
 
 	bBattleRunning = true;
 	BattleStartWorldTime = World->GetTimeSeconds();
@@ -192,6 +205,8 @@ void UBattleManager::StartBattle()
 
 	if (BoundCoreMenu)
 	{
+		// The last battle's enemies go now, rather than staying up through the pause before the first stage spawns.
+		BoundCoreMenu->SetBattleEnemies(TArray<UEnemy*>());
 		BoundCoreMenu->SetBattleTimerText(BattleTime);
 		BoundCoreMenu->SetWarningText(FString::Printf(TEXT("Entering %s: %d stage(s)."), *GetZoneDisplayName(Zone), Zone.GetStageCount()));
 	}
@@ -230,6 +245,10 @@ bool UBattleManager::StartStage(int32 InStageIndex)
 	{
 		BoundCoreMenu->SetBattleEnemies(SpawnedEnemies);
 	}
+	if (BoundBattleScene)
+	{
+		BoundBattleScene->ShowEnemies(SpawnedEnemies);
+	}
 
 	if (Enemies.Num() == 0)
 	{
@@ -240,31 +259,39 @@ bool UBattleManager::StartStage(int32 InStageIndex)
 	BattleKills.Reset();
 	StageStartTime = BattleTime;
 
-	// Everyone starts the stage ready to act. Minions killed in an earlier stage stay down: they're listed, but never
-	// act or get targeted.
+	// Everyone is ready to act together once StageFightDelay has passed, so nothing happens until the new enemies are
+	// on screen. Minions killed in an earlier stage stay down: they're listed, but never act or get targeted.
+	const float FirstActionTime = BattleTime + StageFightDelay;
 	Combatants.Reset();
 	for (UPlayerMinion* Minion : Minions)
 	{
 		FBattleCombatant& Entry = Combatants.AddDefaulted_GetRef();
 		Entry.Combatant = Minion;
 		Entry.bIsMinion = true;
-		Entry.NextActionTime = BattleTime;
+		Entry.NextActionTime = FirstActionTime;
 	}
 	for (UEnemy* Enemy : Enemies)
 	{
 		FBattleCombatant& Entry = Combatants.AddDefaulted_GetRef();
 		Entry.Combatant = Enemy;
-		Entry.NextActionTime = BattleTime;
+		Entry.NextActionTime = FirstActionTime;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("BattleManager: [%.2fs] %s started: %d minion(s) vs %d enemy(s)."),
-		BattleTime, *GetStageLabel(), Minions.Num(), Enemies.Num());
+	UE_LOG(LogTemp, Warning, TEXT("BattleManager: [%.2fs] %s started: %d minion(s) vs %d enemy(s), fighting from %.2fs."),
+		BattleTime, *GetStageLabel(), Minions.Num(), Enemies.Num(), FirstActionTime);
 	return true;
+}
+
+void UBattleManager::QueueStage(int32 InStageIndex)
+{
+	PendingStageIndex = InStageIndex;
+	PendingStageStartTime = BattleTime + StageSpawnDelay;
 }
 
 void UBattleManager::StopBattle()
 {
 	bBattleRunning = false;
+	PendingStageIndex = INDEX_NONE;
 	if (UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().ClearTimer(BattleTickHandle);
@@ -273,6 +300,11 @@ void UBattleManager::StopBattle()
 	for (UEnemy* Enemy : Enemies)
 	{
 		Enemy->OnKilledEvent.RemoveDynamic(this, &UBattleManager::HandleEnemyKilled);
+	}
+
+	if (BoundBattleScene)
+	{
+		BoundBattleScene->ClearEnemies();
 	}
 }
 
@@ -340,12 +372,33 @@ void UBattleManager::TickBattle()
 		BoundCoreMenu->SetBattleTimerText(BattleTime);
 	}
 
+	// Nothing happens while a stage waits out its pause; once it's over, the stage's enemies spawn and the stage starts.
+	if (PendingStageIndex != INDEX_NONE)
+	{
+		if (BattleTime < PendingStageStartTime)
+		{
+			return;
+		}
+
+		const int32 NextStageIndex = PendingStageIndex;
+		PendingStageIndex = INDEX_NONE;
+		if (!StartStage(NextStageIndex))
+		{
+			EndBattle(false);
+			if (BoundCoreMenu)
+			{
+				BoundCoreMenu->SetWarningText(FString::Printf(TEXT("%s has no enemies to battle."), *GetStageLabel()));
+			}
+			return;
+		}
+	}
+
 	// Resolve every action that came due since the last tick in the order it came due, so a combatant
 	// killed earlier in this tick doesn't still get its turn.
 	while (FBattleCombatant* Actor = FindNextReadyCombatant())
 	{
 		TakeAction(*Actor);
-		if (TryEndBattle())
+		if (TryEndStage())
 		{
 			return;
 		}
@@ -440,7 +493,7 @@ bool UBattleManager::IsSideDefeated(bool bMinionSide) const
 	return true;
 }
 
-bool UBattleManager::TryEndBattle()
+bool UBattleManager::TryEndStage()
 {
 	if (IsSideDefeated(false))
 	{
@@ -459,13 +512,9 @@ bool UBattleManager::TryEndBattle()
 			BoundCoreMenu->SetWarningText(BattleKills.Num() > 0 ? BuildBattleKillsMessage() + TEXT("\n") + ClearedMessage : ClearedMessage);
 		}
 
-		// Straight on to the next stage, with the party as it is.
-		if (!StartStage(StageIndex + 1))
-		{
-			EndBattle(false);
-			return true;
-		}
-		return false;
+		// On to the next stage after its pause, with the party as it is.
+		QueueStage(StageIndex + 1);
+		return true;
 	}
 
 	if (IsSideDefeated(true))
