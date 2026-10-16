@@ -24,7 +24,8 @@ struct FEnemyCurrencyDrop
     FIntPoint DropCount = FIntPoint(1, 1);
 };
 
-// What an enemy actually dropped when it was killed (already rolled), sent with UEnemy::OnKilledEvent.
+// What an enemy actually dropped when it was killed (already rolled), sent with UEnemy::OnKilledEvent. Also what a zone
+// stage's end drops rolled once it's cleared.
 USTRUCT(BlueprintType)
 struct FEnemyLoot
 {
@@ -36,6 +37,9 @@ struct FEnemyLoot
     // CurrencyId -> how many dropped.
     UPROPERTY(BlueprintReadOnly, Category = "Drops")
     TMap<FString, int32> CurrencyCounts;
+
+    // True if nothing dropped at all.
+    bool IsEmpty() const { return Gold <= 0 && CurrencyCounts.IsEmpty(); }
 };
 
 USTRUCT(BlueprintType)

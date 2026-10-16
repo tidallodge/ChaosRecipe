@@ -1,9 +1,10 @@
 // ZoneStruct
-/** Purpose: Roll a random enemy group for one of a zone's stages
+/** Purpose: Roll a random enemy group for one of a zone's stages, and the drops for clearing it
 */
 
 #include "ZoneStruct.h"
 #include "CombatTypes.h"
+#include "Enemy.h"
 
 const FZoneStage* FZoneStruct::GetStage(int32 StageIndex) const
 {
@@ -91,4 +92,25 @@ TArray<FString> FZoneStruct::RollEnemyGroup(int32 StageIndex) const
         }
     }
     return EnemyIds;
+}
+
+FEnemyLoot FZoneStruct::RollStageEndDrops(int32 StageIndex) const
+{
+    const FZoneStage* Stage = GetStage(StageIndex);
+    if (!Stage)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Zone: %s has no stage %d (it has %d)."), *ZoneId.ToString(), StageIndex, GetStageCount());
+        return FEnemyLoot();
+    }
+
+    return UEnemy::RollDrops(Stage->StageEndDrops.GoldDrop, Stage->StageEndDrops.CurrencyDrops);
+}
+
+void FZoneStruct::RemoveUnknownCurrencyDrops()
+{
+    for (int32 Index = 0; Index < Stages.Num(); ++Index)
+    {
+        UEnemy::RemoveUnknownCurrencyDrops(Stages[Index].StageEndDrops.CurrencyDrops,
+            FString::Printf(TEXT("%s stage %d"), *ZoneId.ToString(), Index + 1));
+    }
 }

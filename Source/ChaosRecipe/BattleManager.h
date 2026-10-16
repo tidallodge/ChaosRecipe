@@ -35,7 +35,8 @@ public:
 	UFUNCTION()
 	void BindToMinionHandler(UMinionHandler* MinionHandler);
 
-	// Lets every enemy spawned from now on grant the player its drops when it's killed.
+	// Lets every enemy spawned from now on grant the player its drops when it's killed, and every stage cleared from now
+	// on grant its end drops.
 	UFUNCTION()
 	void BindToPlayerInventory(UPlayerInventory* PlayerInventory);
 
@@ -45,9 +46,10 @@ public:
 
 	// Sends the active party through every stage of CoreMenu's active zone in order: each stage spawns a new random
 	// enemy group (FZoneStruct::RollEnemyGroup) after a short pause, both at the start of the battle and after each stage
-	// is cleared, and the fight starts a moment after it spawns. The party starts at full health and keeps whatever
-	// damage it takes from stage to stage, until the battle ends: by clearing the last stage, losing every minion, or a
-	// stage timing out. Ignored while a battle is already running.
+	// is cleared, and the fight starts a moment after it spawns. Each cleared stage grants its StageEndDrops (if it has
+	// any) before the battle moves on. The party starts at full health and keeps whatever damage it takes from stage to
+	// stage, until the battle ends: by clearing the last stage, losing every minion, or a stage timing out. Ignored while
+	// a battle is already running.
 	UFUNCTION(BlueprintCallable, Category = "Battle")
 	void StartBattle();
 
@@ -98,8 +100,13 @@ protected:
 	UFUNCTION()
 	void HandleEnemyKilled(FString EnemyId, const FEnemyLoot& Loot);
 
-	// "<EnemyName> Slain: +<Gold> Gold, +<Count> <CurrencyName>, ..." with one line per entry in BattleKills.
-	FString BuildBattleKillsMessage() const;
+	// "<EnemyName> Slain: +<Gold> Gold, +<Count> <CurrencyName>, ..." with one line per entry in BattleKills, then
+	// "Stage End Drops: ..." if StageEndLoot has anything in it, then Headline last, so it's the most visible line.
+	FString BuildStageDropsMessage(const FString& Headline) const;
+
+	// Rolls the current stage's StageEndDrops into StageEndLoot and grants it to the player. Nothing happens for a stage
+	// with no end drops configured (or whose roll came up empty).
+	void RollStageEndDrops();
 
 	// Spawns stage InStageIndex's enemy group from Zone (replacing the last stage's enemies), shows it in CoreMenu and
 	// the BattleScene, and lines it up against the party as it is now, everyone ready to act together after
@@ -127,9 +134,9 @@ protected:
 
 	bool IsSideDefeated(bool bMinionSide) const;
 
-	// Once a side is fully defeated: the party losing ends the battle, and the enemies losing queues the next stage,
-	// or ends the battle as won after the last one. Returns true if the stage is over (the battle ended, or the next
-	// stage is queued).
+	// Once a side is fully defeated: the party losing ends the battle, and the enemies losing grants the stage's end
+	// drops, then queues the next stage, or ends the battle as won after the last one. Returns true if the stage is over
+	// (the battle ended, or the next stage is queued).
 	bool TryEndStage();
 
 	// Stops the battle, puts the party back to full health, and says how it went.
@@ -157,6 +164,10 @@ protected:
 
 	// Cleared at the start of each stage.
 	TArray<FBattleKill> BattleKills;
+
+	// What the current stage's StageEndDrops rolled once it was cleared, shown with BattleKills. Cleared at the start of
+	// each stage.
+	FEnemyLoot StageEndLoot;
 
 	UPROPERTY()
 	TObjectPtr<UCoreMenu> BoundCoreMenu = nullptr;

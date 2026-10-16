@@ -81,6 +81,11 @@ void UPlayerInventory::HandleStoreBuy(FString ItemType, FString ItemUUID)
 
 void UPlayerInventory::HandleEnemyKilled(FString EnemyId, const FEnemyLoot& Loot)
 {
+	GrantLoot(EnemyId, Loot);
+}
+
+void UPlayerInventory::GrantLoot(const FString& Source, const FEnemyLoot& Loot)
+{
 	if (Loot.Gold > 0)
 	{
 		AdjustPlayerGoldCount(Loot.Gold);
@@ -92,7 +97,7 @@ void UPlayerInventory::HandleEnemyKilled(FString EnemyId, const FEnemyLoot& Loot
 	}
 
 	UE_LOG(LogTemp, Warning, TEXT("PlayerInventory: Looted %s for %d gold and %d currency type(s) (PlayerGoldCount=%d)"),
-		*EnemyId, Loot.Gold, Loot.CurrencyCounts.Num(), PlayerGoldCount);
+		*Source, Loot.Gold, Loot.CurrencyCounts.Num(), PlayerGoldCount);
 }
 
 void UPlayerInventory::HandleItemSold(FString ItemId, FString ItemUUID, float GoldValue)

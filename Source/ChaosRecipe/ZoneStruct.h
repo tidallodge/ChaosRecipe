@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
+#include "EnemyStruct.h"
 #include "ZoneStruct.generated.h"
 
 // Zone_DT, the data table of FZoneStruct rows.
@@ -33,7 +34,23 @@ struct FZoneEnemySpawn
     int32 MaxPerGroup = 0;
 };
 
-// One of a zone's stages: which enemies its groups can be made of, and how many of them.
+// A zone stage's drop table: what the stage itself drops once it's cleared, on top of whatever its enemies dropped.
+// Rolled the same way as an enemy's drops (UEnemy::RollDrops). Left empty (the default), the stage drops nothing.
+USTRUCT(BlueprintType)
+struct FZoneStageDrops
+{
+    GENERATED_BODY()
+
+    // Gold dropped, rolled between X and Y.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Drops")
+    FIntPoint GoldDrop = FIntPoint::ZeroValue;
+
+    // Every entry rolls independently.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Drops", meta = (TitleProperty = "CurrencyId"))
+    TArray<FEnemyCurrencyDrop> CurrencyDrops;
+};
+
+// One of a zone's stages: which enemies its groups can be made of, how many of them, and what clearing it drops.
 USTRUCT(BlueprintType)
 struct FZoneStage
 {
@@ -46,6 +63,11 @@ struct FZoneStage
     // The enemy types valid for this stage, each with its own count limits.
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stage", meta = (TitleProperty = "EnemyId"))
     TArray<FZoneEnemySpawn> Enemies;
+
+    // Rolled and granted once this stage's enemies are all defeated, before the battle moves on to the next stage (or
+    // ends as won, after the last one).
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Stage")
+    FZoneStageDrops StageEndDrops;
 };
 
 // One Zone_DT row: a place to battle, made of a set number of stages the player works through in order, each spawning
@@ -75,4 +97,12 @@ struct FZoneStruct : public FTableRowBase
     // the rest picked by SpawnWeight without taking anyone past their MaxPerGroup. Returns the group's Enemy_DT
     // EnemyIds (an enemy appears once per copy in the group), or none if the zone has no such stage.
     TArray<FString> RollEnemyGroup(int32 StageIndex) const;
+
+    // Rolls the StageEndDrops of the stage at StageIndex. Returns empty loot if it has none configured (or none of its
+    // entries hit), or if the zone has no such stage.
+    FEnemyLoot RollStageEndDrops(int32 StageIndex) const;
+
+    // Removes every stage's StageEndDrops currency whose CurrencyId isn't in Currency_DT, the same way UEnemy does for
+    // its own drops. Call once after loading the row, before rolling any of them.
+    void RemoveUnknownCurrencyDrops();
 };

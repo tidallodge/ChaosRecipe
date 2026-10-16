@@ -43,6 +43,11 @@ public:
 	UFUNCTION()
 	void HandleEnemyKilled(FString EnemyId, const FEnemyLoot& Loot);
 
+	// Single entry point for granting rolled drops (an enemy's, or a zone stage's end drops): adds Loot's gold and
+	// currency. Source is only used to say where they came from in the log.
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void GrantLoot(const FString& Source, const FEnemyLoot& Loot);
+
 	// Bound to ItemHandler's OnItemSoldEvent: that single shared ItemHandler instance (see
 	// CoreGameMode::BeginPlay) resolves the sold item's gold value and broadcasts it here before it
 	// removes the item from SavedItems.json, so PlayerGoldCount is always updated first.

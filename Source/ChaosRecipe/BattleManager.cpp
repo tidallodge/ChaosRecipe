@@ -2,6 +2,7 @@
 /** Purpose: Simulate a battle between the player's minions and a zone's enemies, stage by stage
     Every stage spawns a random enemy group from Zone_DT after a short pause, and the party carries its health from one
     stage to the next
+    Clearing a stage grants its Zone_DT StageEndDrops (if it has any) before the battle moves on
     Every combatant picks a target and an attack/spell, hits with it, then waits out that ability's
     cooldown (one over its attack or cast rate) before acting again, until one side is defeated
 */
@@ -186,6 +187,7 @@ void UBattleManager::StartBattle()
 		return;
 	}
 
+	LoadedZone.RemoveUnknownCurrencyDrops();
 	Zone = LoadedZone;
 	Minions.Reset();
 	Minions.Append(ActivePartyMinions);
@@ -257,6 +259,7 @@ bool UBattleManager::StartStage(int32 InStageIndex)
 	}
 
 	BattleKills.Reset();
+	StageEndLoot = FEnemyLoot();
 	StageStartTime = BattleTime;
 
 	// Everyone is ready to act together once StageFightDelay has passed, so nothing happens until the new enemies are
@@ -323,19 +326,20 @@ void UBattleManager::HandleEnemyKilled(FString EnemyId, const FEnemyLoot& Loot)
 	BattleKills.Add({ EnemyName, Loot });
 }
 
-FString UBattleManager::BuildBattleKillsMessage() const
+FString UBattleManager::BuildStageDropsMessage(const FString& Headline) const
 {
 	UCurrencyManager CurrencyManager;
-	TArray<FString> Lines;
-	for (const FBattleKill& Kill : BattleKills)
+
+	// "+<Gold> Gold, +<Count> <CurrencyName>, ...", or empty if Loot has nothing in it.
+	auto FormatLoot = [&CurrencyManager](const FEnemyLoot& Loot)
 	{
 		TArray<FString> Drops;
-		if (Kill.Loot.Gold > 0)
+		if (Loot.Gold > 0)
 		{
-			Drops.Add(FString::Printf(TEXT("+%d Gold"), Kill.Loot.Gold));
+			Drops.Add(FString::Printf(TEXT("+%d Gold"), Loot.Gold));
 		}
 
-		for (const TPair<FString, int32>& Entry : Kill.Loot.CurrencyCounts)
+		for (const TPair<FString, int32>& Entry : Loot.CurrencyCounts)
 		{
 			FCurrencyStruct Currency;
 			const FString CurrencyName = CurrencyManager.LoadCurrencyDataRow(Entry.Key, Currency)
@@ -343,16 +347,44 @@ FString UBattleManager::BuildBattleKillsMessage() const
 				: Entry.Key;
 			Drops.Add(FString::Printf(TEXT("+%d %s"), Entry.Value, *CurrencyName));
 		}
+		return FString::Join(Drops, TEXT(", "));
+	};
 
+	TArray<FString> Lines;
+	for (const FBattleKill& Kill : BattleKills)
+	{
 		FString Line = FString::Printf(TEXT("%s Slain"), *Kill.EnemyName);
-		if (Drops.Num() > 0)
+		const FString Drops = FormatLoot(Kill.Loot);
+		if (!Drops.IsEmpty())
 		{
-			Line += TEXT(": ") + FString::Join(Drops, TEXT(", "));
+			Line += TEXT(": ") + Drops;
 		}
 		Lines.Add(Line);
 	}
 
+	if (!StageEndLoot.IsEmpty())
+	{
+		Lines.Add(TEXT("Stage End Drops: ") + FormatLoot(StageEndLoot));
+	}
+
+	Lines.Add(Headline);
 	return FString::Join(Lines, TEXT("\n"));
+}
+
+void UBattleManager::RollStageEndDrops()
+{
+	StageEndLoot = Zone.RollStageEndDrops(StageIndex);
+	if (StageEndLoot.IsEmpty())
+	{
+		return;
+	}
+
+	UE_LOG(LogTemp, Warning, TEXT("BattleManager: [%.2fs] %s end drops: %d gold and %d currency type(s)."),
+		BattleTime, *GetStageLabel(), StageEndLoot.Gold, StageEndLoot.CurrencyCounts.Num());
+	if (BoundPlayerInventory)
+	{
+		BoundPlayerInventory->GrantLoot(GetStageLabel(), StageEndLoot);
+	}
 }
 
 void UBattleManager::TickBattle()
@@ -497,19 +529,22 @@ bool UBattleManager::TryEndStage()
 {
 	if (IsSideDefeated(false))
 	{
+		// Before anything else, so the stage's end drops are granted (and shown) whether the battle moves on or is won
+		// here.
+		RollStageEndDrops();
+
 		if (StageIndex + 1 >= Zone.GetStageCount())
 		{
 			EndBattle(true);
 			return true;
 		}
 
-		// Said now, since the next stage starts counting its own kills. The kills go first, so the clear is the last,
-		// most visible line.
+		// Said now, since the next stage starts counting its own kills and drops.
 		const FString ClearedMessage = FString::Printf(TEXT("%s cleared!"), *GetStageLabel());
 		if (BoundCoreMenu)
 		{
 			BoundCoreMenu->LogToScreen(ClearedMessage);
-			BoundCoreMenu->SetWarningText(BattleKills.Num() > 0 ? BuildBattleKillsMessage() + TEXT("\n") + ClearedMessage : ClearedMessage);
+			BoundCoreMenu->SetWarningText(BuildStageDropsMessage(ClearedMessage));
 		}
 
 		// On to the next stage after its pause, with the party as it is.
@@ -543,7 +578,7 @@ void UBattleManager::EndBattle(bool bMinionsWon)
 			: FString::Printf(TEXT("Battle lost on %s after %.1fs."), *GetStageLabel(), BattleTime);
 		BoundCoreMenu->SetBattleTimerText(BattleTime);
 		BoundCoreMenu->LogToScreen(Outcome);
-		BoundCoreMenu->SetWarningText(BattleKills.Num() > 0 ? BuildBattleKillsMessage() + TEXT("\n") + Outcome : Outcome);
+		BoundCoreMenu->SetWarningText(BuildStageDropsMessage(Outcome));
 	}
 
 	OnBattleEndedEvent.Broadcast(bMinionsWon, BattleTime);

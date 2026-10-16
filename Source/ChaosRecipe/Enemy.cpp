@@ -25,21 +25,7 @@ bool UEnemy::InitializeEnemy(const FString& InEnemyId)
 	}
 
 	EnemyData = LoadedEnemyData;
-
-	// Drop any CurrencyId that isn't in Currency_DT, since PlayerInventory would otherwise happily grant
-	// a stack of a currency that doesn't exist.
-	UCurrencyManager CurrencyManager;
-	EnemyData.CurrencyDrops.RemoveAll([&CurrencyManager, &InEnemyId](const FEnemyCurrencyDrop& Drop)
-	{
-		FCurrencyStruct Currency;
-		if (CurrencyManager.LoadCurrencyDataRow(Drop.CurrencyId, Currency))
-		{
-			return false;
-		}
-
-		UE_LOG(LogTemp, Warning, TEXT("Enemy: %s drops unknown currency '%s'; ignoring that drop."), *InEnemyId, *Drop.CurrencyId);
-		return true;
-	});
+	RemoveUnknownCurrencyDrops(EnemyData.CurrencyDrops, InEnemyId);
 
 	Offense = FCombatOffense();
 	Offense.WeaponDamage = EnemyData.Damage;
@@ -126,7 +112,7 @@ FCombatHitResult UEnemy::ApplyHit(const FCombatHit& Hit)
 
 	if (Result.bKilledTarget)
 	{
-		const FEnemyLoot Loot = RollLoot();
+		const FEnemyLoot Loot = RollDrops(EnemyData.GoldDrop, EnemyData.CurrencyDrops);
 		UE_LOG(LogTemp, Warning, TEXT("Enemy: %s killed, dropped %d gold and %d currency type(s)."),
 			*GetEnemyId(), Loot.Gold, Loot.CurrencyCounts.Num());
 		OnKilledEvent.Broadcast(GetEnemyId(), Loot);
@@ -139,12 +125,12 @@ bool UEnemy::IsDefeated() const
 	return CurrentHealth <= 0.f;
 }
 
-FEnemyLoot UEnemy::RollLoot() const
+FEnemyLoot UEnemy::RollDrops(const FIntPoint& GoldDrop, const TArray<FEnemyCurrencyDrop>& CurrencyDrops)
 {
 	FEnemyLoot Loot;
-	Loot.Gold = FMath::Max(0, CombatMath::RollRange(EnemyData.GoldDrop));
+	Loot.Gold = FMath::Max(0, CombatMath::RollRange(GoldDrop));
 
-	for (const FEnemyCurrencyDrop& Drop : EnemyData.CurrencyDrops)
+	for (const FEnemyCurrencyDrop& Drop : CurrencyDrops)
 	{
 		if (FMath::FRand() * 100.f >= Drop.DropChance)
 		{
@@ -159,6 +145,22 @@ FEnemyLoot UEnemy::RollLoot() const
 	}
 
 	return Loot;
+}
+
+void UEnemy::RemoveUnknownCurrencyDrops(TArray<FEnemyCurrencyDrop>& CurrencyDrops, const FString& OwnerName)
+{
+	UCurrencyManager CurrencyManager;
+	CurrencyDrops.RemoveAll([&CurrencyManager, &OwnerName](const FEnemyCurrencyDrop& Drop)
+	{
+		FCurrencyStruct Currency;
+		if (CurrencyManager.LoadCurrencyDataRow(Drop.CurrencyId, Currency))
+		{
+			return false;
+		}
+
+		UE_LOG(LogTemp, Warning, TEXT("Enemy: %s drops unknown currency '%s'; ignoring that drop."), *OwnerName, *Drop.CurrencyId);
+		return true;
+	});
 }
 
 TArray<FString> UEnemy::GetSpellIds() const

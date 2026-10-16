@@ -93,6 +93,14 @@ public:
 	UFUNCTION()
 	static TArray<FString> GetEnemyIdOptions();
 
+	// Rolls GoldDrop and each CurrencyDrops entry independently. Shared with zone stages' end drops, so both roll the
+	// same way.
+	static FEnemyLoot RollDrops(const FIntPoint& GoldDrop, const TArray<FEnemyCurrencyDrop>& CurrencyDrops);
+
+	// Removes (and logs, naming OwnerName) every entry in CurrencyDrops whose CurrencyId isn't in Currency_DT, since
+	// PlayerInventory would otherwise happily grant a stack of a currency that doesn't exist.
+	static void RemoveUnknownCurrencyDrops(TArray<FEnemyCurrencyDrop>& CurrencyDrops, const FString& OwnerName);
+
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnEnemyHealthChangedEvent OnHealthChangedEvent;
 
@@ -103,9 +111,6 @@ public:
 	FOnEnemyKilledEvent OnKilledEvent;
 
 protected:
-	// Rolls GoldDrop and each CurrencyDrops entry independently.
-	FEnemyLoot RollLoot() const;
-
 	void BroadcastHealthChanged();
 
 	UPROPERTY()
