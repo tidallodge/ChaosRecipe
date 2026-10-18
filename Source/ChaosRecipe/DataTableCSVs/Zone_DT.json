@@ -15,9 +15,42 @@
 						"EnemyId": "woods_vagrant_01",
 						"SpawnWeight": 1,
 						"MinPerGroup": 1,
-						"MaxPerGroup": 4
+						"MaxPerGroup": 0
 					}
-				]
+				],
+				"StageEndDrops":
+				{
+					"GoldDrop":
+					{
+						"X": 0,
+						"Y": 0
+					},
+					"CurrencyDrops": []
+				}
+			},
+			{
+				"GroupSize":
+				{
+					"X": 1,
+					"Y": 2
+				},
+				"Enemies": [
+					{
+						"EnemyId": "woods_vagrant_01",
+						"SpawnWeight": 1,
+						"MinPerGroup": 1,
+						"MaxPerGroup": 1
+					}
+				],
+				"StageEndDrops":
+				{
+					"GoldDrop":
+					{
+						"X": 0,
+						"Y": 0
+					},
+					"CurrencyDrops": []
+				}
 			},
 			{
 				"GroupSize":
@@ -28,44 +61,30 @@
 				"Enemies": [
 					{
 						"EnemyId": "woods_vagrant_01",
-						"SpawnWeight": 1,
-						"MinPerGroup": 1,
+						"SpawnWeight": 0.5,
+						"MinPerGroup": 0,
 						"MaxPerGroup": 1
-					},
-					{
-						"EnemyId": "woods_wolf_01",
-						"SpawnWeight": 1,
-						"MinPerGroup": 1,
-						"MaxPerGroup": 0
 					}
-				]
-			},
-			{
-				"GroupSize":
+				],
+				"StageEndDrops":
 				{
-					"X": 2,
-					"Y": 2
-				},
-				"Enemies": [
+					"GoldDrop":
 					{
-						"EnemyId": "woods_cultist_01",
-						"SpawnWeight": 1,
-						"MinPerGroup": 1,
-						"MaxPerGroup": 0
+						"X": 0,
+						"Y": 0
 					},
-					{
-						"EnemyId": "woods_vagrant_01",
-						"SpawnWeight": 0.5,
-						"MinPerGroup": 0,
-						"MaxPerGroup": 1
-					},
-					{
-						"EnemyId": "woods_wolf_01",
-						"SpawnWeight": 0.5,
-						"MinPerGroup": 0,
-						"MaxPerGroup": 1
-					}
-				]
+					"CurrencyDrops": [
+						{
+							"CurrencyId": "add_mod_01",
+							"DropChance": 100,
+							"DropCount":
+							{
+								"X": 1,
+								"Y": 1
+							}
+						}
+					]
+				}
 			}
 		]
 	},
@@ -77,47 +96,32 @@
 			{
 				"GroupSize":
 				{
-					"X": 1,
-					"Y": 1
-				},
-				"Enemies": [
-					{
-						"EnemyId": "woods_shaman_001",
-						"SpawnWeight": 1,
-						"MinPerGroup": 1,
-						"MaxPerGroup": 4
-					}
-				]
-			},
-			{
-				"GroupSize":
-				{
-					"X": 1,
-					"Y": 2
-				},
-				"Enemies": [
-					{
-						"EnemyId": "woods_shaman_001",
-						"SpawnWeight": 1,
-						"MinPerGroup": 1,
-						"MaxPerGroup": 2
-					}
-				]
-			},
-			{
-				"GroupSize":
-				{
 					"X": 2,
 					"Y": 2
 				},
 				"Enemies": [
 					{
-						"EnemyId": "woods_shaman_001",
-						"SpawnWeight": 1,
-						"MinPerGroup": 2,
+						"EnemyId": "woods_vagrant_01",
+						"SpawnWeight": 0.5,
+						"MinPerGroup": 1,
+						"MaxPerGroup": 4
+					},
+					{
+						"EnemyId": "woods_bandit_01",
+						"SpawnWeight": 0.5,
+						"MinPerGroup": 0,
 						"MaxPerGroup": 0
 					}
-				]
+				],
+				"StageEndDrops":
+				{
+					"GoldDrop":
+					{
+						"X": 0,
+						"Y": 0
+					},
+					"CurrencyDrops": []
+				}
 			},
 			{
 				"GroupSize":
@@ -127,12 +131,27 @@
 				},
 				"Enemies": [
 					{
-						"EnemyId": "woods_shaman_001",
-						"SpawnWeight": 1,
-						"MinPerGroup": 2,
+						"EnemyId": "woods_vagrant_01",
+						"SpawnWeight": 0.5,
+						"MinPerGroup": 1,
+						"MaxPerGroup": 2
+					},
+					{
+						"EnemyId": "woods_bandit_01",
+						"SpawnWeight": 0.5,
+						"MinPerGroup": 1,
 						"MaxPerGroup": 0
 					}
-				]
+				],
+				"StageEndDrops":
+				{
+					"GoldDrop":
+					{
+						"X": 0,
+						"Y": 0
+					},
+					"CurrencyDrops": []
+				}
 			},
 			{
 				"GroupSize":
@@ -142,12 +161,416 @@
 				},
 				"Enemies": [
 					{
-						"EnemyId": "woods_shaman_001",
-						"SpawnWeight": 1,
-						"MinPerGroup": 3,
+						"EnemyId": "woods_vagrant_01",
+						"SpawnWeight": 0.25,
+						"MinPerGroup": 0,
+						"MaxPerGroup": 0
+					},
+					{
+						"EnemyId": "woods_bandit_01",
+						"SpawnWeight": 0.75,
+						"MinPerGroup": 2,
 						"MaxPerGroup": 0
 					}
-				]
+				],
+				"StageEndDrops":
+				{
+					"GoldDrop":
+					{
+						"X": 0,
+						"Y": 0
+					},
+					"CurrencyDrops": []
+				}
+			},
+			{
+				"GroupSize":
+				{
+					"X": 5,
+					"Y": 5
+				},
+				"Enemies": [
+					{
+						"EnemyId": "woods_vagrant_01",
+						"SpawnWeight": 1,
+						"MinPerGroup": 5,
+						"MaxPerGroup": 0
+					}
+				],
+				"StageEndDrops":
+				{
+					"GoldDrop":
+					{
+						"X": 0,
+						"Y": 0
+					},
+					"CurrencyDrops": [
+						{
+							"CurrencyId": "magic_reroll_01",
+							"DropChance": 100,
+							"DropCount":
+							{
+								"X": 1,
+								"Y": 1
+							}
+						}
+					]
+				}
+			}
+		]
+	},
+	{
+		"Name": "woods_03",
+		"ZoneId": "NSLOCTEXT(\"[28151B9151061C94B1D49780E34C02F7]\", \"09736416475EF9399093E6A1EA1EB4C6\", \"woods_03\")",
+		"ZoneName": "NSLOCTEXT(\"[28151B9151061C94B1D49780E34C02F7]\", \"B6370C8C4FB1DCAFC29868AA2DFA1934\", \"woods_03\")",
+		"Stages": [
+			{
+				"GroupSize":
+				{
+					"X": 3,
+					"Y": 3
+				},
+				"Enemies": [
+					{
+						"EnemyId": "woods_bandit_01",
+						"SpawnWeight": 1,
+						"MinPerGroup": 1,
+						"MaxPerGroup": 4
+					}
+				],
+				"StageEndDrops":
+				{
+					"GoldDrop":
+					{
+						"X": 0,
+						"Y": 0
+					},
+					"CurrencyDrops": []
+				}
+			},
+			{
+				"GroupSize":
+				{
+					"X": 3,
+					"Y": 4
+				},
+				"Enemies": [
+					{
+						"EnemyId": "woods_bandit_01",
+						"SpawnWeight": 0.8,
+						"MinPerGroup": 2,
+						"MaxPerGroup": 0
+					},
+					{
+						"EnemyId": "woods_vagrant_01",
+						"SpawnWeight": 0.2,
+						"MinPerGroup": 0,
+						"MaxPerGroup": 0
+					}
+				],
+				"StageEndDrops":
+				{
+					"GoldDrop":
+					{
+						"X": 0,
+						"Y": 0
+					},
+					"CurrencyDrops": []
+				}
+			},
+			{
+				"GroupSize":
+				{
+					"X": 4,
+					"Y": 4
+				},
+				"Enemies": [
+					{
+						"EnemyId": "woods_bandit_01",
+						"SpawnWeight": 1,
+						"MinPerGroup": 2,
+						"MaxPerGroup": 0
+					}
+				],
+				"StageEndDrops":
+				{
+					"GoldDrop":
+					{
+						"X": 0,
+						"Y": 0
+					},
+					"CurrencyDrops": []
+				}
+			},
+			{
+				"GroupSize":
+				{
+					"X": 3,
+					"Y": 3
+				},
+				"Enemies": [
+					{
+						"EnemyId": "woods_cultist_01",
+						"SpawnWeight": 1,
+						"MinPerGroup": 1,
+						"MaxPerGroup": 1
+					},
+					{
+						"EnemyId": "woods_bandit_01",
+						"SpawnWeight": 1,
+						"MinPerGroup": 2,
+						"MaxPerGroup": 2
+					}
+				],
+				"StageEndDrops":
+				{
+					"GoldDrop":
+					{
+						"X": 0,
+						"Y": 0
+					},
+					"CurrencyDrops": []
+				}
+			}
+		]
+	},
+	{
+		"Name": "woods_04",
+		"ZoneId": "NSLOCTEXT(\"[28151B9151061C94B1D49780E34C02F7]\", \"5C836D1844A00D4824E578A2D964ECE8\", \"woods_04\")",
+		"ZoneName": "NSLOCTEXT(\"[28151B9151061C94B1D49780E34C02F7]\", \"2B63C8DA4AABBAFF7BAD5594C89A9AC5\", \"woods_02\")",
+		"Stages": [
+			{
+				"GroupSize":
+				{
+					"X": 1,
+					"Y": 1
+				},
+				"Enemies": [
+					{
+						"EnemyId": "woods_vagrant_01",
+						"SpawnWeight": 1,
+						"MinPerGroup": 1,
+						"MaxPerGroup": 4
+					}
+				],
+				"StageEndDrops":
+				{
+					"GoldDrop":
+					{
+						"X": 0,
+						"Y": 0
+					},
+					"CurrencyDrops": []
+				}
+			},
+			{
+				"GroupSize":
+				{
+					"X": 1,
+					"Y": 2
+				},
+				"Enemies": [
+					{
+						"EnemyId": "woods_cultist_01",
+						"SpawnWeight": 1,
+						"MinPerGroup": 1,
+						"MaxPerGroup": 2
+					}
+				],
+				"StageEndDrops":
+				{
+					"GoldDrop":
+					{
+						"X": 0,
+						"Y": 0
+					},
+					"CurrencyDrops": []
+				}
+			},
+			{
+				"GroupSize":
+				{
+					"X": 2,
+					"Y": 2
+				},
+				"Enemies": [
+					{
+						"EnemyId": "woods_cultist_01",
+						"SpawnWeight": 1,
+						"MinPerGroup": 2,
+						"MaxPerGroup": 0
+					}
+				],
+				"StageEndDrops":
+				{
+					"GoldDrop":
+					{
+						"X": 0,
+						"Y": 0
+					},
+					"CurrencyDrops": []
+				}
+			},
+			{
+				"GroupSize":
+				{
+					"X": 2,
+					"Y": 3
+				},
+				"Enemies": [
+					{
+						"EnemyId": "woods_cultist_01",
+						"SpawnWeight": 1,
+						"MinPerGroup": 2,
+						"MaxPerGroup": 0
+					}
+				],
+				"StageEndDrops":
+				{
+					"GoldDrop":
+					{
+						"X": 0,
+						"Y": 0
+					},
+					"CurrencyDrops": []
+				}
+			},
+			{
+				"GroupSize":
+				{
+					"X": 1,
+					"Y": 1
+				},
+				"Enemies": [],
+				"StageEndDrops":
+				{
+					"GoldDrop":
+					{
+						"X": 0,
+						"Y": 0
+					},
+					"CurrencyDrops": []
+				}
+			}
+		]
+	},
+	{
+		"Name": "woods_05",
+		"ZoneId": "NSLOCTEXT(\"[28151B9151061C94B1D49780E34C02F7]\", \"A19B66CD4F01DE6EF6A9AA989EFB08FE\", \"woods_05\")",
+		"ZoneName": "NSLOCTEXT(\"[28151B9151061C94B1D49780E34C02F7]\", \"2B63C8DA4AABBAFF7BAD5594C89A9AC5\", \"woods_02\")",
+		"Stages": [
+			{
+				"GroupSize":
+				{
+					"X": 1,
+					"Y": 1
+				},
+				"Enemies": [
+					{
+						"EnemyId": "woods_vagrant_01",
+						"SpawnWeight": 1,
+						"MinPerGroup": 1,
+						"MaxPerGroup": 4
+					}
+				],
+				"StageEndDrops":
+				{
+					"GoldDrop":
+					{
+						"X": 0,
+						"Y": 0
+					},
+					"CurrencyDrops": []
+				}
+			},
+			{
+				"GroupSize":
+				{
+					"X": 1,
+					"Y": 2
+				},
+				"Enemies": [
+					{
+						"EnemyId": "woods_cultist_01",
+						"SpawnWeight": 1,
+						"MinPerGroup": 1,
+						"MaxPerGroup": 2
+					}
+				],
+				"StageEndDrops":
+				{
+					"GoldDrop":
+					{
+						"X": 0,
+						"Y": 0
+					},
+					"CurrencyDrops": []
+				}
+			},
+			{
+				"GroupSize":
+				{
+					"X": 2,
+					"Y": 2
+				},
+				"Enemies": [
+					{
+						"EnemyId": "woods_cultist_01",
+						"SpawnWeight": 1,
+						"MinPerGroup": 2,
+						"MaxPerGroup": 0
+					}
+				],
+				"StageEndDrops":
+				{
+					"GoldDrop":
+					{
+						"X": 0,
+						"Y": 0
+					},
+					"CurrencyDrops": []
+				}
+			},
+			{
+				"GroupSize":
+				{
+					"X": 2,
+					"Y": 3
+				},
+				"Enemies": [
+					{
+						"EnemyId": "woods_cultist_01",
+						"SpawnWeight": 1,
+						"MinPerGroup": 2,
+						"MaxPerGroup": 0
+					}
+				],
+				"StageEndDrops":
+				{
+					"GoldDrop":
+					{
+						"X": 0,
+						"Y": 0
+					},
+					"CurrencyDrops": []
+				}
+			},
+			{
+				"GroupSize":
+				{
+					"X": 1,
+					"Y": 1
+				},
+				"Enemies": [],
+				"StageEndDrops":
+				{
+					"GoldDrop":
+					{
+						"X": 0,
+						"Y": 0
+					},
+					"CurrencyDrops": []
+				}
 			}
 		]
 	}

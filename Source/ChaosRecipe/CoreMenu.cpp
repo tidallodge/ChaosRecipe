@@ -40,6 +40,7 @@
 #include "Serialization/JsonSerializer.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "Algo/RandomShuffle.h"
 
 static bool GetSavedItemJsonByUUID(const FString& UUID, TSharedPtr<FJsonObject>& OutItemObject);
 
@@ -2081,11 +2082,59 @@ void UCoreMenu::RandomizeShopItems()
 
 	ShopItemCount = FMath::RandRange(6,12);
 
-	for (int32 i = 0; i < ShopItemCount; i++)
+	// Every roll lists at least one weapon and one armor piece, picked first so the random fill can't skip them.
+	TArray<FName> WeaponRowNames;
+	TArray<FName> ArmorRowNames;
+	if (ItemDataTable)
+	{
+		for (const FName& RowName : ItemDataTableRowNames)
+		{
+			const FBaseItemStruct* ItemRow = ItemDataTable->FindRow<FBaseItemStruct>(RowName, TEXT("CoreMenu::RandomizeShopItems"));
+			if (!ItemRow)
+			{
+				continue;
+			}
+			if (ItemRow->ItemClass == EItemClass::Weapon)
+			{
+				WeaponRowNames.Add(RowName);
+			}
+			else if (ItemRow->ItemClass == EItemClass::Armor)
+			{
+				ArmorRowNames.Add(RowName);
+			}
+		}
+	}
+
+	if (WeaponRowNames.Num() > 0)
+	{
+		CurrentShopItems.Add(WeaponRowNames[FMath::RandRange(0, WeaponRowNames.Num() - 1)]);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("RandomizeShopItems: BaseItem_DT has no Weapon rows; shop can't guarantee a weapon."));
+	}
+
+	if (ArmorRowNames.Num() > 0)
+	{
+		CurrentShopItems.Add(ArmorRowNames[FMath::RandRange(0, ArmorRowNames.Num() - 1)]);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("RandomizeShopItems: BaseItem_DT has no Armor rows; shop can't guarantee an armor piece."));
+	}
+
+	while (CurrentShopItems.Num() < ShopItemCount)
 	{
 		int32 RandomItemRowName = FMath::RandRange(1, ItemDataTableRowCount);
 		RandomItemRowName -= 1;
 		CurrentShopItems.Add(ItemDataTableRowNames[RandomItemRowName]);
+	}
+
+	// Otherwise the guaranteed weapon/armor would always sit in the first two slots.
+	Algo::RandomShuffle(CurrentShopItems);
+
+	for (int32 i = 0; i < CurrentShopItems.Num(); i++)
+	{
 		// Minted now rather than when Buy is clicked, so every listing has one from the moment it's shown.
 		CurrentShopItemUUIDs.Add(FGuid::NewGuid().ToString());
 	}
