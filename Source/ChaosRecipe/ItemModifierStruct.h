@@ -220,6 +220,14 @@ struct FItemModifierAttributeStruct
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attribute Modifier")
     float Health = 0.f;
 
+    // Health regenerated per second of battle.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attribute Modifier")
+    float HealthRegen = 0.f;
+
+    // Health recovered after each cleared stage, before the next one starts.
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attribute Modifier")
+    float HealthStageRecovery = 0.f;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attribute Modifier")
     float Strength = 0.f;
 

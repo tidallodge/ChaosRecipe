@@ -134,6 +134,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Minion|Combat")
 	void RestoreToFull();
 
+	// Heals up to Amount health, never past max health and never a defeated minion (it stays down). Returns how much
+	// it actually healed.
+	UFUNCTION(BlueprintCallable, Category = "Minion|Combat")
+	float RecoverHealth(float Amount);
+
 	UFUNCTION(BlueprintPure, Category = "Minion")
 	FString GetMinionUUID() const { return MinionUUID; }
 
@@ -173,6 +178,15 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "Minion|Combat")
 	FCombatDefense GetDefense() const { return Defense; }
+
+	// Health regenerated every second of battle, from equipped items' HealthRegen attribute modifiers.
+	UFUNCTION(BlueprintPure, Category = "Minion|Combat")
+	int32 GetLifeRegenPerSecond() const { return LifeRegenPerSecond; }
+
+	// Health recovered after each cleared stage, before the next one starts, from equipped items' HealthStageRecovery
+	// attribute modifiers.
+	UFUNCTION(BlueprintPure, Category = "Minion|Combat")
+	int32 GetLifeRecoveryPerStage() const { return LifeRecoveryPerStage; }
 
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnMinionHealthChangedEvent OnHealthChangedEvent;
@@ -242,6 +256,13 @@ protected:
 	UPROPERTY()
 	FCombatDefense Defense;
 
+	// Built by RecalculateStats from equipped items' modifiers, already rounded down to whole health.
+	UPROPERTY()
+	int32 LifeRegenPerSecond = 0;
+
+	UPROPERTY()
+	int32 LifeRecoveryPerStage = 0;
+
 	float CurrentHealth = 0.f;
 	float CurrentOvershield = 0.f;
 
@@ -260,12 +281,12 @@ protected:
 	UPROPERTY()
 	TArray<FItemJewelryStatsStruct> EquippedJewelry;
 
-	// Placeholder for slots that will hold more than one item (e.g. two Rings): a slot listed here holds that many,
-	// and every other slot holds 1. Empty for now, so every slot holds 1. Jewelry slots (Neck, Ring, Belt, Misc)
-	// can already hold more (EquippedJewelry isn't one per slot); before a weapon or armor slot can, EquippedWeapon
-	// (a single weapon) and EquippedArmor (one per EArmorSlot) need room for more too.
+	// Slots that hold more than one item: a slot listed here holds that many, and every other slot holds 1. Only jewelry
+	// slots (Neck, Ring, Belt, Misc) can be listed, since EquippedJewelry isn't one per slot; before a weapon or armor slot
+	// can, EquippedWeapon (a single weapon) and EquippedArmor (one per EArmorSlot) need room for more too. The MinionEquip
+	// window shows each one in its own button (MinionRingEquipButton_1 and _2).
 	UPROPERTY()
-	TMap<EItemSlot, int32> MaxItemsPerSlot;
+	TMap<EItemSlot, int32> MaxItemsPerSlot = { { EItemSlot::Ring, 2 } };
 
 	// Every ItemModifier_DT row, loaded on first use to resolve equipped items' modifier ids.
 	TArray<FItemModifierStruct> ModifierPool;

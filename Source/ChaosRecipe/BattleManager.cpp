@@ -3,6 +3,7 @@
     Every stage spawns a random enemy group from Zone_DT after a short pause, and the party carries its health from one
     stage to the next
     Clearing a stage grants its Zone_DT StageEndDrops (if it has any) before the battle moves on
+    Minions regenerate life every second of the battle, and recover more after each cleared stage
     Every combatant picks a target and an attack/spell, hits with it, then waits out that ability's
     cooldown (one over its attack or cast rate) before acting again, until one side is defeated
 */
@@ -33,6 +34,9 @@ namespace
 	// The pause between a stage's enemies spawning and anyone acting, so their meshes are on screen before the fight
 	// starts. The battle clock keeps running through it too.
 	constexpr float StageFightDelay = 1.f;
+
+	// How often minions regenerate their LifeRegenPerSecond, in battle time.
+	constexpr float LifeRegenInterval = 1.f;
 
 	// The zone's ZoneName, or its ZoneId if it has none.
 	FString GetZoneDisplayName(const FZoneStruct& Zone)
@@ -199,6 +203,7 @@ void UBattleManager::StartBattle()
 	}
 
 	BattleTime = 0.f;
+	NextLifeRegenTime = LifeRegenInterval;
 	QueueStage(0);
 
 	bBattleRunning = true;
@@ -404,11 +409,13 @@ void UBattleManager::TickBattle()
 		BoundCoreMenu->SetBattleTimerText(BattleTime);
 	}
 
-	// Nothing happens while a stage waits out its pause; once it's over, the stage's enemies spawn and the stage starts.
+	// Only life regen happens while a stage waits out its pause; once it's over, the stage's enemies spawn and the stage
+	// starts.
 	if (PendingStageIndex != INDEX_NONE)
 	{
 		if (BattleTime < PendingStageStartTime)
 		{
+			ApplyLifeRegen(BattleTime);
 			return;
 		}
 
@@ -426,9 +433,17 @@ void UBattleManager::TickBattle()
 	}
 
 	// Resolve every action that came due since the last tick in the order it came due, so a combatant
-	// killed earlier in this tick doesn't still get its turn.
-	while (FBattleCombatant* Actor = FindNextReadyCombatant())
+	// killed earlier in this tick doesn't still get its turn. Life regen due before each action goes first, so a
+	// minion healed in time survives a hit it otherwise wouldn't.
+	while (true)
 	{
+		FBattleCombatant* Actor = FindNextReadyCombatant();
+		ApplyLifeRegen(Actor ? Actor->NextActionTime : BattleTime);
+		if (!Actor)
+		{
+			break;
+		}
+
 		TakeAction(*Actor);
 		if (TryEndStage())
 		{
@@ -499,6 +514,36 @@ void UBattleManager::TakeAction(FBattleCombatant& Actor)
 	}
 }
 
+void UBattleManager::ApplyLifeRegen(float UpToTime)
+{
+	while (NextLifeRegenTime <= UpToTime)
+	{
+		for (UPlayerMinion* Minion : Minions)
+		{
+			const float Healed = Minion->RecoverHealth(static_cast<float>(Minion->GetLifeRegenPerSecond()));
+			if (Healed > 0.f)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("BattleManager: [%.2fs] %s regenerated %.0f life (Health=%.1f/%.0f)"),
+					NextLifeRegenTime, *Minion->GetCombatantName(), Healed, Minion->GetCurrentHealth(), Minion->GetMaxHealth());
+			}
+		}
+		NextLifeRegenTime += LifeRegenInterval;
+	}
+}
+
+void UBattleManager::ApplyStageLifeRecovery()
+{
+	for (UPlayerMinion* Minion : Minions)
+	{
+		const float Healed = Minion->RecoverHealth(static_cast<float>(Minion->GetLifeRecoveryPerStage()));
+		if (Healed > 0.f)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("BattleManager: [%.2fs] %s recovered %.0f life after %s (Health=%.1f/%.0f)"),
+				BattleTime, *Minion->GetCombatantName(), Healed, *GetStageLabel(), Minion->GetCurrentHealth(), Minion->GetMaxHealth());
+		}
+	}
+}
+
 ICombatant* UBattleManager::PickTarget(const FBattleCombatant& Actor) const
 {
 	TArray<ICombatant*> Candidates;
@@ -547,7 +592,8 @@ bool UBattleManager::TryEndStage()
 			BoundCoreMenu->SetWarningText(BuildStageDropsMessage(ClearedMessage));
 		}
 
-		// On to the next stage after its pause, with the party as it is.
+		// On to the next stage after its pause, with the party as it is once it's recovered.
+		ApplyStageLifeRecovery();
 		QueueStage(StageIndex + 1);
 		return true;
 	}

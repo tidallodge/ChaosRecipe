@@ -305,16 +305,27 @@ bool UPlayerMinion::EquipInItemSlot(const FString& ItemUUID, const FString& Item
 	TArray<FString> SlotItemUUIDs = GetEquippedItemUUIDsInSlot(ItemSlot);
 	SlotItemUUIDs.Remove(ItemUUID);
 
-	// Unequips enough of what's in the slot to leave room for this item. With every slot holding 1, that's
-	// whatever is in it. Once a slot can hold more, this takes out the first ones found; letting the player
-	// choose which item is replaced would go here. Hand slots that block each other (a two-handed weapon and
-	// an off-hand) are still sorted out by EquipWeapon/EquipArmor.
+	auto FindJewelryIndex = [this](const FString& UUID)
+	{
+		return EquippedJewelry.IndexOfByPredicate([&UUID](const FItemJewelryStatsStruct& Jewelry) { return Jewelry.UUID.ToString() == UUID; });
+	};
+
+	// Unequips enough of what's in the slot to leave room for this item. In a slot holding 1, that's whatever is in
+	// it. In one holding more (Rings), that's the first ones found, which for two full ring slots is the ring in
+	// MinionRingEquipButton_1; letting the player choose which item is replaced would go here. Hand slots that block
+	// each other (a two-handed weapon and an off-hand) are still sorted out by EquipWeapon/EquipArmor.
 	const int32 NumToUnequip = SlotItemUUIDs.Num() - GetMaxItemsInSlot(ItemSlot) + 1;
 	TArray<FString> UnequippedUUIDs;
+	int32 ReplacedJewelryIndex = INDEX_NONE;
 	for (int32 Index = 0; Index < NumToUnequip; ++Index)
 	{
+		const int32 JewelryIndex = FindJewelryIndex(SlotItemUUIDs[Index]);
 		if (UnequipItem(SlotItemUUIDs[Index]))
 		{
+			if (ReplacedJewelryIndex == INDEX_NONE)
+			{
+				ReplacedJewelryIndex = JewelryIndex;
+			}
 			UnequippedUUIDs.Add(SlotItemUUIDs[Index]);
 			UE_LOG(LogTemp, Warning, TEXT("PlayerMinion: Unequipped %s from the %s slot to make room for %s."),
 				*SlotItemUUIDs[Index], *UEnum::GetValueAsString(ItemSlot), *ItemUUID);
@@ -323,6 +334,18 @@ bool UPlayerMinion::EquipInItemSlot(const FString& ItemUUID, const FString& Item
 
 	if (Equip())
 	{
+		// EquipJewelry adds a new item after the rest, so a replacement is moved to where the item it replaced was. That
+		// keeps it in the same equip button, rather than the other ring sliding into that button and the new one showing
+		// up in the next.
+		const int32 NewJewelryIndex = FindJewelryIndex(ItemUUID);
+		if (ReplacedJewelryIndex != INDEX_NONE && NewJewelryIndex != INDEX_NONE && NewJewelryIndex != ReplacedJewelryIndex)
+		{
+			FItemJewelryStatsStruct Replacement = EquippedJewelry[NewJewelryIndex];
+			EquippedJewelry.RemoveAt(NewJewelryIndex);
+			EquippedJewelry.Insert(MoveTemp(Replacement), FMath::Min(ReplacedJewelryIndex, EquippedJewelry.Num()));
+			// The saved order is the order items are re-equipped in on load, so it's saved again to keep the button.
+			BroadcastSaveDataChanged();
+		}
 		return true;
 	}
 
@@ -604,6 +627,24 @@ void UPlayerMinion::RestoreToFull()
 	BroadcastHealthChanged();
 }
 
+float UPlayerMinion::RecoverHealth(float Amount)
+{
+	if (IsDefeated())
+	{
+		return 0.f;
+	}
+
+	const float Healed = FMath::Min(Amount, GetMaxHealth() - CurrentHealth);
+	if (Healed <= 0.f)
+	{
+		return 0.f;
+	}
+
+	CurrentHealth += Healed;
+	BroadcastHealthChanged();
+	return Healed;
+}
+
 void UPlayerMinion::BroadcastHealthChanged()
 {
 	OnHealthChangedEvent.Broadcast(CurrentHealth, GetMaxHealth(), CurrentOvershield);
@@ -681,6 +722,17 @@ void UPlayerMinion::RecalculateStats()
 	TotalAttributes.Strength = ApplyAttributeModifiers(BaseAttributes.Strength, &FItemModifierAttributeStruct::Strength);
 	TotalAttributes.Intelligence = ApplyAttributeModifiers(BaseAttributes.Intelligence, &FItemModifierAttributeStruct::Intelligence);
 	TotalAttributes.Dexterity = ApplyAttributeModifiers(BaseAttributes.Dexterity, &FItemModifierAttributeStruct::Dexterity);
+
+	// Health regen and stage recovery only heal whole health, so they're rounded down rather than to the nearest, with
+	// a little slack so float error can't knock an exact total under (10 * 1.3f is 12.99...).
+	auto ApplyHealingModifiers = [&GlobalModifiers](float FItemModifierAttributeStruct::* Field)
+	{
+		const float Total = ApplyModifiersToStat(0.f, GlobalModifiers,
+			[Field](const FItemModifierAffectedAttributes& Attributes) { return Attributes.AttributeModifier.*Field; });
+		return FMath::Max(0, FMath::FloorToInt(Total + UE_KINDA_SMALL_NUMBER));
+	};
+	LifeRegenPerSecond = ApplyHealingModifiers(&FItemModifierAttributeStruct::HealthRegen);
+	LifeRecoveryPerStage = ApplyHealingModifiers(&FItemModifierAttributeStruct::HealthStageRecovery);
 
 	// A saved armor item's BaseDefense already includes its local mitigation modifiers
 	// (ItemHandler::RecalculateArmorDefense), so it's summed as-is.

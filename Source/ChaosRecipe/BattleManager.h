@@ -47,9 +47,10 @@ public:
 	// Sends the active party through every stage of CoreMenu's active zone in order: each stage spawns a new random
 	// enemy group (FZoneStruct::RollEnemyGroup) after a short pause, both at the start of the battle and after each stage
 	// is cleared, and the fight starts a moment after it spawns. Each cleared stage grants its StageEndDrops (if it has
-	// any) before the battle moves on. The party starts at full health and keeps whatever damage it takes from stage to
-	// stage, until the battle ends: by clearing the last stage, losing every minion, or a stage timing out. Ignored while
-	// a battle is already running.
+	// any) and lets each minion recover its LifeRecoveryPerStage before the battle moves on. The party starts at full
+	// health, regenerates each minion's LifeRegenPerSecond every second (pauses included), and otherwise keeps whatever
+	// damage it takes from stage to stage, until the battle ends: by clearing the last stage, losing every minion, or a
+	// stage timing out. Ignored while a battle is already running.
 	UFUNCTION(BlueprintCallable, Category = "Battle")
 	void StartBattle();
 
@@ -129,14 +130,20 @@ protected:
 	// Picks Actor's target and an ability, uses it, then puts Actor on that ability's cooldown.
 	void TakeAction(FBattleCombatant& Actor);
 
+	// Heals every living minion by its LifeRegenPerSecond once for each regen pulse due at or before UpToTime.
+	void ApplyLifeRegen(float UpToTime);
+
+	// Heals every living minion by its LifeRecoveryPerStage, once a stage is cleared and before the next one starts.
+	void ApplyStageLifeRecovery();
+
 	// A random living combatant from the other side, or null if they're all defeated.
 	ICombatant* PickTarget(const FBattleCombatant& Actor) const;
 
 	bool IsSideDefeated(bool bMinionSide) const;
 
 	// Once a side is fully defeated: the party losing ends the battle, and the enemies losing grants the stage's end
-	// drops, then queues the next stage, or ends the battle as won after the last one. Returns true if the stage is over
-	// (the battle ended, or the next stage is queued).
+	// drops, then lets the party recover (ApplyStageLifeRecovery) and queues the next stage, or ends the battle as won
+	// after the last one. Returns true if the stage is over (the battle ended, or the next stage is queued).
 	bool TryEndStage();
 
 	// Stops the battle, puts the party back to full health, and says how it went.
@@ -195,4 +202,7 @@ protected:
 
 	// BattleTime at which PendingStageIndex starts.
 	float PendingStageStartTime = 0.f;
+
+	// BattleTime at which the party next regenerates life (ApplyLifeRegen).
+	float NextLifeRegenTime = 0.f;
 };

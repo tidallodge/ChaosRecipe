@@ -9,7 +9,7 @@ namespace
 {
     // Physical reduction = Mitigation / (Mitigation + PhysicalMitigationScaling), so mitigation equal to
     // this value halves physical damage, and every extra point is worth a little less than the last.
-    constexpr float PhysicalMitigationScaling = 100.f;
+    constexpr float PhysicalMitigationScaling = 50.f;
     constexpr float MaxPhysicalReduction = 0.9f;
 
     // Percent caps, so stacking resistance or evade can never make a combatant fully immune.

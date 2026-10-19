@@ -73,7 +73,7 @@ struct FEnemyStruct : public FTableRowBase
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
     int32 Overshield = 0;
 
-    // Same scale as armor: mitigation equal to 100 halves physical damage (see CombatMath::ResolveHit).
+    // Same scale as armor: mitigation equal to 50 halves physical damage (see CombatMath::ResolveHit).
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Defense")
     int32 PhysicalMitigation = 0;
 
